@@ -1399,18 +1399,6 @@
              return itemEntity;
          }
      }
-@@ -1955,6 +_,11 @@
-             return null;
-         } else {
-             double d = this.getEyeY() - 0.3F;
-+            // Paper start
-+            ItemStack tmp = droppedItem.copy();
-+            droppedItem.setCount(0);
-+            droppedItem = tmp;
-+            // Paper end
-             ItemEntity itemEntity = new ItemEntity(this.level(), this.getX(), d, this.getZ(), droppedItem);
-             itemEntity.setPickUpDelay(40);
-             if (includeThrowerName) {
 @@ -2008,6 +_,16 @@
      }
  

@@ -1382,7 +1382,7 @@
              if (traceItem) {
                  if (!item.isEmpty()) {
 -                    this.awardStat(Stats.ITEM_DROPPED.get(item.getItem()), droppedItem.getCount());
-+                    this.awardStat(Stats.ITEM_DROPPED.get(item.getItem()), item.getCount()); // Paper - Fix PlayerDropItemEvent using wrong item
++                    this.awardStat(Stats.ITEM_DROPPED.get(item.getItem()), item.getCount()); // Paper - Use updated count on item provided from event
                  }
  
                  this.awardStat(Stats.DROP);

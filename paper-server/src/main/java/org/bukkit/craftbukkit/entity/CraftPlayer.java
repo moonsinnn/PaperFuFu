@@ -9,6 +9,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Pair;
 import io.papermc.paper.FeatureHooks;
 import io.papermc.paper.configuration.GlobalConfiguration;
+import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.PaperPlayerGiveResult;
 import io.papermc.paper.entity.PlayerGiveResult;
@@ -304,8 +305,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         ConnectionProtocol getProtocol();
 
         void sendPacket(Packet<?> packet);
-
-        void kickPlayer(Component reason, org.bukkit.event.player.PlayerKickEvent.Cause cause); // Paper - kick event causes
     }
 
     public record CookieFuture(ResourceLocation key, CompletableFuture<byte[]> future) {
@@ -333,38 +332,23 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean isTransferred() {
-        return this.getHandle().transferCookieConnection.isTransferred();
+        return this.getHandle().connection.isTransferred();
     }
 
     @Override
     public CompletableFuture<byte[]> retrieveCookie(NamespacedKey key) {
-        Preconditions.checkArgument(key != null, "Cookie key cannot be null");
-
-        CompletableFuture<byte[]> future = new CompletableFuture<>();
-        ResourceLocation nms = CraftNamespacedKey.toMinecraft(key);
-        this.requestedCookies.add(new CookieFuture(nms, future));
-
-        this.getHandle().transferCookieConnection.sendPacket(new ClientboundCookieRequestPacket(nms));
-
-        return future;
+        // TODO
+        return null;
     }
 
     @Override
     public void storeCookie(NamespacedKey key, byte[] value) {
-        Preconditions.checkArgument(key != null, "Cookie key cannot be null");
-        Preconditions.checkArgument(value != null, "Cookie value cannot be null");
-        Preconditions.checkArgument(value.length <= 5120, "Cookie value too large, must be smaller than 5120 bytes");
-        Preconditions.checkState(this.getHandle().transferCookieConnection.getProtocol() == ConnectionProtocol.CONFIGURATION || this.getHandle().transferCookieConnection.getProtocol() == ConnectionProtocol.PLAY, "Can only store cookie in CONFIGURATION or PLAY protocol.");
-
-        this.getHandle().transferCookieConnection.sendPacket(new ClientboundStoreCookiePacket(CraftNamespacedKey.toMinecraft(key), value));
+        // TODO
     }
 
     @Override
     public void transfer(String host, int port) {
-        Preconditions.checkArgument(host != null, "Host cannot be null");
-        Preconditions.checkState(this.getHandle().transferCookieConnection.getProtocol() == ConnectionProtocol.CONFIGURATION || this.getHandle().transferCookieConnection.getProtocol() == ConnectionProtocol.PLAY, "Can only transfer in CONFIGURATION or PLAY protocol.");
-
-        this.getHandle().transferCookieConnection.sendPacket(new ClientboundTransferPacket(host, port));
+        // TODO
     }
 
     // Paper start - Implement NetworkClient
@@ -673,7 +657,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void kickPlayer(String message) {
         org.spigotmc.AsyncCatcher.catchOp("player kick"); // Spigot
-        this.getHandle().transferCookieConnection.kickPlayer(CraftChatMessage.fromStringOrEmpty(message, true), org.bukkit.event.player.PlayerKickEvent.Cause.PLUGIN); // Paper - kick event cause
+        this.getHandle().connection.disconnect(CraftChatMessage.fromStringOrEmpty(message, true), org.bukkit.event.player.PlayerKickEvent.Cause.PLUGIN); // Paper - kick event cause
     }
 
     private static final net.kyori.adventure.text.Component DEFAULT_KICK_COMPONENT = net.kyori.adventure.text.Component.translatable("multiplayer.disconnect.kicked");
@@ -3576,6 +3560,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void setDeathScreenScore(final int score) {
         getHandle().setScore(score);
+    }
+
+    @Override
+    public PlayerGameConnection getConnection() {
+        return this.getHandle().connection.playerGameConnection;
     }
 
     /**

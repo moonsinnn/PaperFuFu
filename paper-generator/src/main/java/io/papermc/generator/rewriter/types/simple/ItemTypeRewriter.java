@@ -1,13 +1,11 @@
 package io.papermc.generator.rewriter.types.simple;
 
+import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
-import io.papermc.typewriter.util.ClassHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import org.bukkit.inventory.ItemType;
-import org.bukkit.inventory.meta.ItemMeta;
 
 @Deprecated // bad generic
 public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
@@ -22,6 +20,6 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
             return super.rewriteFieldType(reference);
         }
 
-        return "%s<%s>".formatted(ClassHelper.retrieveFullNestedName(ItemType.Typed.class), ItemMeta.class.getSimpleName());
+        return "%s<%s>".formatted(Types.ITEM_TYPE_TYPED.dottedNestedName(), Types.ITEM_META.simpleName());
     }
 }

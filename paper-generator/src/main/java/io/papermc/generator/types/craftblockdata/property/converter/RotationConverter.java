@@ -6,13 +6,14 @@ import com.squareup.javapoet.ParameterSpec;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
-import org.bukkit.block.BlockFace;
-import org.bukkit.util.Vector;
+//import org.bukkit.block.BlockFace;
+//import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class RotationConverter implements Converter<Integer, BlockFace> {
+public class RotationConverter/* implements Converter<Integer, BlockFace>*/ {
 
+    /*
     private static final String DIRECTION_VAR = "dir";
     private static final String ANGLE_VAR = "angle";
 
@@ -41,5 +42,5 @@ public class RotationConverter implements Converter<Integer, BlockFace> {
     @Override
     public String rawGetExprent() {
         return "CraftBlockData.ROTATION_CYCLE[this.get(%s)]";
-    }
+    }*/
 }

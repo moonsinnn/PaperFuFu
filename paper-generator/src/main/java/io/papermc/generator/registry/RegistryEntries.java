@@ -1,33 +1,32 @@
 package io.papermc.generator.registry;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import io.papermc.generator.utils.ClassHelper;
-import io.papermc.paper.datacomponent.DataComponentType;
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.registry.data.BannerPatternRegistryEntry;
-import io.papermc.paper.registry.data.DamageTypeRegistryEntry;
-import io.papermc.paper.registry.data.EnchantmentRegistryEntry;
-import io.papermc.paper.registry.data.GameEventRegistryEntry;
-import io.papermc.paper.registry.data.PaintingVariantRegistryEntry;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.CatVariants;
@@ -40,6 +39,7 @@ import net.minecraft.world.entity.animal.wolf.WolfVariants;
 import net.minecraft.world.entity.decoration.PaintingVariants;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Instruments;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.JukeboxSongs;
@@ -50,68 +50,24 @@ import net.minecraft.world.item.equipment.trim.TrimPatterns;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPatterns;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
-import org.bukkit.Art;
-import org.bukkit.Fluid;
-import org.bukkit.GameEvent;
-import org.bukkit.JukeboxSong;
-import org.bukkit.Keyed;
-import org.bukkit.MusicInstrument;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.block.Biome;
-import org.bukkit.block.BlockType;
-import org.bukkit.block.banner.PatternType;
-import org.bukkit.damage.DamageType;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Cat;
-import org.bukkit.entity.Chicken;
-import org.bukkit.entity.Cow;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Frog;
-import org.bukkit.entity.Pig;
-import org.bukkit.entity.Villager;
-import org.bukkit.entity.Wolf;
-import org.bukkit.entity.memory.MemoryKey;
-import org.bukkit.generator.structure.Structure;
-import org.bukkit.generator.structure.StructureType;
-import org.bukkit.inventory.ItemType;
-import org.bukkit.inventory.MenuType;
-import org.bukkit.inventory.meta.trim.TrimMaterial;
-import org.bukkit.inventory.meta.trim.TrimPattern;
-import org.bukkit.map.MapCursor;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class RegistryEntries {
 
-    // CraftBukkit entry where implementation start by "Craft"
-    private static <T> RegistryEntry<T> entry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass, Class<? extends Keyed> apiClass) {
-        return entry(registryKey, holderElementsClass, apiClass, "Craft");
-    }
+    private static final Gson GSON = new Gson();
 
-    private static <T> RegistryEntry<T> entry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass, Class<? extends Keyed> apiClass, String implPrefix) {
-        String name = io.papermc.typewriter.util.ClassHelper.retrieveFullNestedName(apiClass);
+    private static <T> RegistryEntry<T> entry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass) {
         RegistryKeyField<T> registryKeyField = (RegistryKeyField<T>) REGISTRY_KEY_FIELDS.get(registryKey);
-        String[] classes = name.split("\\.");
-        if (classes.length == 0) {
-            return new RegistryEntry<>(registryKey, registryKeyField, holderElementsClass, apiClass, implPrefix.concat(apiClass.getSimpleName()));
-        }
-
-        String implName = Arrays.stream(classes).map(implPrefix::concat).collect(Collectors.joining("."));
-        return new RegistryEntry<>(registryKey, registryKeyField, holderElementsClass, apiClass, implName);
+        return new RegistryEntry<>(registryKey, registryKeyField, holderElementsClass, REGISTRY_DATA.get(registryKey));
     }
 
-    @Deprecated
-    private static <T> RegistryEntry<T> inconsistentEntry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass, Class<? extends Keyed> apiClass, String implClass) {
-        return new RegistryEntry<>(registryKey, (RegistryKeyField<T>) REGISTRY_KEY_FIELDS.get(registryKey), holderElementsClass, apiClass, implClass);
-    }
-
+    private static final Map<ResourceKey<? extends Registry<?>>, RegistryData> REGISTRY_DATA;
     private static final Map<ResourceKey<? extends Registry<?>>, RegistryKeyField<?>> REGISTRY_KEY_FIELDS;
     static {
         Map<ResourceKey<? extends Registry<?>>, RegistryKeyField<?>> registryKeyFields = new IdentityHashMap<>();
@@ -132,54 +88,61 @@ public final class RegistryEntries {
             throw new RuntimeException(ex);
         }
         REGISTRY_KEY_FIELDS = Collections.unmodifiableMap(registryKeyFields);
+
+        Map<ResourceKey<? extends Registry<?>>, RegistryData> registryData = new IdentityHashMap<>();
+        try (Reader input = new BufferedReader(new InputStreamReader(RegistryEntries.class.getClassLoader().getResourceAsStream("data/registries.json")))) {
+            JsonObject registries = GSON.fromJson(input, JsonObject.class);
+            for (String rawRegistryKey : registries.keySet()) {
+                ResourceKey<? extends Registry<?>> registryKey = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace(rawRegistryKey));
+                registryData.put(registryKey, RegistryData.CODEC.parse(JsonOps.INSTANCE, registries.get(rawRegistryKey)).getOrThrow());
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        REGISTRY_DATA = Collections.unmodifiableMap(registryData);
     }
 
-    public static final Set<Class<?>> REGISTRY_CLASS_NAME_BASED_ON_API = Set.of(
-        BlockType.class,
-        ItemType.class
-    );
-
     public static final List<RegistryEntry<?>> BUILT_IN = List.of(
-        entry(Registries.GAME_EVENT, net.minecraft.world.level.gameevent.GameEvent.class, GameEvent.class).apiRegistryBuilder(GameEventRegistryEntry.Builder.class, "PaperGameEventRegistryEntry.PaperBuilder"),
-        entry(Registries.STRUCTURE_TYPE, net.minecraft.world.level.levelgen.structure.StructureType.class, StructureType.class),
-        entry(Registries.MOB_EFFECT, MobEffects.class, PotionEffectType.class),
-        entry(Registries.BLOCK, Blocks.class, BlockType.class),
-        entry(Registries.ITEM, Items.class, ItemType.class),
-        entry(Registries.VILLAGER_PROFESSION, VillagerProfession.class, Villager.Profession.class),
-        entry(Registries.VILLAGER_TYPE, VillagerType.class, Villager.Type.class),
-        entry(Registries.MAP_DECORATION_TYPE, MapDecorationTypes.class, MapCursor.Type.class),
-        entry(Registries.MENU, net.minecraft.world.inventory.MenuType.class, MenuType.class),
-        entry(Registries.ATTRIBUTE, Attributes.class, Attribute.class),
-        entry(Registries.FLUID, Fluids.class, Fluid.class),
-        entry(Registries.SOUND_EVENT, SoundEvents.class, Sound.class).allowDirect().apiRegistryField("SOUNDS"),
-        entry(Registries.DATA_COMPONENT_TYPE, DataComponents.class, DataComponentType.class, "Paper").preload(DataComponentTypes.class).apiAccessName("of")
+        entry(Registries.GAME_EVENT, GameEvent.class),
+        entry(Registries.STRUCTURE_TYPE, StructureType.class),
+        entry(Registries.MOB_EFFECT, MobEffects.class),
+        entry(Registries.BLOCK, Blocks.class),
+        entry(Registries.ITEM, Items.class),
+        entry(Registries.VILLAGER_PROFESSION, VillagerProfession.class),
+        entry(Registries.VILLAGER_TYPE, VillagerType.class),
+        entry(Registries.MAP_DECORATION_TYPE, MapDecorationTypes.class),
+        entry(Registries.MENU, MenuType.class),
+        entry(Registries.ATTRIBUTE, Attributes.class),
+        entry(Registries.FLUID, Fluids.class),
+        entry(Registries.SOUND_EVENT, SoundEvents.class),
+        entry(Registries.DATA_COMPONENT_TYPE, DataComponents.class)
     );
 
     public static final List<RegistryEntry<?>> DATA_DRIVEN = List.of(
-        entry(Registries.BIOME, Biomes.class, Biome.class).delayed(),
-        entry(Registries.STRUCTURE, BuiltinStructures.class, Structure.class).delayed(),
-        entry(Registries.TRIM_MATERIAL, TrimMaterials.class, TrimMaterial.class).allowDirect().delayed(),
-        entry(Registries.TRIM_PATTERN, TrimPatterns.class, TrimPattern.class).allowDirect().delayed(),
-        entry(Registries.DAMAGE_TYPE, DamageTypes.class, DamageType.class).apiRegistryBuilder(DamageTypeRegistryEntry.Builder.class, "PaperDamageTypeRegistryEntry.PaperBuilder").delayed(),
-        entry(Registries.WOLF_VARIANT, WolfVariants.class, Wolf.Variant.class).delayed(),
-        entry(Registries.WOLF_SOUND_VARIANT, WolfSoundVariants.class, Wolf.SoundVariant.class),
-        entry(Registries.ENCHANTMENT, Enchantments.class, Enchantment.class).apiRegistryBuilder(EnchantmentRegistryEntry.Builder.class, "PaperEnchantmentRegistryEntry.PaperBuilder").serializationUpdater("ENCHANTMENT_RENAME").delayed(),
-        entry(Registries.JUKEBOX_SONG, JukeboxSongs.class, JukeboxSong.class).delayed(),
-        entry(Registries.BANNER_PATTERN, BannerPatterns.class, PatternType.class).allowDirect().apiRegistryBuilder(BannerPatternRegistryEntry.Builder.class, "PaperBannerPatternRegistryEntry.PaperBuilder").delayed(),
-        entry(Registries.PAINTING_VARIANT, PaintingVariants.class, Art.class).allowDirect().apiRegistryBuilder(PaintingVariantRegistryEntry.Builder.class, "PaperPaintingVariantRegistryEntry.PaperBuilder").apiRegistryField("ART").delayed(),
-        entry(Registries.INSTRUMENT, Instruments.class, MusicInstrument.class).allowDirect().delayed(),
-        entry(Registries.CAT_VARIANT, CatVariants.class, Cat.Type.class).delayed(),
-        entry(Registries.FROG_VARIANT, FrogVariants.class, Frog.Variant.class).delayed(),
-        entry(Registries.CHICKEN_VARIANT, ChickenVariants.class, Chicken.Variant.class),
-        entry(Registries.COW_VARIANT, CowVariants.class, Cow.Variant.class),
-        entry(Registries.PIG_VARIANT, PigVariants.class, Pig.Variant.class)
+        entry(Registries.BIOME, Biomes.class),
+        entry(Registries.STRUCTURE, BuiltinStructures.class),
+        entry(Registries.TRIM_MATERIAL, TrimMaterials.class),
+        entry(Registries.TRIM_PATTERN, TrimPatterns.class),
+        entry(Registries.DAMAGE_TYPE, DamageTypes.class),
+        entry(Registries.WOLF_VARIANT, WolfVariants.class),
+        entry(Registries.WOLF_SOUND_VARIANT, WolfSoundVariants.class),
+        entry(Registries.ENCHANTMENT, Enchantments.class),
+        entry(Registries.JUKEBOX_SONG, JukeboxSongs.class),
+        entry(Registries.BANNER_PATTERN, BannerPatterns.class),
+        entry(Registries.PAINTING_VARIANT, PaintingVariants.class),
+        entry(Registries.INSTRUMENT, Instruments.class),
+        entry(Registries.CAT_VARIANT, CatVariants.class),
+        entry(Registries.FROG_VARIANT, FrogVariants.class),
+        entry(Registries.CHICKEN_VARIANT, ChickenVariants.class),
+        entry(Registries.COW_VARIANT, CowVariants.class),
+        entry(Registries.PIG_VARIANT, PigVariants.class)
     );
 
     public static final List<RegistryEntry<?>> API_ONLY = List.of(
-        entry(Registries.ENTITY_TYPE, net.minecraft.world.entity.EntityType.class, EntityType.class),
-        entry(Registries.PARTICLE_TYPE, ParticleTypes.class, Particle.class),
-        entry(Registries.POTION, Potions.class, PotionType.class),
-        entry(Registries.MEMORY_MODULE_TYPE, MemoryModuleType.class, MemoryKey.class)
+        entry(Registries.ENTITY_TYPE, EntityType.class),
+        entry(Registries.PARTICLE_TYPE, ParticleTypes.class),
+        entry(Registries.POTION, Potions.class),
+        entry(Registries.MEMORY_MODULE_TYPE, MemoryModuleType.class)
     );
 
     public static final Map<ResourceKey<? extends Registry<?>>, RegistryEntry<?>> BY_REGISTRY_KEY;

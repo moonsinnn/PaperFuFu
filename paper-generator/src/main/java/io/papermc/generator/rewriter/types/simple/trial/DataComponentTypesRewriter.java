@@ -3,11 +3,9 @@ package io.papermc.generator.rewriter.types.simple.trial;
 import com.google.gson.internal.Primitives;
 import com.mojang.serialization.Codec;
 import io.papermc.generator.registry.RegistryEntries;
+import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
 import io.papermc.generator.utils.ClassHelper;
-import io.papermc.paper.datacomponent.item.BlockItemDataProperties;
-import io.papermc.paper.datacomponent.item.ItemAdventurePredicate;
-import io.papermc.paper.datacomponent.item.ItemArmorTrim;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.parser.Lexer;
 import io.papermc.typewriter.parser.sequence.SequenceTokens;
@@ -27,7 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import net.kyori.adventure.key.Key;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -44,9 +41,6 @@ import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
-import org.bukkit.FireworkEffect;
-import org.bukkit.MusicInstrument;
-import org.bukkit.inventory.ItemRarity;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -116,16 +110,16 @@ public class DataComponentTypesRewriter extends RegistryFieldRewriter<DataCompon
         return null;
     });
 
-    private static final Map<Class<?>, Class<?>> API_BRIDGE = Map.of(
-        Component.class, net.kyori.adventure.text.Component.class,
-        ResourceLocation.class, Key.class,
-        Instrument.class, MusicInstrument.class,
-        FireworkExplosion.class, FireworkEffect.class,
-        Rarity.class, ItemRarity.class,
-        ArmorTrim.class, ItemArmorTrim.class,
+    private static final Map<Class<?>, ClassNamed> API_BRIDGE = Map.of(
+        Component.class, Types.COMPONENT,
+        ResourceLocation.class, Types.KEY,
+        Instrument.class, Types.MUSIC_INSTRUMENT,
+        FireworkExplosion.class, Types.FIREWORK_EFFECT,
+        Rarity.class, Types.ITEM_RARITY,
+        ArmorTrim.class, Types.ITEM_ARMOR_TRIM,
         // renames
-        BlockItemStateProperties.class, BlockItemDataProperties.class,
-        AdventureModePredicate.class, ItemAdventurePredicate.class
+        BlockItemStateProperties.class, Types.BLOCK_ITEM_DATA_PROPERTIES,
+        AdventureModePredicate.class, Types.ITEM_ADVENTURE_PREDICATE
     );
 
     @Deprecated
@@ -185,7 +179,7 @@ public class DataComponentTypesRewriter extends RegistryFieldRewriter<DataCompon
             Class<?> componentClass = null;
             UnaryOperator<String> tryToWrap = UnaryOperator.identity();
             if (!reference.value().isTransient()) {
-                final Class<? extends Annotation> annotation = getEquivalentAnnotation(reference.value().codecOrThrow());
+                final Class<? extends Annotation> annotation = guessAnnotationType(reference.value().codecOrThrow());
                 if (annotation != null) {
                     tryToWrap = value -> "@%s %s".formatted(this.importCollector.getShortName(annotation), value);
                 }
@@ -212,9 +206,9 @@ public class DataComponentTypesRewriter extends RegistryFieldRewriter<DataCompon
                 throw new UnsupportedOperationException("Unsupported type " + componentType);
             }
 
-            Class<?> apiComponentClass = null;
+            ClassNamed apiComponentClass = null;
             if (Primitives.isWrapperType(componentClass)) {
-                apiComponentClass = componentClass;
+                apiComponentClass = new ClassNamed(componentClass);
             } else if (API_BRIDGE.containsKey(componentClass)) {
                 apiComponentClass = API_BRIDGE.get(componentClass);
             }
@@ -223,22 +217,22 @@ public class DataComponentTypesRewriter extends RegistryFieldRewriter<DataCompon
             if (apiComponentClass == null) {
                 finalClass = this.classNamedView.tryFindFirst(io.papermc.typewriter.util.ClassHelper.retrieveFullNestedName(componentClass)).orElse(null);
             } else {
-                finalClass = new ClassNamed(apiComponentClass);
+                finalClass = apiComponentClass;
             }
             return "%s.%s<%s>".formatted(
-                io.papermc.paper.datacomponent.DataComponentType.class.getSimpleName(),
-                io.papermc.paper.datacomponent.DataComponentType.Valued.class.getSimpleName(),
+                Types.DATA_COMPONENT_VALUED.topLevel().simpleName(),
+                Types.DATA_COMPONENT_VALUED.simpleName(),
                 tryToWrap.apply(Optional.ofNullable(finalClass).map(this.importCollector::getShortName).orElse(componentClass.getSimpleName()))
             );
         } else {
             return "%s.%s".formatted(
-                io.papermc.paper.datacomponent.DataComponentType.class.getSimpleName(),
-                io.papermc.paper.datacomponent.DataComponentType.NonValued.class.getSimpleName()
+                Types.DATA_COMPONENT_NON_VALUED.topLevel().simpleName(),
+                Types.DATA_COMPONENT_NON_VALUED.simpleName()
             );
         }
     }
 
-    private @Nullable Class<? extends Annotation> getEquivalentAnnotation(Codec<?> codec) {
+    private @Nullable Class<? extends Annotation> guessAnnotationType(Codec<?> codec) {
         Class<? extends Annotation> annotation = null; // int range maybe?
         if (codec == ExtraCodecs.POSITIVE_INT || codec == ExtraCodecs.POSITIVE_FLOAT) {
             annotation = Positive.class;

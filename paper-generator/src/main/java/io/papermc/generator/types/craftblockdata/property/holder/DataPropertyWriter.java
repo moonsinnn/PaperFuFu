@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.properties.Property;
-import org.bukkit.block.BlockFace;
+//import org.bukkit.block.BlockFace;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 
@@ -80,7 +80,7 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
             this.type = DataHolderType.MAP;
             this.internalIndexClass = ClassHelper.eraseType(complexType.getActualTypeArguments()[0]);
             if (this.internalIndexClass.isEnum()) {
-                this.indexClass = BlockStateMapping.ENUM_BRIDGE.getOrDefault(this.internalIndexClass, (Class<? extends Enum<?>>) this.internalIndexClass);
+                this.indexClass = null;//BlockStateMapping.ENUM_PROPERTY_TYPES.getOrDefault(this.internalIndexClass, this.internalIndexClass);
                 this.fieldType = ParameterizedTypeName.get(
                     ClassName.get(field.getType()),
                     ClassName.get(this.indexClass),
@@ -99,8 +99,8 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
         FieldSpec.Builder fieldBuilder = FieldSpec.builder(this.fieldType, this.field.getName(), PRIVATE, STATIC, FINAL);
         if (Modifier.isPublic(this.field.getModifiers())) {
             // accessible phew
-            if (this.type == DataHolderType.MAP &&
-                this.internalIndexClass == Direction.class && this.indexClass == BlockFace.class) { // Direction -> BlockFace
+            if (this.type == DataHolderType.MAP && true
+                /*this.internalIndexClass == Direction.class && this.indexClass == BlockFace.class*/) { // Direction -> BlockFace
                 // convert the key manually only this one is needed for now
                 fieldBuilder.initializer("$[$1T.$2L.entrySet().stream()\n.collect($3T.toMap($4L -> $5T.notchToBlockFace($4L.getKey()), $4L -> $4L.getValue()))$]",
                     this.blockClass, this.field.getName(), Collectors.class, CommonVariable.MAP_ENTRY, Types.CRAFT_BLOCK);

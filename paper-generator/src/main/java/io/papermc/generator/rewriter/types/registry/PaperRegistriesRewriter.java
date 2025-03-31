@@ -1,18 +1,14 @@
 package io.papermc.generator.rewriter.types.registry;
 
 import com.google.common.base.CaseFormat;
+import io.papermc.generator.registry.RegistryData;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.registry.RegistryEntry;
 import io.papermc.generator.rewriter.types.Types;
-import io.papermc.paper.registry.RegistryKey;
-import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.replace.SearchMetadata;
 import io.papermc.typewriter.replace.SearchReplaceRewriter;
 import java.lang.constant.ConstantDescs;
-import java.util.stream.Stream;
 import net.minecraft.core.registries.Registries;
-import org.bukkit.Keyed;
-import org.bukkit.Registry;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -24,43 +20,43 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
         builder.append('(');
         builder.append(Registries.class.getSimpleName()).append('.').append(entry.registryKeyField());
         builder.append(", ");
-        builder.append(RegistryKey.class.getSimpleName()).append('.').append(entry.registryKeyField());
+        builder.append(Types.REGISTRY_KEY.simpleName()).append('.').append(entry.registryKeyField());
         builder.append(").");
+
+        RegistryData data = entry.data();
         if (apiOnly) {
             builder.append("apiOnly(");
-            if (entry.apiClass().isEnum()) {
+            if (data.api().legacyEnum()) {
                 builder.append(this.importCollector.getShortName(Types.PAPER_SIMPLE_REGISTRY)).append("::").append(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, entry.registryKey().location().getPath()));
             } else {
                 builder.append("() -> ");
-                builder.append(Registry.class.getCanonicalName()).append('.').append(entry.apiRegistryField().orElse(entry.registryKeyField()));
+                builder.append(Types.REGISTRY.canonicalName()).append('.').append(data.api().registryField().orElse(entry.registryKeyField()));
             }
             builder.append(')');
         } else {
             builder.append("craft(");
-            builder.append(this.importCollector.getShortName(entry.preloadClass())).append(".class");
+            builder.append(this.importCollector.getShortName(data.api().holders().orElse(data.api().klass()))).append(".class");
             builder.append(", ");
 
-            builder.append(this.importCollector.getShortName(this.getImplClassName(entry))).append("::").append(entry.apiAccessName().equals(ConstantDescs.INIT_NAME) ? "new" : entry.apiAccessName());
+            builder.append(this.importCollector.getShortName(data.impl().klass())).append("::").append(data.impl().instanceMethod().equals(ConstantDescs.INIT_NAME) ? "new" : data.impl().instanceMethod());
 
-            if (entry.canAllowDirect()) {
+            if (data.allowInline()) {
                 builder.append(", ");
                 builder.append(Boolean.TRUE.toString());
             }
             builder.append(')');
 
-            if (entry.fieldRename() != null) {
-                builder.append(".serializationUpdater(").append(Types.FIELD_RENAME.simpleName()).append('.').append(entry.fieldRename()).append(")");
-            }
+            data.serializationUpdaterField().ifPresent(field -> {
+                builder.append(".serializationUpdater(").append(Types.FIELD_RENAME.simpleName()).append('.').append(field).append(")");
+            });
 
-            if (entry.apiRegistryBuilderImpl() != null) {
+            data.builder().ifPresentOrElse(b -> {
                 builder.append(".writable(");
-                builder.append(this.importCollector.getShortName(this.classNamedView.findFirst(entry.apiRegistryBuilderImpl()).resolve(this.classResolver))).append("::new");
+                builder.append(this.importCollector.getShortName(b.impl())).append("::new");
                 builder.append(')');
-            } else {
-                builder.append(".build()");
-            }
+            }, () -> builder.append(".build()"));
         }
-        if (canBeDelayed && entry.isDelayed()) {
+        if (canBeDelayed && data.delayed()) {
             builder.append(".delayed()");
         }
         builder.append(',');
@@ -93,13 +89,5 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
         }
 
         builder.deleteCharAt(builder.length() - 2); // delete extra comma...
-    }
-
-    private ClassNamed getImplClassName(RegistryEntry<?> entry) {
-        try (Stream<ClassNamed> stream = this.classNamedView.find(entry.implClass())) {
-            return stream.map(klass -> klass.resolve(this.classResolver))
-                .filter(klass -> Keyed.class.isAssignableFrom(klass.knownClass())) // todo check handleable/holderable once keyed is gone
-                .findFirst().orElseThrow();
-        }
     }
 }

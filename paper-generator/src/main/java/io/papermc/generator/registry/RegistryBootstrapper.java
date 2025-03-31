@@ -7,7 +7,6 @@ import io.papermc.generator.rewriter.types.registry.RegistryEventsRewriter;
 import io.papermc.generator.types.SourceGenerator;
 import io.papermc.generator.types.registry.GeneratedKeyType;
 import io.papermc.generator.types.registry.GeneratedTagKeyType;
-import io.papermc.paper.registry.event.RegistryEvents;
 import java.util.List;
 import net.minecraft.core.registries.Registries;
 import org.jspecify.annotations.NullMarked;
@@ -36,7 +35,7 @@ public class RegistryBootstrapper {
     }
 
     public static void bootstrapApi(PatternSourceSetRewriter sourceSet) {
-        sourceSet.register("RegistryEvents", RegistryEvents.class, new RegistryEventsRewriter());
+        sourceSet.register("RegistryEvents", Types.REGISTRY_EVENTS, new RegistryEventsRewriter());
     }
 
     public static void bootstrapServer(PatternSourceSetRewriter sourceSet) {

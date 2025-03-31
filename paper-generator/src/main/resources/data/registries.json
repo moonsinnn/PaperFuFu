@@ -1,0 +1,201 @@
+{
+    "minecraft:game_event": {
+        "api": "org.bukkit.GameEvent",
+        "impl": "org.bukkit.craftbukkit.CraftGameEvent",
+        "builder": {
+            "api": "io.papermc.paper.registry.data.GameEventRegistryEntry$Builder",
+            "impl": "io.papermc.paper.registry.data.PaperGameEventRegistryEntry$PaperBuilder"
+        }
+    },
+    "minecraft:worldgen/structure_type": {
+        "api": "org.bukkit.generator.structure.StructureType",
+        "impl": "org.bukkit.craftbukkit.generator.structure.CraftStructureType"
+    },
+    "minecraft:mob_effect": {
+        "api": "org.bukkit.potion.PotionEffectType",
+        "impl": "org.bukkit.craftbukkit.potion.CraftPotionEffectType"
+    },
+    "minecraft:block": {
+        "api": "org.bukkit.block.BlockType",
+        "impl": "org.bukkit.craftbukkit.block.CraftBlockType",
+        "key_class_name_based_on_api": true
+    },
+    "minecraft:item": {
+        "api": "org.bukkit.inventory.ItemType",
+        "impl": "org.bukkit.craftbukkit.inventory.CraftItemType",
+        "key_class_name_based_on_api": true
+    },
+    "minecraft:villager_profession": {
+        "api": "org.bukkit.entity.Villager$Profession",
+        "impl": "org.bukkit.craftbukkit.entity.CraftVillager$CraftProfession"
+    },
+    "minecraft:villager_type": {
+        "api": "org.bukkit.entity.Villager$Type",
+        "impl": "org.bukkit.craftbukkit.entity.CraftVillager$CraftType"
+    },
+    "minecraft:map_decoration_type": {
+        "api": "org.bukkit.map.MapCursor$Type",
+        "impl": "org.bukkit.craftbukkit.map.CraftMapCursor$CraftType"
+    },
+    "minecraft:menu": {
+        "api": "org.bukkit.inventory.MenuType",
+        "impl": "org.bukkit.craftbukkit.inventory.CraftMenuType"
+    },
+    "minecraft:attribute": {
+        "api": "org.bukkit.attribute.Attribute",
+        "impl": "org.bukkit.craftbukkit.attribute.CraftAttribute"
+    },
+    "minecraft:fluid": {
+        "api": "org.bukkit.Fluid",
+        "impl": "org.bukkit.craftbukkit.CraftFluid"
+    },
+    "minecraft:sound_event": {
+        "api": {
+            "class": "org.bukkit.Sound",
+            "registry_field": "SOUND_EVENT"
+        },
+        "impl": "org.bukkit.CraftSound",
+        "allow_inline": true
+    },
+    "minecraft:data_component_type": {
+        "api": {
+            "class": "io.papermc.paper.datacomponent.DataComponentType",
+            "holders": "io.papermc.paper.datacomponent.DataComponentTypes"
+        },
+        "impl": {
+            "class": "io.papermc.paper.datacomponent.PaperDataComponentType",
+            "instance_method": "of"
+        }
+    },
+    "minecraft:worldgen/biome": {
+        "api": "org.bukkit.block.Biome",
+        "impl": "org.bukkit.craftbukkit.block.CraftBiome",
+        "delayed": true
+    },
+    "minecraft:worldgen/structure": {
+        "api": "org.bukkit.generator.structure.Structure",
+        "impl": "org.bukkit.craftbukkit.generator.structure.CraftStructure",
+        "delayed": true
+    },
+    "minecraft:trim_material": {
+        "api": "org.bukkit.inventory.meta.trim.TrimMaterial",
+        "impl": "org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial",
+        "delayed": true,
+        "allow_inline": true
+    },
+    "minecraft:trim_pattern": {
+        "api": "org.bukkit.inventory.meta.trim.TrimPattern",
+        "impl": "org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern",
+        "delayed": true,
+        "allow_inline": true
+    },
+    "minecraft:damage_type": {
+        "api": "org.bukkit.damage.DamageType",
+        "impl": "org.bukkit.craftbukkit.damage.CraftDamageType",
+        "builder": {
+            "api": "io.papermc.paper.registry.data.DamageTypeRegistryEntry$Builder",
+            "impl": "io.papermc.paper.registry.data.PaperDamageTypeRegistryEntry$PaperBuilder"
+        },
+        "delayed": true
+    },
+    "minecraft:wolf_variant": {
+        "api": "org.bukkit.entity.Wolf$Variant",
+        "impl": "org.bukkit.craftbukkit.entity.CraftWolf$CraftVariant",
+        "delayed": true
+    },
+    "minecraft:wolf_sound_variant": {
+        "api": "org.bukkit.entity.Wolf$SoundVariant",
+        "impl": "org.bukkit.craftbukkit.entity.CraftWolf$CraftSoundVariant"
+    },
+    "minecraft:enchantment": {
+        "api": "org.bukkit.enchantments.Enchantment",
+        "impl": "org.bukkit.craftbukkit.enchantments.CraftEnchantment",
+        "builder": {
+            "api": "io.papermc.paper.registry.data.EnchantmentRegistryEntry$Builder",
+            "impl": "io.papermc.paper.registry.data.PaperEnchantmentRegistryEntry$PaperBuilder"
+        },
+        "serialization_updater_field": "ENCHANTMENT_RENAME",
+        "delayed": true
+    },
+    "minecraft:jukebox_song": {
+        "api": "org.bukkit.JukeboxSong",
+        "impl": "org.bukkit.craftbukkit.CraftJukeboxSong",
+        "delayed": true
+    },
+    "minecraft:banner_pattern": {
+        "api": "org.bukkit.block.banner.PatternType",
+        "impl": "org.bukkit.craftbukkit.block.banner.CraftPatternType",
+        "builder": {
+            "api": "io.papermc.paper.registry.data.BannerPatternRegistryEntry$Builder",
+            "impl": "io.papermc.paper.registry.data.PaperBannerPatternRegistryEntry$PaperBuilder"
+        },
+        "delayed": true,
+        "allow_inline": true
+    },
+    "minecraft:painting_variant": {
+        "api": {
+            "class": "org.bukkit.Art",
+            "registry_field": "ART"
+        },
+        "impl": "org.bukkit.craftbukkit.CraftArt",
+        "builder": {
+            "api": "io.papermc.paper.registry.data.PaintingVariantRegistryEntry$Builder",
+            "impl": "io.papermc.paper.registry.data.PaperPaintingVariantRegistryEntry$PaperBuilder"
+        },
+        "delayed": true,
+        "allow_inline": true
+    },
+    "minecraft:instrument": {
+        "api": "org.bukkit.MusicInstrument",
+        "impl": "org.bukkit.craftbukkit.CraftMusicInstrument",
+        "delayed": true,
+        "allow_inline": true
+    },
+    "minecraft:cat_variant": {
+        "api": "org.bukkit.entity.Cat$Type",
+        "impl": "org.bukkit.craftbukkit.entity.CraftCat$CraftType",
+        "delayed": true
+    },
+    "minecraft:frog_variant": {
+        "api": "org.bukkit.entity.Frog$Variant",
+        "impl": "org.bukkit.craftbukkit.entity.CraftFrog$CraftVariant",
+        "delayed": true
+    },
+    "minecraft:chicken_variant": {
+        "api": "org.bukkit.entity.Chicken$Variant",
+        "impl": "org.bukkit.craftbukkit.entity.CraftChicken$CraftVariant"
+    },
+    "minecraft:cow_variant": {
+        "api": "org.bukkit.entity.Cow$Variant",
+        "impl": "org.bukkit.craftbukkit.entity.CraftCow$CraftVariant"
+    },
+    "minecraft:pig_variant": {
+        "api": "org.bukkit.entity.Pig$Variant",
+        "impl": "org.bukkit.craftbukkit.entity.CraftPig$CraftVariant"
+    },
+    "minecraft:entity_type": {
+        "api": {
+            "class": "org.bukkit.entity.EntityType",
+            "legacy_enum": true
+        },
+        "impl": "org.bukkit.craftbukkit.entity.CraftEntityType"
+    },
+    "minecraft:particle_type": {
+        "api": {
+            "class": "org.bukkit.Particle",
+            "legacy_enum": true
+        },
+        "impl": "org.bukkit.craftbukkit.CraftParticle"
+    },
+    "minecraft:potion": {
+        "api": {
+            "class": "org.bukkit.potion.PotionType",
+            "legacy_enum": true
+        },
+        "impl": "org.bukkit.craftbukkit.potion.CraftPotionType"
+    },
+    "minecraft:memory_module_type": {
+        "api": "org.bukkit.entity.memory.MemoryKey",
+        "impl": "org.bukkit.craftbukkit.entity.memory.CraftMemoryKey"
+    }
+}

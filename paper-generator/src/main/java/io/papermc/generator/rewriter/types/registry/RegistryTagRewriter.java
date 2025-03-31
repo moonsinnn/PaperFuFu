@@ -3,6 +3,8 @@ package io.papermc.generator.rewriter.types.registry;
 import com.google.common.base.Preconditions;
 import com.mojang.logging.LogUtils;
 import io.papermc.generator.Main;
+import io.papermc.generator.registry.RegistryEntries;
+import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.utils.Annotations;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.experimental.SingleFlagHolder;
@@ -14,8 +16,6 @@ import java.util.Iterator;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
-import org.bukkit.Keyed;
-import org.bukkit.Tag;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
@@ -27,17 +27,20 @@ import static javax.lang.model.element.Modifier.STATIC;
 
 @NullMarked
 @ApiStatus.Obsolete
-public class RegistryTagRewriter<T> extends SearchReplaceRewriter {
+public class RegistryTagRewriter<T> extends SearchReplaceRewriter implements RegistryIdentifiable<T> {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private final ResourceKey<? extends Registry<T>> registryKey;
-    private final Class<? extends Keyed> apiClass;
     private final String fetchMethod = "getTag";
 
-    public RegistryTagRewriter(ResourceKey<? extends Registry<T>> registryKey, Class<? extends Keyed> apiClass) {
+    public RegistryTagRewriter(ResourceKey<? extends Registry<T>> registryKey) {
         this.registryKey = registryKey;
-        this.apiClass = apiClass;
+    }
+
+    @Override
+    public ResourceKey<? extends Registry<T>> getRegistryKey() {
+        return this.registryKey;
     }
 
     @Override
@@ -57,6 +60,7 @@ public class RegistryTagRewriter<T> extends SearchReplaceRewriter {
     @Override
     protected void insert(SearchMetadata metadata, StringBuilder builder) {
         Registry<T> registry = Main.REGISTRY_ACCESS.lookupOrThrow(this.registryKey);
+        ClassNamed apiClass = RegistryEntries.byRegistryKey(this.registryKey).data().api().klass();
         Iterator<? extends TagKey<T>> keyIterator = registry.listTagIds().sorted(Formatting.alphabeticKeyOrder(reference -> reference.location().getPath())).iterator();
 
         while (keyIterator.hasNext()) {
@@ -70,7 +74,7 @@ public class RegistryTagRewriter<T> extends SearchReplaceRewriter {
             builder.append(metadata.indent());
             builder.append("%s %s %s ".formatted(PUBLIC, STATIC, FINAL));
 
-            builder.append("%s<%s>".formatted(Tag.class.getSimpleName(), this.apiClass.getSimpleName())).append(' ').append(this.rewriteFieldName(tagKey));
+            builder.append("%s<%s>".formatted(Types.TAG.simpleName(), apiClass.simpleName())).append(' ').append(this.rewriteFieldName(tagKey));
             builder.append(" = ");
             builder.append(this.rewriteFieldValue(tagKey));
             builder.append(';');

@@ -53,7 +53,7 @@ public class VirtualDataPropertyWriter extends DataPropertyWriterBase {
                 } else {
                     this.indexClass = this.properties.iterator().next().getValueClass();
                     if (this.indexClass.isEnum()) {
-                        this.indexClass = BlockStateMapping.ENUM_BRIDGE.getOrDefault(this.indexClass, (Class<? extends Enum<?>>) this.indexClass);
+                        this.indexClass = null;//BlockStateMapping.ENUM_PROPERTY_TYPES.getOrDefault(this.indexClass, (Class<? extends Enum<?>>) this.indexClass);
                     }
                 }
                 this.fieldType = ParameterizedTypeName.get(Map.class, this.indexClass, virtualField.valueType());

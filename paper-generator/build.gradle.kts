@@ -9,27 +9,21 @@ paperweight {
     atFile.set(layout.projectDirectory.file("wideners.at"))
 }
 
-val serverRuntimeClasspath by configurations.registering { // resolvable?
-    isCanBeConsumed = false
-    isCanBeResolved = true
-}
-
 dependencies {
     minecraftJar(project(":paper-server", "mappedJarOutgoing"))
     implementation(project(":paper-server", "macheMinecraftLibraries"))
 
     implementation("com.squareup:javapoet:1.13.0")
-    implementation(project(":paper-api"))
     implementation("io.papermc.typewriter:typewriter:1.0.1") {
         isTransitive = false // paper-api already have everything
     }
     implementation("info.picocli:picocli:4.7.6")
     implementation("io.github.classgraph:classgraph:4.8.47")
-    implementation("org.jetbrains:annotations:26.0.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("org.jetbrains:annotations:26.0.2")
+    compileOnlyApi("org.jspecify:jspecify:1.0.0")
 
-    serverRuntimeClasspath(project(":paper-server", "runtimeConfiguration"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 val gameVersion = providers.gradleProperty("mcVersion")
@@ -44,7 +38,6 @@ val rewriteApi = tasks.registerGenerationTask("rewriteApi", true, "api", {
 
 val rewriteImpl = tasks.registerGenerationTask("rewriteImpl", true, "impl", {
     sourceSet = rootProject.layout.projectDirectory.dir("paper-server")
-    serverClassPath.from(serverRuntimeClasspath)
 }) {
     description = "Rewrite existing implementation classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })

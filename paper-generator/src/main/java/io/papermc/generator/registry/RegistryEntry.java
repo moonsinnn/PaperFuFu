@@ -1,22 +1,17 @@
 package io.papermc.generator.registry;
 
-import com.google.common.base.Preconditions;
 import io.papermc.generator.Main;
 import io.papermc.generator.utils.ClassHelper;
-import java.lang.constant.ConstantDescs;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
-import javax.lang.model.SourceVersion;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import org.bukkit.Keyed;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -27,30 +22,16 @@ public final class RegistryEntry<T> {
     private final RegistryKeyField<T> registryKeyField;
     private final Class<T> elementClass;
     private final Class<?> holderElementsClass;
-    private boolean allowDirect;
-
-    private final Class<? extends Keyed> apiClass; // TODO remove Keyed
-    private Class<?> preloadClass;
-    private final String implClass;
-
-    private @Nullable Class<?> apiRegistryBuilder;
-    private @Nullable String apiRegistryBuilderImpl;
-
-    private @Nullable String fieldRename;
-    private boolean delayed;
-    private String apiAccessName = ConstantDescs.INIT_NAME;
-    private Optional<String> apiRegistryField = Optional.empty();
+    private final RegistryData data;
 
     private @Nullable Map<ResourceKey<T>, String> fieldNames;
 
-    public RegistryEntry(ResourceKey<? extends Registry<T>> registryKey, RegistryKeyField<T> registryKeyField, Class<?> holderElementsClass, Class<? extends Keyed> apiClass, String implClass) {
+    public RegistryEntry(ResourceKey<? extends Registry<T>> registryKey, RegistryKeyField<T> registryKeyField, Class<?> holderElementsClass, RegistryData data) {
         this.registryKey = registryKey;
         this.registryKeyField = registryKeyField;
         this.elementClass = registryKeyField.elementClass();
         this.holderElementsClass = holderElementsClass;
-        this.apiClass = apiClass;
-        this.preloadClass = apiClass;
-        this.implClass = implClass;
+        this.data = data;
     }
 
     public ResourceKey<? extends Registry<T>> registryKey() {
@@ -65,93 +46,20 @@ public final class RegistryEntry<T> {
         return this.registryKeyField.name();
     }
 
-    public Class<? extends Keyed> apiClass() {
-        return this.apiClass;
-    }
-
-    public String implClass() {
-        return this.implClass;
-    }
-
-    public RegistryEntry<T> allowDirect() {
-        this.allowDirect = true;
-        return this;
-    }
-
-    public RegistryEntry<T> delayed() {
-        this.delayed = true;
-        return this;
-    }
-
-    public RegistryEntry<T> preload(Class<?> klass) {
-        this.preloadClass = klass;
-        return this;
-    }
-
-    public RegistryEntry<T> apiAccessName(String name) {
-        Preconditions.checkArgument(SourceVersion.isIdentifier(name) && !SourceVersion.isKeyword(name), "Invalid accessor name");
-        this.apiAccessName = name;
-        return this;
-    }
-
-    public RegistryEntry<T> serializationUpdater(String fieldName) {
-        this.fieldRename = fieldName;
-        return this;
-    }
-
-    public boolean canAllowDirect() {
-        return this.allowDirect;
-    }
-
-    public boolean isDelayed() {
-        return this.delayed;
-    }
-
-    public String apiAccessName() {
-        return this.apiAccessName;
-    }
-
-    public Class<?> preloadClass() {
-        return this.preloadClass;
-    }
-
-    public @Nullable String fieldRename() {
-        return this.fieldRename;
-    }
-
-    public @Nullable Class<?> apiRegistryBuilder() {
-        return this.apiRegistryBuilder;
-    }
-
-    public @Nullable String apiRegistryBuilderImpl() {
-        return this.apiRegistryBuilderImpl;
-    }
-
-    public RegistryEntry<T> apiRegistryBuilder(Class<?> builderClass, String builderImplClass) {
-        this.apiRegistryBuilder = builderClass;
-        this.apiRegistryBuilderImpl = builderImplClass;
-        return this;
-    }
-
-    public Optional<String> apiRegistryField() {
-        return this.apiRegistryField;
-    }
-
-    public RegistryEntry<T> apiRegistryField(String registryField) {
-        this.apiRegistryField = Optional.of(registryField);
-        return this;
+    public RegistryData data() {
+        return this.data;
     }
 
     public String keyClassName() {
-        if (RegistryEntries.REGISTRY_CLASS_NAME_BASED_ON_API.contains(this.apiClass)) {
-            return this.apiClass.getSimpleName();
+        if (this.data.keyClassNameBasedOnApi()) {
+            return this.data.api().klass().simpleName();
         }
 
         return this.elementClass.getSimpleName();
     }
 
     public boolean allowCustomKeys() {
-        return this.apiRegistryBuilder != null || RegistryEntries.DATA_DRIVEN.contains(this);
+        return this.data.builder().isPresent() || RegistryEntries.DATA_DRIVEN.contains(this);
     }
 
     private <TO> Map<ResourceKey<T>, TO> getFields(Map<ResourceKey<T>, TO> map, Function<Field, @Nullable TO> transform) {
@@ -207,8 +115,7 @@ public final class RegistryEntry<T> {
         return "RegistryEntry[" +
             "registryKey=" + this.registryKey + ", " +
             "registryKeyField=" + this.registryKeyField + ", " +
-            "apiClass=" + this.apiClass + ", " +
-            "implClass=" + this.implClass + ", " +
+            "data=" + this.data +
             ']';
     }
 }

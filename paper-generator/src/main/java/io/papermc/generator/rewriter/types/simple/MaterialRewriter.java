@@ -6,13 +6,12 @@ import io.papermc.generator.utils.Formatting;
 import io.papermc.typewriter.preset.model.EnumValue;
 import java.util.Optional;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WallSignBlock;
-import org.bukkit.block.data.BlockData;
+//import org.bukkit.block.data.BlockData;
 
 import static io.papermc.generator.utils.Formatting.asCode;
 
@@ -37,6 +36,7 @@ public class MaterialRewriter {
         protected EnumValue.Builder rewriteEnumValue(Holder.Reference<Block> reference) {
             EnumValue.Builder value = super.rewriteEnumValue(reference);
             Block block = reference.value();
+            /*
             if (BlockStateMapping.MAPPING.containsKey(block.getClass())) {
                 // some block can also be represented as item in that enum
                 // doing a double job
@@ -58,6 +58,8 @@ public class MaterialRewriter {
                 return value.arguments(Integer.toString(-1), this.importCollector.getShortName(blockData).concat(".class"));
             }
             return value.argument(Integer.toString(-1)); // id not needed for non legacy material
+             */
+            return value;
         }
     }
 

@@ -1,0 +1,100 @@
+[
+    {
+        "field": "ATTACH_FACE",
+        "api": "org.bukkit.block.data.FaceAttachable"
+    },
+    {
+        "field": "AXIS",
+        "api": "org.bukkit.block.data.Orientable"
+    },
+    {
+        "field": "DOUBLE_BLOCK_HALF",
+        "api": "org.bukkit.block.data.Bisected"
+    },
+    {
+        "field": "DUSTED",
+        "api": "org.bukkit.block.data.Brushable"
+    },
+    {
+        "field": "FACING",
+        "api": "org.bukkit.block.data.Directional"
+    },
+    {
+        "field": "HALF",
+        "api": "org.bukkit.block.data.Bisected"
+    },
+    {
+        "field": "HANGING",
+        "api": "org.bukkit.block.data.Hangable"
+    },
+    {
+        "field": "HATCH",
+        "api": "org.bukkit.block.data.Hatchable"
+    },
+    {
+        "field": "HORIZONTAL_AXIS",
+        "api": "org.bukkit.block.data.Orientable"
+    },
+    {
+        "field": "HORIZONTAL_FACING",
+        "api": "org.bukkit.block.data.Directional"
+    },
+    {
+        "field": "LIT",
+        "api": "org.bukkit.block.data.Lightable"
+    },
+    {
+        "field": "OPEN",
+        "api": "org.bukkit.block.data.Openable"
+    },
+    {
+        "field": "PISTON_TYPE",
+        "api": "org.bukkit.block.data.type.TechnicalPiston",
+        "pure": true
+    },
+    {
+        "field": "POWER",
+        "api": "org.bukkit.block.data.AnaloguePowerable"
+    },
+    {
+        "field": "POWERED",
+        "api": "org.bukkit.block.data.Powerable"
+    },
+    {
+        "field": "RAIL_SHAPE",
+        "api": "org.bukkit.block.data.Rail"
+    },
+    {
+        "field": "RAIL_SHAPE_STRAIGHT",
+        "api": "org.bukkit.block.data.Rail"
+    },
+    {
+        "field": "ROTATION_16",
+        "api": "org.bukkit.block.data.Rotatable"
+    },
+    {
+        "field": "SEGMENT_AMOUNT",
+        "api": "org.bukkit.block.data.Segmentable"
+    },
+    {
+        "field": "SNOWY",
+        "api": "org.bukkit.block.data.Snowable"
+    },
+    {
+        "field": "STAIRS_SHAPE",
+        "api": "org.bukkit.block.data.type.Stairs",
+        "pure": true
+    },
+    {
+        "field": "WATERLOGGED",
+        "api": "org.bukkit.block.data.Waterlogged"
+    },
+    {
+        "name": "age",
+        "api": "org.bukkit.block.data.Ageable"
+    },
+    {
+        "name": "level",
+        "api": "org.bukkit.block.data.Levelled"
+    }
+]

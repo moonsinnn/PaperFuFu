@@ -17,15 +17,16 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import org.bukkit.block.BlockFace;
+/*import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.block.data.type.RedstoneWire;
+import org.bukkit.block.data.type.RedstoneWire;*/
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class MapAppender implements DataAppender {
 
+    /*
     private static final Map<String, String> INDEX_NAMES = ImmutableMap.<String, String>builder()
         .put(BlockFace.class.getSimpleName(), "Face")
         .buildOrThrow();
@@ -34,8 +35,9 @@ public class MapAppender implements DataAppender {
     private static final Set<Class<? extends BlockData>> HAS_ALLOWED_METHOD = Set.of(
         MultipleFacing.class,
         RedstoneWire.class
-    );
+    );*/
 
+    /*
     private static boolean supportsExtraMethod(Class<? extends BlockData> clazz) {
         for (Class<? extends BlockData> supported : HAS_ALLOWED_METHOD) {
             if (supported.isAssignableFrom(clazz)) {
@@ -43,7 +45,7 @@ public class MapAppender implements DataAppender {
             }
         }
         return false;
-    }
+    }*/
 
     @Override
     public DataHolderType getType() {
@@ -71,7 +73,7 @@ public class MapAppender implements DataAppender {
             builder.addMethod(methodBuilder.build());
         }
 
-        if (supportsExtraMethod(generator.getBaseClass()) &&
+        /*if (supportsExtraMethod(generator.getBaseClass()) &&
             indexParameter.type instanceof ClassName className && !className.isPrimitive() && !className.isBoxedPrimitive()) {
             NamingManager.NameWrapper indexNaming = NamingManager.NameWrapper.wrap("get", INDEX_NAMES.getOrDefault(className.simpleName(), className.simpleName()));
 
@@ -80,6 +82,6 @@ public class MapAppender implements DataAppender {
             methodBuilder.returns(ParameterizedTypeName.get(ClassName.get(Set.class), className));
 
             builder.addMethod(methodBuilder.build());
-        }
+        }*/
     }
 }

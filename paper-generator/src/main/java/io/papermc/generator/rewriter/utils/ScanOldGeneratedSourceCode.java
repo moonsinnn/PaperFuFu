@@ -3,7 +3,7 @@ package io.papermc.generator.rewriter.utils;
 import io.papermc.generator.Main;
 import io.papermc.generator.Rewriters;
 import io.papermc.generator.rewriter.registration.PaperPatternSourceSetRewriter;
-import io.papermc.paper.generated.GeneratedFrom;
+import io.papermc.generator.rewriter.types.Types;
 import io.papermc.typewriter.SourceFile;
 import io.papermc.typewriter.SourceRewriter;
 import io.papermc.typewriter.context.FileMetadata;
@@ -86,7 +86,7 @@ public class ScanOldGeneratedSourceCode {
                             continue;
                         }
 
-                        String generatedComment = "// %s ".formatted(Annotations.annotationStyle(GeneratedFrom.class));
+                        String generatedComment = "// %s ".formatted(Annotations.annotationStyle(Types.GENERATED_FROM));
                         if (nextLineIterator.trySkipString(generatedComment) && nextLineIterator.canRead()) {
                             String generatedVersion = nextLineIterator.getRemaining();
                             if (!CURRENT_VERSION.equals(generatedVersion)) {

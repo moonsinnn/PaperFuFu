@@ -16,6 +16,7 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.PipeBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.junit.jupiter.api.Assertions;
@@ -57,18 +58,19 @@ public class BlockStatePropertyTest {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         lookup.findStaticVarHandle(ChiseledBookShelfBlock.class, "SLOT_OCCUPIED_PROPERTIES", List.class);
         lookup.findStaticVarHandle(PipeBlock.class, "PROPERTY_BY_DIRECTION", Map.class);
-        MethodHandles.privateLookupIn(MossyCarpetBlock.class, lookup).findStaticVarHandle(MossyCarpetBlock.class, "PROPERTY_BY_DIRECTION", Map.class);
+        lookup.findStaticVarHandle(WallBlock.class, "PROPERTY_BY_DIRECTION", Map.class);
+        lookup.findStaticVarHandle(MossyCarpetBlock.class, "PROPERTY_BY_DIRECTION", Map.class);
     }
 
     @Test
     public void testBridge() {
         Set<String> missingApiEquivalents = new HashSet<>();
         for (Class<? extends Comparable<?>> value : ENUM_PROPERTY_VALUES) {
-            if (!BlockStateMapping.ENUM_BRIDGE.containsKey(value)) {
+            if (!BlockStateMapping.ENUM_PROPERTY_TYPES.containsKey(value)) {
                 missingApiEquivalents.add(value.getCanonicalName());
             }
         }
 
-        Assertions.assertTrue(missingApiEquivalents.isEmpty(), () -> "Missing some api equivalent in the block state mapping enum bridge (BlockStateMapping#ENUM_BRIDGE) : " + String.join(", ", missingApiEquivalents));
+        Assertions.assertTrue(missingApiEquivalents.isEmpty(), () -> "Missing some api equivalent in the block state mapping enum bridge (BlockStateMapping#ENUM_PROPERTY_TYPES) : " + String.join(", ", missingApiEquivalents));
     }
 }

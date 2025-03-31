@@ -65,7 +65,7 @@ public record VirtualField(
         }
 
         public VirtualField make() {
-            Preconditions.checkState(this.values != null && !this.values.isEmpty(), "The field should doesn't have any content");
+            Preconditions.checkState(this.values != null && !this.values.isEmpty(), "The field doesn't have any content");
             return new VirtualField(this.name, this.valueTypeToken.getType(), this.holderType, this.baseName, this.keyClass, this.values);
         }
     }

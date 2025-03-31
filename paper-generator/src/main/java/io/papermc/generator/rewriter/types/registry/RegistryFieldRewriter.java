@@ -1,8 +1,6 @@
 package io.papermc.generator.rewriter.types.registry;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
-import com.mojang.logging.LogUtils;
 import io.papermc.generator.Main;
 import io.papermc.generator.rewriter.utils.Annotations;
 import io.papermc.generator.utils.Formatting;
@@ -24,7 +22,6 @@ import net.minecraft.world.flag.FeatureFlags;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
 
 import static io.papermc.generator.utils.Formatting.quoted;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -32,9 +29,7 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
 @NullMarked
-public class RegistryFieldRewriter<T> extends SearchReplaceRewriter {
-
-    private static final Logger LOGGER = LogUtils.getLogger();
+public class RegistryFieldRewriter<T> extends SearchReplaceRewriter implements RegistryIdentifiable<T> {
 
     private final ResourceKey<? extends Registry<T>> registryKey;
     private final boolean isFilteredRegistry;
@@ -50,19 +45,13 @@ public class RegistryFieldRewriter<T> extends SearchReplaceRewriter {
     }
 
     @Override
+    public ResourceKey<? extends Registry<T>> getRegistryKey() {
+        return this.registryKey;
+    }
+
+    @Override
     public boolean registerFor(SourceFile file) {
         this.fieldClass = this.options.targetClass().orElse(file.mainClass());
-        Preconditions.checkState(this.fieldClass.knownClass() != null, "This rewriter can't run without knowing the field class at runtime!");
-
-        if (this.fetchMethod != null) {
-            try {
-                this.fieldClass.knownClass().getDeclaredMethod(this.fetchMethod, String.class);
-            } catch (NoSuchMethodException e) {
-                LOGGER.error("Fetch method not found, skipping the rewriter for registry fields of {}", this.registryKey, e);
-                return false;
-            }
-        }
-
         return super.registerFor(file);
     }
 

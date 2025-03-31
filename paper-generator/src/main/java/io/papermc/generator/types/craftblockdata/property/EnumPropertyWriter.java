@@ -27,7 +27,7 @@ public class EnumPropertyWriter<T extends Enum<T> & StringRepresentable> extends
     @Override
     protected Class<?> processApiType() {
         Class<?> apiClass = this.property.getValueClass();
-        apiClass = BlockStateMapping.ENUM_BRIDGE.get(apiClass);
+        //apiClass = BlockStateMapping.ENUM_PROPERTY_TYPES.get(apiClass);
         if (apiClass == null) {
             throw new IllegalStateException("Unknown enum type for " + this.property);
         }

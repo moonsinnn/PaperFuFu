@@ -10,14 +10,12 @@ import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.Main;
 import io.papermc.generator.registry.RegistryEntry;
 import io.papermc.generator.types.SimpleGenerator;
+import io.papermc.generator.types.Types;
 import io.papermc.generator.utils.Annotations;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.Javadocs;
 import io.papermc.generator.utils.experimental.SingleFlagHolder;
-import io.papermc.paper.registry.RegistryKey;
-import io.papermc.paper.registry.tag.TagKey;
 import java.util.concurrent.atomic.AtomicBoolean;
-import net.kyori.adventure.key.Key;
 import org.jspecify.annotations.NullMarked;
 
 import static com.squareup.javapoet.TypeSpec.classBuilder;
@@ -41,15 +39,15 @@ public class GeneratedTagKeyType extends SimpleGenerator {
     private MethodSpec.Builder createMethod(TypeName returnType) {
         boolean publicCreateKeyMethod = true; // tag lifecycle event exists
 
-        ParameterSpec keyParam = ParameterSpec.builder(Key.class, "key", FINAL).build();
+        ParameterSpec keyParam = ParameterSpec.builder(Types.KEY, "key", FINAL).build();
         MethodSpec.Builder create = MethodSpec.methodBuilder("create")
             .addModifiers(publicCreateKeyMethod ? PUBLIC : PRIVATE, STATIC)
             .addParameter(keyParam)
-            .addCode("return $T.create($T.$L, $N);", TagKey.class, RegistryKey.class, this.entry.registryKeyField(), keyParam)
+            .addCode("return $T.create($T.$L, $N);", Types.TAG_KEY, Types.REGISTRY_KEY, this.entry.registryKeyField(), keyParam)
             .returns(returnType);
         if (publicCreateKeyMethod) {
             create.addAnnotation(EXPERIMENTAL_API_ANNOTATION); // TODO remove once not experimental
-            create.addJavadoc(Javadocs.CREATED_TAG_KEY_JAVADOC, this.entry.apiClass(), this.entry.registryKey().location().toString());
+            create.addJavadoc(Javadocs.CREATED_TAG_KEY_JAVADOC, Types.typed(this.entry.data().api().klass()), this.entry.registryKey().location().toString());
         }
         return create;
     }
@@ -57,7 +55,7 @@ public class GeneratedTagKeyType extends SimpleGenerator {
     private TypeSpec.Builder keyHolderType() {
         return classBuilder(this.className)
             .addModifiers(PUBLIC, FINAL)
-            .addJavadoc(Javadocs.getVersionDependentClassHeader("tag keys", "{@link $T#$L}"), RegistryKey.class, this.entry.registryKeyField())
+            .addJavadoc(Javadocs.getVersionDependentClassHeader("tag keys", "{@link $T#$L}"), Types.REGISTRY_KEY, this.entry.registryKeyField())
             .addAnnotations(Annotations.CLASS_HEADER)
             .addMethod(MethodSpec.constructorBuilder()
                 .addModifiers(PRIVATE)
@@ -67,7 +65,7 @@ public class GeneratedTagKeyType extends SimpleGenerator {
 
     @Override
     protected TypeSpec getTypeSpec() {
-        TypeName tagKeyType = ParameterizedTypeName.get(TagKey.class, this.entry.apiClass());
+        TypeName tagKeyType = ParameterizedTypeName.get(Types.TAG_KEY, Types.typed(this.entry.data().api().klass()));
 
         TypeSpec.Builder typeBuilder = this.keyHolderType();
         MethodSpec.Builder createMethod = this.createMethod(tagKeyType);
@@ -98,6 +96,6 @@ public class GeneratedTagKeyType extends SimpleGenerator {
 
     @Override
     protected JavaFile.Builder file(JavaFile.Builder builder) {
-        return builder.addStaticImport(Key.class, "key");
+        return builder.addStaticImport(Types.KEY, "key");
     }
 }

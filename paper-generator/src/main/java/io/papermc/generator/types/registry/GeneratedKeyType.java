@@ -10,17 +10,15 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.registry.RegistryEntry;
 import io.papermc.generator.types.SimpleGenerator;
+import io.papermc.generator.types.Types;
 import io.papermc.generator.utils.Annotations;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.Javadocs;
 import io.papermc.generator.utils.experimental.ExperimentalCollector;
 import io.papermc.generator.utils.experimental.SingleFlagHolder;
-import io.papermc.paper.registry.RegistryKey;
-import io.papermc.paper.registry.TypedKey;
 import java.util.Map;
 import java.util.function.Supplier;
 import javax.lang.model.SourceVersion;
-import net.kyori.adventure.key.Key;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.flag.FeatureElement;
@@ -53,14 +51,14 @@ public class GeneratedKeyType<T> extends SimpleGenerator {
     private MethodSpec.Builder createMethod(TypeName returnType) {
         boolean publicCreateKeyMethod = this.entry.allowCustomKeys();
 
-        ParameterSpec keyParam = ParameterSpec.builder(Key.class, "key", FINAL).build();
+        ParameterSpec keyParam = ParameterSpec.builder(Types.KEY, "key", FINAL).build();
         MethodSpec.Builder create = MethodSpec.methodBuilder("create")
             .addModifiers(publicCreateKeyMethod ? PUBLIC : PRIVATE, STATIC)
             .addParameter(keyParam)
-            .addCode("return $T.create($T.$L, $N);", TypedKey.class, RegistryKey.class, this.entry.registryKeyField(), keyParam)
+            .addCode("return $T.create($T.$L, $N);", Types.TYPED_KEY, Types.REGISTRY_KEY, this.entry.registryKeyField(), keyParam)
             .returns(returnType);
         if (publicCreateKeyMethod) {
-            create.addJavadoc(Javadocs.CREATE_TYPED_KEY_JAVADOC, this.entry.apiClass(), this.entry.registryKey().location().toString());
+            create.addJavadoc(Javadocs.CREATE_TYPED_KEY_JAVADOC, Types.typed(this.entry.data().api().klass()), this.entry.registryKey().location().toString());
         }
         return create;
     }
@@ -68,7 +66,7 @@ public class GeneratedKeyType<T> extends SimpleGenerator {
     private TypeSpec.Builder keyHolderType() {
         return classBuilder(this.className)
             .addModifiers(PUBLIC, FINAL)
-            .addJavadoc(Javadocs.getVersionDependentClassHeader("keys", "{@link $T#$L}"), RegistryKey.class, this.entry.registryKeyField())
+            .addJavadoc(Javadocs.getVersionDependentClassHeader("keys", "{@link $T#$L}"), Types.REGISTRY_KEY, this.entry.registryKeyField())
             .addAnnotations(Annotations.CLASS_HEADER)
             .addMethod(MethodSpec.constructorBuilder()
                 .addModifiers(PRIVATE)
@@ -78,7 +76,7 @@ public class GeneratedKeyType<T> extends SimpleGenerator {
 
     @Override
     protected TypeSpec getTypeSpec() {
-        TypeName typedKeyType = ParameterizedTypeName.get(TypedKey.class, this.entry.apiClass());
+        TypeName typedKeyType = ParameterizedTypeName.get(Types.TYPED_KEY, Types.typed(this.entry.data().api().klass()));
 
         TypeSpec.Builder typeBuilder = this.keyHolderType();
         MethodSpec.Builder createMethod = this.createMethod(typedKeyType);
@@ -114,7 +112,7 @@ public class GeneratedKeyType<T> extends SimpleGenerator {
 
     @Override
     protected JavaFile.Builder file(JavaFile.Builder builder) {
-        return builder.addStaticImport(Key.class, "key");
+        return builder.addStaticImport(Types.KEY, "key");
     }
 
     protected @Nullable SingleFlagHolder getRequiredFeature(Holder.Reference<T> reference) {

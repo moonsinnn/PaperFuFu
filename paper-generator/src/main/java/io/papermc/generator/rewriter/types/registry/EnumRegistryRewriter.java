@@ -23,8 +23,9 @@ import static io.papermc.generator.utils.Formatting.quoted;
 
 @NullMarked
 @ApiStatus.Obsolete
-public class EnumRegistryRewriter<T> extends EnumRewriter<Holder.Reference<T>> {
+public class EnumRegistryRewriter<T> extends EnumRewriter<Holder.Reference<T>> implements RegistryIdentifiable<T> {
 
+    private final ResourceKey<? extends Registry<T>> registryKey;
     private final Supplier<Registry<T>> registry;
     private final Supplier<Map<ResourceKey<T>, SingleFlagHolder>> experimentalKeys;
     private final boolean isFilteredRegistry;
@@ -35,10 +36,16 @@ public class EnumRegistryRewriter<T> extends EnumRewriter<Holder.Reference<T>> {
     }
 
     protected EnumRegistryRewriter(ResourceKey<? extends Registry<T>> registryKey, boolean hasKeyArgument) {
+        this.registryKey = registryKey;
         this.registry = Suppliers.memoize(() -> Main.REGISTRY_ACCESS.lookupOrThrow(registryKey));
         this.experimentalKeys = Suppliers.memoize(() -> ExperimentalCollector.collectDataDrivenElementIds(this.registry.get()));
         this.isFilteredRegistry = FeatureElement.FILTERED_REGISTRIES.contains(registryKey);
         this.hasKeyArgument = hasKeyArgument;
+    }
+
+    @Override
+    public ResourceKey<? extends Registry<T>> getRegistryKey() {
+        return this.registryKey;
     }
 
     @Override

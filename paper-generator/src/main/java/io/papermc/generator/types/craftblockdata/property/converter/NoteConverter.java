@@ -4,12 +4,13 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
-import org.bukkit.Note;
+//import org.bukkit.Note;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class NoteConverter implements Converter<Integer, Note> {
+public class NoteConverter /*implements Converter<Integer, Note>*/ {
 
+    /*
     @Override
     public Property<Integer> getProperty() {
         return BlockStateProperties.NOTE;
@@ -33,5 +34,5 @@ public class NoteConverter implements Converter<Integer, Note> {
     @Override
     public String rawGetExprent() {
         return "new $T(this.get(%s))";
-    }
+    }*/
 }

@@ -1,11 +1,24 @@
 package io.papermc.generator.utils;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.papermc.generator.types.craftblockdata.property.holder.VirtualField;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -16,11 +29,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import net.minecraft.core.Direction;
-import net.minecraft.core.FrontAndTop;
+import java.util.stream.Collectors;
+import io.papermc.typewriter.ClassNamed;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
@@ -34,88 +49,33 @@ import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.StructureBlock;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.TestInstanceBlock;
-import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
-import net.minecraft.world.level.block.entity.vault.VaultState;
-import net.minecraft.world.level.block.state.properties.AttachFace;
-import net.minecraft.world.level.block.state.properties.BambooLeaves;
-import net.minecraft.world.level.block.state.properties.BedPart;
-import net.minecraft.world.level.block.state.properties.BellAttachType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.ChestType;
-import net.minecraft.world.level.block.state.properties.ComparatorMode;
-import net.minecraft.world.level.block.state.properties.CreakingHeartState;
-import net.minecraft.world.level.block.state.properties.DoorHingeSide;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.level.block.state.properties.DripstoneThickness;
-import net.minecraft.world.level.block.state.properties.Half;
-import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.block.state.properties.RailShape;
-import net.minecraft.world.level.block.state.properties.RedstoneSide;
-import net.minecraft.world.level.block.state.properties.SculkSensorPhase;
-import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.block.state.properties.StairsShape;
-import net.minecraft.world.level.block.state.properties.StructureMode;
-import net.minecraft.world.level.block.state.properties.TestBlockMode;
-import net.minecraft.world.level.block.state.properties.Tilt;
-import net.minecraft.world.level.block.state.properties.WallSide;
-import org.bukkit.Axis;
-import org.bukkit.Instrument;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Orientation;
-import org.bukkit.block.data.Ageable;
-import org.bukkit.block.data.AnaloguePowerable;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.Brushable;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.FaceAttachable;
-import org.bukkit.block.data.Hangable;
-import org.bukkit.block.data.Hatchable;
-import org.bukkit.block.data.Levelled;
-import org.bukkit.block.data.Lightable;
+/*
 import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.block.data.Openable;
-import org.bukkit.block.data.Orientable;
-import org.bukkit.block.data.Powerable;
-import org.bukkit.block.data.Rail;
-import org.bukkit.block.data.Rotatable;
-import org.bukkit.block.data.Segmentable;
-import org.bukkit.block.data.Snowable;
-import org.bukkit.block.data.Waterlogged;
-import org.bukkit.block.data.type.Bamboo;
-import org.bukkit.block.data.type.Bed;
-import org.bukkit.block.data.type.Bell;
-import org.bukkit.block.data.type.BigDripleaf;
-import org.bukkit.block.data.type.Chest;
-import org.bukkit.block.data.type.Comparator;
-import org.bukkit.block.data.type.CreakingHeart;
-import org.bukkit.block.data.type.Door;
 import org.bukkit.block.data.type.Dripleaf;
 import org.bukkit.block.data.type.Fence;
 import org.bukkit.block.data.type.Furnace;
-import org.bukkit.block.data.type.PointedDripstone;
 import org.bukkit.block.data.type.RedstoneRail;
-import org.bukkit.block.data.type.RedstoneWire;
 import org.bukkit.block.data.type.ResinClump;
-import org.bukkit.block.data.type.SculkSensor;
-import org.bukkit.block.data.type.Slab;
-import org.bukkit.block.data.type.Stairs;
-import org.bukkit.block.data.type.Switch;
-import org.bukkit.block.data.type.TechnicalPiston;
-import org.bukkit.block.data.type.TrialSpawner;
-import org.bukkit.block.data.type.Vault;
-import org.bukkit.block.data.type.Wall;
+import org.bukkit.block.data.type.Switch;*/
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class BlockStateMapping {
 
-    public record BlockData(String implName, @Nullable Class<? extends org.bukkit.block.data.BlockData> api,
+    private static final Gson GSON = new Gson();
+
+    public record BlockData(String implName, @Nullable Class<?> api,
                             Collection<? extends Property<?>> properties, Map<Property<?>, Field> propertyFields,
                             Multimap<Either<Field, VirtualField>, Property<?>> complexPropertyFields) {
     }
+    /*
+    public record BlockData(String implName, @Nullable Class<? extends org.bukkit.block.data.BlockData> api,
+                            Collection<? extends Property<?>> properties, Map<Property<?>, Field> propertyFields,
+                            Multimap<Either<Field, VirtualField>, Property<?>> complexPropertyFields) {
+    }*/
 
     private static final Map<String, String> API_RENAMES = ImmutableMap.<String, String>builder()
         .put("SnowLayer", "Snow")
@@ -146,14 +106,15 @@ public final class BlockStateMapping {
     public static final ImmutableMultimap<Class<?>, VirtualField> VIRTUAL_NODES = ImmutableMultimap.<Class<?>, VirtualField>builder()
         .build();
 
-    public static final Map<Property<?>, Field> FALLBACK_GENERIC_FIELDS;
+    public static final BiMap<Property<?>, Field> FALLBACK_GENERIC_FIELDS;
 
     static {
-        Map<Property<?>, Field> fallbackGenericFields = new HashMap<>();
+        ImmutableBiMap.Builder<Property<?>, Field> fallbackGenericFields = ImmutableBiMap.builder();
         fetchProperties(BlockStateProperties.class, (field, property) -> fallbackGenericFields.put(property, field), null);
-        FALLBACK_GENERIC_FIELDS = Collections.unmodifiableMap(fallbackGenericFields);
+        FALLBACK_GENERIC_FIELDS = fallbackGenericFields.buildOrThrow();
     }
 
+    /*
     public static final Map<Class<? extends Block>, BlockData> MAPPING;
 
     static {
@@ -231,74 +192,67 @@ public final class BlockStateMapping {
             map.put(specialBlock, new BlockData(implName, api, properties, propertyFields, complexPropertyFields));
         }
         MAPPING = Collections.unmodifiableMap(map);
+    }*/
+
+    record PropertyData(Optional<String> field, Optional<String> name, ClassNamed api, boolean pure) {
+
+        public static final Codec<PropertyData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            SourceCodecs.IDENTIFIER.optionalFieldOf("field").forGetter(PropertyData::field),
+            Codec.STRING.optionalFieldOf("name").forGetter(PropertyData::name),
+            SourceCodecs.CLASS_NAMED.fieldOf("api").forGetter(PropertyData::api),
+            Codec.BOOL.optionalFieldOf("pure", false).forGetter(PropertyData::pure)
+        ).apply(instance, PropertyData::new));
     }
 
-    private static final Map<String, Class<? extends org.bukkit.block.data.BlockData>> NAME_TO_DATA = Map.of(
-        BlockStateProperties.AGE_1.getName(), Ageable.class,
-        BlockStateProperties.LEVEL.getName(), Levelled.class
-    );
+    // levelled and ageable are done using the property name
+    // multiple facing is done by matching two or more pipe block properties
 
-    private static final Map<Property<?>, Class<? extends org.bukkit.block.data.BlockData>> PROPERTY_TO_DATA = ImmutableMap.<Property<?>, Class<? extends org.bukkit.block.data.BlockData>>builder()
-        // levelled and ageable are done using the property name
-        .put(BlockStateProperties.POWER, AnaloguePowerable.class)
-        .put(BlockStateProperties.HALF, Bisected.class)
-        .put(BlockStateProperties.DOUBLE_BLOCK_HALF, Bisected.class)
-        .put(BlockStateProperties.DUSTED, Brushable.class)
-        .put(BlockStateProperties.FACING, Directional.class)
-        .put(BlockStateProperties.HORIZONTAL_FACING, Directional.class)
-        .put(BlockStateProperties.ATTACH_FACE, FaceAttachable.class)
-        .put(BlockStateProperties.HANGING, Hangable.class)
-        .put(BlockStateProperties.HATCH, Hatchable.class)
-        .put(BlockStateProperties.LIT, Lightable.class)
-        // multiple facing is done by matching two or more pipe block properties
-        .put(BlockStateProperties.OPEN, Openable.class)
-        .put(BlockStateProperties.HORIZONTAL_AXIS, Orientable.class)
-        .put(BlockStateProperties.AXIS, Orientable.class)
-        .put(BlockStateProperties.POWERED, Powerable.class)
-        .put(BlockStateProperties.RAIL_SHAPE, Rail.class)
-        .put(BlockStateProperties.RAIL_SHAPE_STRAIGHT, Rail.class)
-        .put(BlockStateProperties.ROTATION_16, Rotatable.class)
-        .put(BlockStateProperties.SNOWY, Snowable.class)
-        .put(BlockStateProperties.WATERLOGGED, Waterlogged.class)
-        .put(BlockStateProperties.SEGMENT_AMOUNT, Segmentable.class)
-        .buildOrThrow();
+    private static final Map<String, ClassNamed> NAME_TO_DATA;
+    private static final Map<Property<?>, ClassNamed> PROPERTY_TO_DATA;
+    private static final Map<Property<?>, ClassNamed> MAIN_PROPERTY_TO_DATA;
+    static {
+        List<PropertyData> propertyData = new ArrayList<>();
+        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state_properties.json")))) {
+            JsonArray properties = GSON.fromJson(input, JsonArray.class);
+            for (JsonElement element : properties.getAsJsonArray()) {
+                propertyData.add(PropertyData.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
 
-    private static final Map<Property<?>, Class<? extends org.bukkit.block.data.BlockData>> MAIN_PROPERTY_TO_DATA = Map.of(
-        BlockStateProperties.PISTON_TYPE, TechnicalPiston.class,
-        BlockStateProperties.STAIRS_SHAPE, Stairs.class
-    );
+        Map<String, Property<?>> propertyByName = FALLBACK_GENERIC_FIELDS.inverse().entrySet().stream()
+            .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
 
-    public static final Map<Class<? extends Enum<? extends StringRepresentable>>, Class<? extends Enum<?>>> ENUM_BRIDGE = ImmutableMap.<Class<? extends Enum<? extends StringRepresentable>>, Class<? extends Enum<?>>>builder()
-        .put(DoorHingeSide.class, Door.Hinge.class)
-        .put(SlabType.class, Slab.Type.class)
-        .put(StructureMode.class, org.bukkit.block.data.type.StructureBlock.Mode.class)
-        .put(DripstoneThickness.class, PointedDripstone.Thickness.class)
-        .put(WallSide.class, Wall.Height.class)
-        .put(BellAttachType.class, Bell.Attachment.class)
-        .put(NoteBlockInstrument.class, Instrument.class)
-        .put(StairsShape.class, Stairs.Shape.class)
-        .put(Direction.class, BlockFace.class)
-        .put(ComparatorMode.class, Comparator.Mode.class)
-        .put(PistonType.class, TechnicalPiston.Type.class)
-        .put(BedPart.class, Bed.Part.class)
-        .put(Half.class, Bisected.Half.class)
-        .put(AttachFace.class, FaceAttachable.AttachedFace.class)
-        .put(RailShape.class, Rail.Shape.class)
-        .put(SculkSensorPhase.class, SculkSensor.Phase.class)
-        .put(DoubleBlockHalf.class, Bisected.Half.class)
-        .put(Tilt.class, BigDripleaf.Tilt.class)
-        .put(ChestType.class, Chest.Type.class)
-        .put(RedstoneSide.class, RedstoneWire.Connection.class)
-        .put(Direction.Axis.class, Axis.class)
-        .put(BambooLeaves.class, Bamboo.Leaves.class)
-        .put(TrialSpawnerState.class, TrialSpawner.State.class)
-        .put(FrontAndTop.class, Orientation.class)
-        .put(VaultState.class, Vault.State.class)
-        .put(CreakingHeartState.class, CreakingHeart.State.class)
-        .put(TestBlockMode.class, org.bukkit.block.data.type.TestBlock.Mode.class)
-        .buildOrThrow();
+        NAME_TO_DATA = propertyData.stream().filter(data -> !data.pure() && data.name().isPresent())
+            .collect(Collectors.toUnmodifiableMap(data -> data.name().get(), PropertyData::api));
+        MAIN_PROPERTY_TO_DATA = propertyData.stream().filter(data -> data.pure() && data.field().isPresent())
+            .collect(Collectors.toUnmodifiableMap(data -> propertyByName.get(data.field().get()), PropertyData::api));
+        PROPERTY_TO_DATA = propertyData.stream().filter(data -> !data.pure() && data.field().isPresent())
+            .collect(Collectors.toUnmodifiableMap(data -> propertyByName.get(data.field().get()), PropertyData::api));
+    }
 
-    public static @Nullable Class<? extends org.bukkit.block.data.BlockData> getBestSuitedApiClass(Class<?> block) {
+    public static final Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed> ENUM_PROPERTY_TYPES;
+    static {
+        ImmutableMap.Builder<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed> enumPropertyTypes = ImmutableMap.builder();
+        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/enum_property_types.json")))) {
+            JsonObject properties = GSON.fromJson(input, JsonObject.class);
+            for (String className : properties.keySet()) {
+                Class<? extends Enum<? extends StringRepresentable>> type = ClassHelper.classOr(className, null);
+                if (type == null) {
+                    throw new IllegalStateException();
+                }
+
+                enumPropertyTypes.put(type, SourceCodecs.CLASS_NAMED.parse(JsonOps.INSTANCE, properties.get(className)).getOrThrow());
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        ENUM_PROPERTY_TYPES = enumPropertyTypes.buildOrThrow();
+    }
+
+    /*
+    public static @Nullable ClassNamed getBestSuitedApiClass(Class<?> block) {
         if (!MAPPING.containsKey(block)) {
             return null;
         }
@@ -306,13 +260,13 @@ public final class BlockStateMapping {
         return getBestSuitedApiClass(MAPPING.get(block));
     }
 
-    public static @Nullable Class<? extends org.bukkit.block.data.BlockData> getBestSuitedApiClass(BlockData data) {
+    public static @Nullable ClassNamed getBestSuitedApiClass(BlockData data) {
         if (data.api() != null) {
             return data.api();
         }
 
         int pipeProps = 0;
-        Set<Class<? extends org.bukkit.block.data.BlockData>> extensions = new LinkedHashSet<>();
+        Set<ClassNamed> extensions = new LinkedHashSet<>();
         for (Property<?> property : data.properties()) {
             if (MAIN_PROPERTY_TO_DATA.containsKey(property)) {
                 return MAIN_PROPERTY_TO_DATA.get(property);
@@ -358,7 +312,7 @@ public final class BlockStateMapping {
 
     private static boolean isExactly(Set<Class<? extends org.bukkit.block.data.BlockData>> extensions, Class<? extends org.bukkit.block.data.BlockData> globClass) {
         return extensions.equals(ClassHelper.getAllInterfaces(globClass, org.bukkit.block.data.BlockData.class, new HashSet<>()));
-    }
+    }*/
 
     private static String formatApiName(Class<?> specialBlock) {
         String apiName = specialBlock.getSimpleName();

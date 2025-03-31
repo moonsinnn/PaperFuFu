@@ -32,10 +32,12 @@ import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
+/*
 import org.bukkit.Axis;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Rail;
+*/
 import org.jspecify.annotations.NullMarked;
 
 import static io.papermc.generator.utils.NamingManager.keywordGet;
@@ -46,13 +48,13 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
 @NullMarked
-public class CraftBlockDataGenerator<T extends BlockData> extends OverriddenClassGenerator<T> {
+public class CraftBlockDataGenerator<T/* extends BlockData*/> extends OverriddenClassGenerator<T> {
 
     private final Class<? extends Block> blockClass;
     private final BlockStateMapping.BlockData blockData;
 
     protected CraftBlockDataGenerator(Class<? extends Block> blockClass, BlockStateMapping.BlockData blockData, Class<T> baseClass) {
-        super(baseClass, blockData.implName(), Types.BASE_PACKAGE + ".block.impl");
+        super(baseClass, blockData.implName(), Types.IMPL_PACKAGE + ".block.impl");
         this.blockClass = blockClass;
         this.blockData = blockData;
         this.printWarningOnMissingOverride = true;
@@ -70,6 +72,7 @@ public class CraftBlockDataGenerator<T extends BlockData> extends OverriddenClas
         .buildOrThrow();
 
     private static final Map<Property<?>, BiConsumer<ParameterSpec, MethodSpec.Builder>> SETTER_PRECONDITIONS = Map.of(
+        /*
         BlockStateProperties.FACING, (param, method) -> {
             method.addStatement("$T.checkArgument($N.isCartesian(), $S)", Preconditions.class, param, "Invalid face, only cartesian face are allowed for this property!");
         },
@@ -90,7 +93,7 @@ public class CraftBlockDataGenerator<T extends BlockData> extends OverriddenClas
         },
         BlockStateProperties.RAIL_SHAPE_STRAIGHT, (param, method) -> {
             method.addStatement("$1T.checkArgument($2N != $3T.NORTH_EAST && $2N != $3T.NORTH_WEST && $2N != $3T.SOUTH_EAST && $2N != $3T.SOUTH_WEST, $4S)", Preconditions.class, param, Rail.Shape.class, "Invalid rail shape, only straight rail are allowed for this property!");
-        }
+        }*/
     );
 
     private TypeSpec.Builder propertyHolder() {

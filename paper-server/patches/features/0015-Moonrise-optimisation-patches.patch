@@ -27565,7 +27565,7 @@ index fe9b4484d683fe48f435a053c9c90557fdf80e7b..8afe96bfdc37e57129f1bb4af5b6d5cc
      }
  
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index a8c73bdf8fb130eed8922cb537a35cda07e66da5..3e73c69c9db8cbded28a001b20d9989acb11c638 100644
+index a03dae93819114fa2b4ba5899b94a3aad6939581..ffd53c8fff094042e148172b1e029ceaadbfec51 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -187,7 +187,7 @@ import net.minecraft.world.scores.Team;
@@ -27577,7 +27577,7 @@ index a8c73bdf8fb130eed8922cb537a35cda07e66da5..3e73c69c9db8cbded28a001b20d9989a
      private static final Logger LOGGER = LogUtils.getLogger();
      private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
      private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
-@@ -423,6 +423,36 @@ public class ServerPlayer extends Player {
+@@ -422,6 +422,36 @@ public class ServerPlayer extends Player {
      public @Nullable String clientBrandName = null; // Paper - Brand support
      public @Nullable org.bukkit.event.player.PlayerQuitEvent.QuitReason quitReason = null; // Paper - Add API for quit reason; there are a lot of changes to do if we change all methods leading to the event
  
@@ -28202,10 +28202,10 @@ index b30f56fbc1fd17259a1d05dc9155fffcab292ca1..11fed81a4696ba18440e755c3b8a5ca3
          this.generatingStep = generatingStep;
          this.cache = cache;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 73717609fccd9af12e2cc39824106f49426b581c..72524ff3399a4477dfa3db2f4e79bb14f6519a8b 100644
+index abfb1cbf575c38442177fb1fdc030af23e3ed426..8069714955342fc6cf7c4f7a7faf309bc1332f6e 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -1321,7 +1321,7 @@ public abstract class PlayerList {
+@@ -1283,7 +1283,7 @@ public abstract class PlayerList {
  
      public void setViewDistance(int viewDistance) {
          this.viewDistance = viewDistance;
@@ -28214,7 +28214,7 @@ index 73717609fccd9af12e2cc39824106f49426b581c..72524ff3399a4477dfa3db2f4e79bb14
  
          for (ServerLevel serverLevel : this.server.getAllLevels()) {
              if (serverLevel != null) {
-@@ -1332,7 +1332,7 @@ public abstract class PlayerList {
+@@ -1294,7 +1294,7 @@ public abstract class PlayerList {
  
      public void setSimulationDistance(int simulationDistance) {
          this.simulationDistance = simulationDistance;

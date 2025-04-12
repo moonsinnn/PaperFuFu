@@ -3,10 +3,15 @@ package io.papermc.testplugin;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.event.connection.common.PlayerConnectionValidateLoginEvent;
+import io.papermc.paper.event.connection.configuration.AsyncPlayerConnectionConfigurateEvent;
+import io.papermc.paper.event.connection.configuration.PlayerConnectionInitialConfigurateEvent;
 import io.papermc.paper.event.connection.configuration.PlayerConnectionReconfigurateEvent;
+import net.kyori.adventure.text.Component;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class TestPlugin extends JavaPlugin implements Listener {

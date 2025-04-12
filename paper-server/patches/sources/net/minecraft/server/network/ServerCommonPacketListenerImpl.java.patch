@@ -81,15 +81,7 @@
          }
      }
  
-@@ -89,29 +_,32 @@
-     }
- 
-     @Override
--    public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {
--    }
--
--    @Override
-     public void handleResourcePackResponse(ServerboundResourcePackPacket packet) {
+@@ -97,21 +_,28 @@
          PacketUtils.ensureRunningOnSameThread(packet, this, this.server);
          if (packet.action() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
              LOGGER.info("Disconnecting {} due to resource pack {} rejection", this.playerProfile().getName(), packet.id());

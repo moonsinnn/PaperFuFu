@@ -12,11 +12,11 @@ import org.jetbrains.annotations.NotNull;
  * <p>
  * This occurs after configuration, but before the player has entered the world.
  */
-public class AsyncPlayerConnectionConfigurateEvent extends PlayerConfigurationConnectionEvent {
+public class AsyncPlayerConnectionConfigureEvent extends PlayerConfigurationConnectionEvent {
     private static final HandlerList handlers = new HandlerList();
 
     @ApiStatus.Internal
-    public AsyncPlayerConnectionConfigurateEvent(PlayerConfigurationConnection connection) {
+    public AsyncPlayerConnectionConfigureEvent(PlayerConfigurationConnection connection) {
         super(true, connection);
     }
 

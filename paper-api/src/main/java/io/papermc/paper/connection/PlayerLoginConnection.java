@@ -43,8 +43,6 @@ public interface PlayerLoginConnection extends CookieConnection  {
     @NotNull
     String getHostname();
 
-    boolean isTransferred();
-
     // TODO: Should we have a read-only interface?
     @Deprecated
     @Override

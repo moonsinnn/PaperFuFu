@@ -2638,7 +2638,7 @@
 +    public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {
 +        // Paper start
 +        if (packet.payload() instanceof net.minecraft.network.protocol.common.custom.BrandPayload(String brand)) {
-+            this.player.clientBrandName = brand;
++            this.playerBrand = brand;
 +        }
 +
 +        if (!(packet.payload() instanceof final net.minecraft.network.protocol.common.custom.DiscardedPayload discardedPayload)) {
@@ -2670,7 +2670,7 @@
 +            }
 +
 +            if (identifier.equals(MINECRAFT_BRAND)) {
-+                this.player.clientBrandName = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.wrappedBuffer(data)).readUtf(256);
++                this.player.connection.playerBrand = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.wrappedBuffer(data)).readUtf(256);
 +            }
 +
 +            this.cserver.getMessenger().dispatchIncomingMessage(this.player.getBukkitEntity(), identifier.toString(), data);

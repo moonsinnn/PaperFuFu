@@ -86,12 +86,16 @@ public class PaperPlayerConfigurationConnection extends CommonCookieConnection i
 
     @Override
     public void transfer(final String host, final int port) {
-        this.serverConfigurationPacketListenerImpl.sendPacket(new ClientboundTransferPacket(host, port));
+        this.serverConfigurationPacketListenerImpl.send(new ClientboundTransferPacket(host, port));
     }
-
 
     @Override
     public void disconnect(final Component component) {
         this.serverConfigurationPacketListenerImpl.disconnect(PaperAdventure.asVanilla(component), DisconnectionReason.UNKNOWN);
+    }
+
+    @Override
+    public String getBrand() {
+        return this.serverConfigurationPacketListenerImpl.playerBrand;
     }
 }

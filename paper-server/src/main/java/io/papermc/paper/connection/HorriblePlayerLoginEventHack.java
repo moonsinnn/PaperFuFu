@@ -45,32 +45,12 @@ public class HorriblePlayerLoginEventHack {
 
         CraftPlayer horribleBukkitPlayer = player.getBukkitEntity();
         PlayerLoginEvent event = new PlayerLoginEvent(horribleBukkitPlayer, connection.hostname, ((java.net.InetSocketAddress) connection.getRemoteAddress()).getAddress(), ((java.net.InetSocketAddress) connection.channel.remoteAddress()).getAddress());
-        event.disallow(fromModern(result.result()), PaperAdventure.asAdventure(result.message()));
+        event.disallow(result.result(), PaperAdventure.asAdventure(result.message()));
         event.callEvent();
         if (event.getResult() == PlayerLoginEvent.Result.ALLOWED) {
             return null;
         } else {
             return PaperAdventure.asVanilla(event.kickMessage());
         }
-    }
-
-    private static PlayerConnectionValidateLoginEvent.Result toModern(@NotNull PlayerLoginEvent.Result result) {
-        return switch (result) {
-            case ALLOWED -> PlayerConnectionValidateLoginEvent.Result.ALLOWED;
-            case KICK_OTHER -> PlayerConnectionValidateLoginEvent.Result.KICK_OTHER;
-            case KICK_BANNED -> PlayerConnectionValidateLoginEvent.Result.KICK_BANNED;
-            case KICK_WHITELIST -> PlayerConnectionValidateLoginEvent.Result.KICK_WHITELIST;
-            case KICK_FULL -> PlayerConnectionValidateLoginEvent.Result.KICK_FULL;
-        };
-    }
-
-    private static PlayerLoginEvent.Result fromModern(@NotNull PlayerConnectionValidateLoginEvent.Result result) {
-        return switch (result) {
-            case ALLOWED -> PlayerLoginEvent.Result.ALLOWED;
-            case KICK_OTHER -> PlayerLoginEvent.Result.KICK_OTHER;
-            case KICK_BANNED -> PlayerLoginEvent.Result.KICK_BANNED;
-            case KICK_WHITELIST -> PlayerLoginEvent.Result.KICK_WHITELIST;
-            case KICK_FULL -> PlayerLoginEvent.Result.KICK_FULL;
-        };
     }
 }

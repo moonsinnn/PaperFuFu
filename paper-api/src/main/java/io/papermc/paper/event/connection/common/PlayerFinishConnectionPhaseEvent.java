@@ -1,8 +1,10 @@
-package io.papermc.paper.event.connection.configuration;
+package io.papermc.paper.event.connection.common;
 
 import io.papermc.paper.connection.PlayerConfigurationConnection;
+import io.papermc.paper.connection.PlayerConnection;
+import io.papermc.paper.connection.PlayerLoginConnection;
 import net.kyori.adventure.text.Component;
-import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -11,18 +13,32 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 /**
- * Called when the player has successfully exited the configuration stage and is about to enter the
- * GAME protocol stage.
+ * Called when a player's connection phase is effectively "finished", meaning
+ * that they are progressing to another connection stage.
+ * <p>
+ * Currently fires during the login and configuration protocol.
  */
 @NullMarked
-public class PostPlayerConnectionConfigurateEvent extends PlayerConfigurationConnectionEvent {
+public class PlayerFinishConnectionPhaseEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
+
+    private PlayerConnection currentConnection;
+
     @Nullable
     private Component kickMessage;
 
     @ApiStatus.Internal
-    public PostPlayerConnectionConfigurateEvent(PlayerConfigurationConnection connection) {
-        super(false, connection);
+    public PlayerFinishConnectionPhaseEvent(PlayerConnection connection) {
+        super(false);
+        this.currentConnection = connection;
+    }
+
+    /**
+     * Gets the current connection.
+     * @return connection
+     */
+    public PlayerConnection getCurrentConnection() {
+        return this.currentConnection;
     }
 
     /**
@@ -51,11 +67,12 @@ public class PostPlayerConnectionConfigurateEvent extends PlayerConfigurationCon
     }
 
     /**
-     * Gets the kick message for this event, may be empty.
+     * Gets the kick message for this event, may be null
      * @return kick message
      */
+    @org.jetbrains.annotations.Nullable
     public Component getKickMessage() {
-        return Objects.requireNonNullElse(this.kickMessage, Component.empty());
+        return this.kickMessage;
     }
 
     @NotNull

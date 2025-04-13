@@ -6,6 +6,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Validates whether a player connection would be able to login at this event.
@@ -13,79 +15,50 @@ import org.jetbrains.annotations.NotNull;
  * Currently, this occurs when the player connection is attempting to log in for the first time, or is finishing up
  * being configured.
  */
-// TODO: I am not sure about this event however. I have seen the most common reasons for needing a LoginEvent is to prevent the fullness check. Should we add a separate event for each case? Like WhitelistVerifyEvent?
+@NullMarked
 public class PlayerConnectionValidateLoginEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
 
     private final PlayerConnection connection;
-    private Result result;
-    private Component message;
+
+    @Nullable
+    private Component disallowedReason;
 
     @ApiStatus.Internal
-    public PlayerConnectionValidateLoginEvent(PlayerConnection connection, final Result result, final Component message) {
+    public PlayerConnectionValidateLoginEvent(final PlayerConnection connection, @Nullable final Component disallowReason) {
         super(false);
         this.connection = connection;
-        this.result = result;
-        this.message = message;
+        this.disallowedReason = disallowReason;
     }
 
     public PlayerConnection getConnection() {
         return connection;
     }
 
-    public Component getMessage() {
-        return message;
-    }
-
-    public Result getResult() {
-        return result;
-    }
-
     /**
-     * Allows the player to log in
+     * Allows the player to log in.
+     * This skips any login validation checks.
      */
     public void allow() {
-        result = Result.ALLOWED;
-        message = net.kyori.adventure.text.Component.empty();
+        this.disallowedReason = null;
     }
 
     /**
      * Disallows the player from logging in, with the given reason
      *
-     * @param result New result for disallowing the player
      * @param message Kick message to display to the user
      */
-    public void disallow(@NotNull final Result result, @NotNull final net.kyori.adventure.text.Component message) {
-        this.result = result;
-        this.message = message;
+    public void disallow(@NotNull final net.kyori.adventure.text.Component message) {
+        this.disallowedReason = message;
     }
 
     /**
-     * Basic kick reasons for communicating to plugins
+     * Gets the reason for why a player is not allowed to join the server.
+     * This may be null in the case that the player is allowed to login.
+     * @return disallow reason
      */
-    public enum Result {
-
-        /**
-         * The player is allowed to log in
-         */
-        ALLOWED,
-        /**
-         * The player is not allowed to log in, due to the server being full
-         */
-        KICK_FULL,
-        /**
-         * The player is not allowed to log in, due to them being banned
-         */
-        KICK_BANNED,
-        /**
-         * The player is not allowed to log in, due to them not being on the
-         * white list
-         */
-        KICK_WHITELIST,
-        /**
-         * The player is not allowed to log in, for reasons undefined
-         */
-        KICK_OTHER
+    public @Nullable Component getDisallowedReason() {
+        return disallowedReason;
     }
 
     @NotNull

@@ -336,10 +336,10 @@ index 7de11ba404f0b60e7f7b7c16954811a343688219..bd07e6a5aa1883786d789ea71711a0c0
              this.channels
                  .add(
 diff --git a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index 5ede11aa202c67cdc27eaaa314fc69456ec7113e..5c816eaf90677d7624e1f24327073b01a400fc4f 100644
+index fc82af47a6be4afc7380d317b0ab91e95860ef26..4261db0f3b274632964323ff499961d9e7b5e2de 100644
 --- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-@@ -243,11 +243,9 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
+@@ -253,11 +253,9 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
              }
  
              SecretKey secretKey = packet.getSecretKey(_private);

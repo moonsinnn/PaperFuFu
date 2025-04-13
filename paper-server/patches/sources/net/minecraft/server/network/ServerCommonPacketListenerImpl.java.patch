@@ -1,11 +1,11 @@
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
-@@ -27,22 +_,29 @@
+@@ -27,22 +_,30 @@
  import net.minecraft.util.profiling.Profiler;
  import org.slf4j.Logger;
  
 -public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener {
-+public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener, org.bukkit.craftbukkit.entity.CraftPlayer.TransferCookieConnection { // CraftBukkit
++public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener{
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final int LATENCY_CHECK_INTERVAL = 15000;
      private static final int CLOSED_LISTENER_TIMEOUT = 15000;
@@ -30,35 +30,21 @@
 +    public final java.util.Map<java.util.UUID, net.kyori.adventure.resource.ResourcePackCallback> packCallbacks = new java.util.concurrent.ConcurrentHashMap<>(); // Paper - adventure resource pack callbacks
 +    private static final long KEEPALIVE_LIMIT = Long.getLong("paper.playerconnection.keepalive", 30) * 1000; // Paper - provide property to set keepalive limit
 +    protected static final net.minecraft.resources.ResourceLocation MINECRAFT_BRAND = net.minecraft.resources.ResourceLocation.withDefaultNamespace("brand"); // Paper - Brand support
++    public @Nullable String playerBrand; // Paper
  
      public ServerCommonPacketListenerImpl(MinecraftServer server, Connection connection, CommonListenerCookie cookie) {
          this.server = server;
-@@ -50,7 +_,24 @@
+@@ -50,6 +_,10 @@
          this.keepAliveTime = Util.getMillis();
          this.latency = cookie.latency();
          this.transferred = cookie.transferred();
--    }
-+        this.cserver = server.server; // Paper
-+    }
-+
-+    @Override
-+    public boolean isTransferred() {
-+        return this.transferred;
-+    }
-+
-+    @Override
-+    public net.minecraft.network.ConnectionProtocol getProtocol() {
-+        return this.protocol();
-+    }
-+
-+    @Override
-+    public void sendPacket(Packet<?> packet) {
-+        this.send(packet);
-+    }
-+    // CraftBukkit end
++        // Paper start
++        this.playerBrand = cookie.brandName();
++        this.cserver = server.server;
++        // Paper end
+     }
  
      private void close() {
-         if (!this.closed) {
 @@ -61,6 +_,12 @@
  
      @Override
@@ -137,7 +123,7 @@
          if (packet.isTerminal()) {
              this.close();
          }
-@@ -165,19 +_,101 @@
+@@ -165,19 +_,105 @@
          }
      }
  
@@ -238,7 +224,19 @@
 +    public abstract void disconnectAsync(DisconnectionDetails disconnectionInfo);
 +
 +    public abstract io.papermc.paper.connection.CommonCookieConnection getCookieConnection();
++
++    public boolean isTransferred() {
++        return this.transferred;
++    }
 +    // Paper end - add proper async disconnect
  
      protected boolean isSingleplayerOwner() {
          return this.server.isSingleplayerOwner(this.playerProfile());
+@@ -195,6 +_,6 @@
+     }
+ 
+     protected CommonListenerCookie createCookie(ClientInformation clientInformation) {
+-        return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred);
++        return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred, this.playerBrand); // Paper
+     }
+ }

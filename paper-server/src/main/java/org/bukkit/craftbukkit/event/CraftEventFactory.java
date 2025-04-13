@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.connection.PlayerConnection;
+import io.papermc.paper.event.connection.common.PlayerConnectionValidateLoginEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.Connection;
@@ -230,6 +232,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerRecipeBookClickEvent;
 import org.bukkit.event.player.PlayerRecipeBookSettingsChangeEvent;
 import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
@@ -2042,20 +2045,15 @@ public class CraftEventFactory {
         return event;
     }
     public static Component handleLoginResult(PlayerList.LoginResult result, PlayerConnection paperConnection, Connection connection, GameProfile profile, MinecraftServer server) {
-        if (result == null) {
-            result = new net.minecraft.server.players.PlayerList.LoginResult(null, io.papermc.paper.event.connection.common.PlayerConnectionValidateLoginEvent.Result.ALLOWED);
-        }
-
-        io.papermc.paper.event.connection.common.PlayerConnectionValidateLoginEvent event = new io.papermc.paper.event.connection.common.PlayerConnectionValidateLoginEvent(
-                paperConnection, result.result(), io.papermc.paper.adventure.PaperAdventure.asAdventure(result.message())
+        PlayerConnectionValidateLoginEvent event = new io.papermc.paper.event.connection.common.PlayerConnectionValidateLoginEvent(
+                paperConnection, result == null ? null : io.papermc.paper.adventure.PaperAdventure.asAdventure(result.message())
         );
         event.callEvent();
 
-        result = new net.minecraft.server.players.PlayerList.LoginResult(
-                event.getResult() == io.papermc.paper.event.connection.common.PlayerConnectionValidateLoginEvent.Result.ALLOWED ? null : io.papermc.paper.adventure.PaperAdventure.asVanilla(event.getMessage()), // allowed? mark as null
-                event.getResult()
-        );
+        Component disconnectReason = PaperAdventure.asVanilla(event.getDisallowedReason());
 
-        return io.papermc.paper.connection.HorriblePlayerLoginEventHack.execute(connection, server, profile, result);
+        return io.papermc.paper.connection.HorriblePlayerLoginEventHack.execute(connection, server, profile,
+            disconnectReason == null ? PlayerList.LoginResult.ALLOW : new PlayerList.LoginResult(disconnectReason, disconnectReason == null ? PlayerLoginEvent.Result.KICK_OTHER : result.result())
+        );
     }
 }

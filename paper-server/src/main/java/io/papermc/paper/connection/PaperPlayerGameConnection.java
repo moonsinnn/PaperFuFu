@@ -6,6 +6,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import net.kyori.adventure.text.Component;
+import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -22,7 +23,7 @@ public class PaperPlayerGameConnection extends CommonCookieConnection implements
     }
 
     @Override
-    public void configurate() {
+    public void enterConfiguration() {
         this.serverConfigurationPacketListenerImpl.switchToConfig();
     }
 
@@ -32,7 +33,22 @@ public class PaperPlayerGameConnection extends CommonCookieConnection implements
     }
 
     @Override
+    public void transfer(final String host, final int port) {
+        this.serverConfigurationPacketListenerImpl.send(new ClientboundTransferPacket(host, port));
+    }
+
+    @Override
+    public String getBrand() {
+        return this.serverConfigurationPacketListenerImpl.playerBrand;
+    }
+
+    @Override
     public void disconnect(final Component component) {
         this.serverConfigurationPacketListenerImpl.disconnect(component);
+    }
+
+    @Override
+    public boolean isTransferred() {
+        return this.serverConfigurationPacketListenerImpl.isTransferred();
     }
 }

@@ -6,11 +6,11 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerConnectionInitialConfigurateEvent extends PlayerConfigurationConnectionEvent {
+public class PlayerConnectionInitialConfigureEvent extends PlayerConfigurationConnectionEvent {
     private static final HandlerList handlers = new HandlerList();
 
     @ApiStatus.Internal
-    public PlayerConnectionInitialConfigurateEvent(PlayerConfigurationConnection connection) {
+    public PlayerConnectionInitialConfigureEvent(PlayerConfigurationConnection connection) {
         super(!Bukkit.isPrimaryThread(), connection);
     }
 

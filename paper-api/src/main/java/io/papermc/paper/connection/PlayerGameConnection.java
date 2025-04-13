@@ -1,8 +1,10 @@
 package io.papermc.paper.connection;
 
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
-public interface PlayerGameConnection extends CookieConnection {
+@NullMarked
+public interface PlayerGameConnection extends PlayerCommonConnection {
 
 
     /**
@@ -11,7 +13,13 @@ public interface PlayerGameConnection extends CookieConnection {
      * This will, by default, cause the player to stay until their connection is released by
      * {@link PlayerConfigurationConnection#completeConfiguration()}
      */
-    void configurate();
+    void enterConfiguration();
 
+    /**
+     * Gets the player that is currently associated with this game connection.
+     *
+     * @return player
+     */
     Player getPlayer();
+
 }

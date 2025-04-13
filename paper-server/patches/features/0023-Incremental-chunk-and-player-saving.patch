@@ -83,7 +83,7 @@ index 32db2b9e375c12cbf7abab69cc01e8ac2c7c3b6e..d50d2928ad9f8b34a14621b1fe5c1885
          // Paper start - add close param
          this.save(progress, flush, skipSave, false);
 diff --git a/net/minecraft/server/level/ServerPlayer.java b/net/minecraft/server/level/ServerPlayer.java
-index ffd53c8fff094042e148172b1e029ceaadbfec51..642ae91abed7b8c9d8afaef84764921808687420 100644
+index a8c7ff01cbf853c00986d40c50edb6bd24be7c9b..0f6123877f0f78e670ba1fb4b7abcc388e95b6e5 100644
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
 @@ -189,6 +189,7 @@ import org.slf4j.Logger;
@@ -95,7 +95,7 @@ index ffd53c8fff094042e148172b1e029ceaadbfec51..642ae91abed7b8c9d8afaef847649218
      private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
      private static final int FLY_STAT_RECORDING_SPEED = 25;
 diff --git a/net/minecraft/server/players/PlayerList.java b/net/minecraft/server/players/PlayerList.java
-index 8069714955342fc6cf7c4f7a7faf309bc1332f6e..fec8e0824de7dfdc959248b855af0362e0f77596 100644
+index 19263d2e3735b468279f448a51479c5e2f31b9e7..9f4337e83516a3c1fc1a1fa29e8eed1de8b837d4 100644
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
 @@ -486,6 +486,7 @@ public abstract class PlayerList {
@@ -106,7 +106,7 @@ index 8069714955342fc6cf7c4f7a7faf309bc1332f6e..fec8e0824de7dfdc959248b855af0362
          this.playerIo.save(player);
          ServerStatsCounter serverStatsCounter = player.getStats(); // CraftBukkit
          if (serverStatsCounter != null) {
-@@ -1030,9 +1031,23 @@ public abstract class PlayerList {
+@@ -1047,9 +1048,23 @@ public abstract class PlayerList {
      }
  
      public void saveAll() {

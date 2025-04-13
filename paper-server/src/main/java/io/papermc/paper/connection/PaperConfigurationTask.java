@@ -2,7 +2,7 @@ package io.papermc.paper.connection;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.logging.LogUtils;
-import io.papermc.paper.event.connection.configuration.AsyncPlayerConnectionConfigurateEvent;
+import io.papermc.paper.event.connection.configuration.AsyncPlayerConnectionConfigureEvent;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.network.ConfigurationTask;
@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-public class PaperConfigurateTask implements ConfigurationTask {
+public class PaperConfigurationTask implements ConfigurationTask {
     private static final Logger LOGGER = LogUtils.getClassLogger();
 
     private static final ExecutorService CONFIGURATION_POOL = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("Configuration Thread #%d")
@@ -22,18 +22,18 @@ public class PaperConfigurateTask implements ConfigurationTask {
 
     private final ServerConfigurationPacketListenerImpl serverConfigurationPacketListener;
 
-    public PaperConfigurateTask(ServerConfigurationPacketListenerImpl serverConfigurationPacketListener) {
+    public PaperConfigurationTask(ServerConfigurationPacketListenerImpl serverConfigurationPacketListener) {
         this.serverConfigurationPacketListener = serverConfigurationPacketListener;
     }
 
     @Override
     public void start(final Consumer<Packet<?>> task) {
-        if (AsyncPlayerConnectionConfigurateEvent.getHandlerList().getRegisteredListeners().length == 0) {
+        if (AsyncPlayerConnectionConfigureEvent.getHandlerList().getRegisteredListeners().length == 0) {
             this.serverConfigurationPacketListener.finishCurrentTask(TYPE);
             return;
         }
         CONFIGURATION_POOL.execute(() -> {
-            AsyncPlayerConnectionConfigurateEvent event = new AsyncPlayerConnectionConfigurateEvent(this.serverConfigurationPacketListener.paperConnection);
+            AsyncPlayerConnectionConfigureEvent event = new AsyncPlayerConnectionConfigureEvent(this.serverConfigurationPacketListener.paperConnection);
             event.callEvent();
             this.serverConfigurationPacketListener.finishCurrentTask(TYPE);
         });

@@ -6,15 +6,17 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Indicates that a player connection has entered the configuration stage from the
+ * game protocol stage.
+ */
 public class PlayerConnectionReconfigurateEvent extends PlayerConfigurationConnectionEvent {
     private static final HandlerList handlers = new HandlerList();
-
 
     @ApiStatus.Internal
     public PlayerConnectionReconfigurateEvent(PlayerConfigurationConnection connection) {
         super(!Bukkit.isPrimaryThread(), connection);
     }
-
 
     @NotNull
     @Override

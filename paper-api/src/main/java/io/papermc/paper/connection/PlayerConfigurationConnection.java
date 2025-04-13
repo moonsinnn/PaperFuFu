@@ -1,14 +1,14 @@
 package io.papermc.paper.connection;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 @NullMarked
-public interface PlayerConfigurationConnection extends CookieConnection {
+public interface PlayerConfigurationConnection extends PlayerCommonConnection {
 
     /**
      * Gets the profile for this connection.
@@ -54,5 +54,4 @@ public interface PlayerConfigurationConnection extends CookieConnection {
 
     <T> T getClientOption(com.destroystokyo.paper.ClientOption<T> type);
 
-    void transfer(String host, int port);
 }

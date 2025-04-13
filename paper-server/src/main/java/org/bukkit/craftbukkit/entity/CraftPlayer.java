@@ -297,58 +297,24 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         return this.getHandle().connection.connection.haProxyAddress instanceof final InetSocketAddress inetSocketAddress ? inetSocketAddress : null;
     }
     // Paper end - Add API to get player's proxy address
-
-    public interface TransferCookieConnection {
-
-        boolean isTransferred();
-
-        ConnectionProtocol getProtocol();
-
-        void sendPacket(Packet<?> packet);
-    }
-
-    public record CookieFuture(ResourceLocation key, CompletableFuture<byte[]> future) {
-
-    }
-    private final Queue<CookieFuture> requestedCookies = new LinkedList<>();
-
-    public boolean isAwaitingCookies() {
-        return !this.requestedCookies.isEmpty();
-    }
-
-    public boolean handleCookieResponse(ServerboundCookieResponsePacket response) {
-        CookieFuture future = this.requestedCookies.peek();
-        if (future != null) {
-            if (future.key.equals(response.key())) {
-                Preconditions.checkState(future == this.requestedCookies.poll(), "requestedCookies queue mismatch");
-
-                future.future().complete(response.payload());
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     @Override
     public boolean isTransferred() {
-        return this.getHandle().connection.isTransferred();
+        return this.getHandle().connection.playerGameConnection.isTransferred();
     }
 
     @Override
     public CompletableFuture<byte[]> retrieveCookie(NamespacedKey key) {
-        // TODO
-        return null;
+        return this.getHandle().connection.playerGameConnection.retrieveCookie(key);
     }
 
     @Override
     public void storeCookie(NamespacedKey key, byte[] value) {
-        // TODO
+        this.getHandle().connection.playerGameConnection.storeCookie(key, value);
     }
 
     @Override
     public void transfer(String host, int port) {
-        // TODO
+        this.getHandle().connection.playerGameConnection.transfer(host, port);
     }
 
     // Paper start - Implement NetworkClient
@@ -3381,7 +3347,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     // Paper start - brand support
     @Override
     public String getClientBrandName() {
-        return getHandle().clientBrandName;
+        return getHandle().connection.playerGameConnection.getBrand();
     }
     // Paper end
 

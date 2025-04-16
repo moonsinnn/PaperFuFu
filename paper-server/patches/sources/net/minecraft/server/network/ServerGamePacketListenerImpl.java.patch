@@ -2591,7 +2591,7 @@
          if (!this.receivedMovementThisTick) {
              this.player.setKnownMovement(Vec3.ZERO);
          }
-@@ -2048,4 +_,156 @@
+@@ -2048,4 +_,144 @@
      interface EntityInteraction {
          InteractionResult run(ServerPlayer player, Entity entity, InteractionHand hand);
      }
@@ -2701,18 +2701,6 @@
 +    @Override
 +    public void handleResourcePackResponse(final net.minecraft.network.protocol.common.ServerboundResourcePackPacket packet) {
 +        super.handleResourcePackResponse(packet);
-+        // Paper start - adventure pack callbacks
-+        // call the callbacks before the previously-existing event so the event has final say
-+        final net.kyori.adventure.resource.ResourcePackCallback callback;
-+        if (packet.action().isTerminal()) {
-+            callback = this.packCallbacks.remove(packet.id());
-+        } else {
-+            callback = this.packCallbacks.get(packet.id());
-+        }
-+        if (callback != null) {
-+            callback.packEventReceived(packet.id(), net.kyori.adventure.resource.ResourcePackStatus.valueOf(packet.action().name()), this.getCraftPlayer());
-+        }
-+        // Paper end
 +        // Paper start - store last pack status
 +        org.bukkit.event.player.PlayerResourcePackStatusEvent.Status packStatus = org.bukkit.event.player.PlayerResourcePackStatusEvent.Status.values()[packet.action().ordinal()];
 +        this.player.getBukkitEntity().resourcePackStatus = packStatus;

@@ -3,7 +3,9 @@ package io.papermc.paper.event.connection.configuration;
 import io.papermc.paper.connection.PlayerConfigurationConnection;
 import io.papermc.paper.connection.PlayerLoginConnection;
 import org.bukkit.event.Event;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 abstract class PlayerConfigurationConnectionEvent extends Event {
     private final PlayerConfigurationConnection loginConnection;
 

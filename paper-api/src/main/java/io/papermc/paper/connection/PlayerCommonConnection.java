@@ -1,15 +1,26 @@
 package io.papermc.paper.connection;
 
+import net.kyori.adventure.resource.ResourcePackRequest;
+import net.kyori.adventure.resource.ResourcePackRequestLike;
 import org.bukkit.ServerLinks;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
+
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Represents a connection that has properties shared between the GAME and CONFIG stage.
  */
 @NullMarked
 public interface PlayerCommonConnection extends CookieConnection {
+
+    void sendResourcePacks(final @NotNull ResourcePackRequest request);
+
+    void removeResourcePacks(final @NotNull UUID id, final @NotNull UUID... others);
+
+    void clearResourcePacks();
 
     /**
      * Sends data to appear in this connection's report logs.

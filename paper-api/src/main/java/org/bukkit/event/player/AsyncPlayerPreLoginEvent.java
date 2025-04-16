@@ -304,6 +304,11 @@ public class AsyncPlayerPreLoginEvent extends Event {
         return this.transferred;
     }
 
+    /**
+     * Gets the connection for the player logging in.
+     * @return connection
+     */
+    @NotNull
     public PlayerLoginConnection getPlayerLoginConnection() {
         return playerLoginConnection;
     }

@@ -21,13 +21,12 @@ public interface PlayerConfigurationConnection extends PlayerCommonConnection {
      *
      * @return The IP address
      */
-    @NotNull
     InetAddress getAddress();
+
     /**
      * Gets the raw address of the player logging in
      * @return The address
      */
-    @NotNull
     InetAddress getRawAddress();
 
     /**
@@ -36,10 +35,7 @@ public interface PlayerConfigurationConnection extends PlayerCommonConnection {
      *
      * @return The hostname
      */
-    @NotNull
     String getHostname();
-
-    boolean isTransferred();
 
     /**
      * Clears the players chat history and their local chat.
@@ -47,11 +43,16 @@ public interface PlayerConfigurationConnection extends PlayerCommonConnection {
     void clearChat();
 
     /**
+     * Completes the configuration for this player, which will cause this player to reenter the game.
+     * <p>
      * Note, this should be only be called if you are reconfiguring the player.
-     * Calling this on initial configuration will caused undefined behavior.
      */
     void completeConfiguration();
 
+    /**
+     * @param type client option
+     * @return the client option value of the player
+     */
     <T> T getClientOption(com.destroystokyo.paper.ClientOption<T> type);
 
 }

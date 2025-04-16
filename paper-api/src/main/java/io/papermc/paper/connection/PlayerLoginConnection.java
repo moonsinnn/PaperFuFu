@@ -21,12 +21,20 @@ public interface PlayerLoginConnection extends CookieConnection  {
     PlayerProfile getAuthenticatedProfile();
 
     /**
+     * Gets the player profile that this connection is requesting to authenticate as.
+     * @return the unsafe unauthenticated profile, or null if not currently sent
+     */
+    @Nullable
+    PlayerProfile getUnsafeProfile();
+
+    /**
      * Gets the player IP address.
      *
      * @return The IP address
      */
     @NotNull
     InetAddress getAddress();
+
     /**
      * Gets the raw address of the player logging in
      * @return The address

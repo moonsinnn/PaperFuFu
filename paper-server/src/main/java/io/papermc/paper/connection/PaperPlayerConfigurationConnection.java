@@ -10,56 +10,54 @@ import net.kyori.adventure.text.Component;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.network.protocol.configuration.ClientboundResetChatPacket;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import org.jetbrains.annotations.NotNull;
 
-public class PaperPlayerConfigurationConnection extends CommonCookieConnection implements PlayerConfigurationConnection {
-
-    private final ServerConfigurationPacketListenerImpl serverConfigurationPacketListenerImpl;
+public class PaperPlayerConfigurationConnection extends PaperCommonConnection<ServerConfigurationPacketListenerImpl> implements PlayerConfigurationConnection {
 
     public PaperPlayerConfigurationConnection(final ServerConfigurationPacketListenerImpl serverConfigurationPacketListenerImpl) {
-        super(serverConfigurationPacketListenerImpl.connection);
-        this.serverConfigurationPacketListenerImpl = serverConfigurationPacketListenerImpl;
+        super(serverConfigurationPacketListenerImpl);
     }
 
     @Override
     public PlayerProfile getProfile() {
-        return CraftPlayerProfile.asBukkitCopy(this.serverConfigurationPacketListenerImpl.gameProfile);
+        return CraftPlayerProfile.asBukkitCopy(this.handle.gameProfile);
     }
 
     @Override
     public @NotNull InetAddress getAddress() {
-        return ((InetSocketAddress) this.serverConfigurationPacketListenerImpl.connection.getRemoteAddress()).getAddress();
+        return ((InetSocketAddress) this.handle.connection.getRemoteAddress()).getAddress();
     }
 
     @Override
     public @NotNull InetAddress getRawAddress() {
-        return ((InetSocketAddress) this.serverConfigurationPacketListenerImpl.connection.channel.remoteAddress()).getAddress();
+        return ((InetSocketAddress) this.handle.connection.channel.remoteAddress()).getAddress();
     }
 
     @Override
     public @NotNull String getHostname() {
-        return this.serverConfigurationPacketListenerImpl.connection.hostname;
-    }
-
-    @Override
-    public boolean isTransferred() {
-        return this.serverConfigurationPacketListenerImpl.isTransferred();
+        return this.handle.connection.hostname;
     }
 
     @Override
     public void clearChat() {
-        this.serverConfigurationPacketListenerImpl.send(ClientboundResetChatPacket.INSTANCE);
+        this.handle.send(ClientboundResetChatPacket.INSTANCE);
     }
 
     @Override
     public void completeConfiguration() {
-        this.serverConfigurationPacketListenerImpl.returnToWorld();
+        ConfigurationTask task = this.handle.currentTask;
+        if (task != null) {
+            throw new IllegalStateException("This current connection is already attempting to complete configuration. (FOUND: " + task.type().id() + ")");
+        }
+
+        this.handle.returnToWorld();
     }
 
     @Override
     public <T> T getClientOption(final ClientOption<T> type) {
-        ServerConfigurationPacketListenerImpl connection = this.serverConfigurationPacketListenerImpl;
+        ServerConfigurationPacketListenerImpl connection = this.handle;
 
         ClientInformation information = connection.clientInformation;
         if (com.destroystokyo.paper.ClientOption.SKIN_PARTS == type) {
@@ -82,20 +80,5 @@ public class PaperPlayerConfigurationConnection extends CommonCookieConnection i
             return type.getType().cast(com.destroystokyo.paper.ClientOption.ParticleVisibility.valueOf(information.particleStatus().name()));
         }
         throw new RuntimeException("Unknown settings type");
-    }
-
-    @Override
-    public void transfer(final String host, final int port) {
-        this.serverConfigurationPacketListenerImpl.send(new ClientboundTransferPacket(host, port));
-    }
-
-    @Override
-    public void disconnect(final Component component) {
-        this.serverConfigurationPacketListenerImpl.disconnect(PaperAdventure.asVanilla(component), DisconnectionReason.UNKNOWN);
-    }
-
-    @Override
-    public String getBrand() {
-        return this.serverConfigurationPacketListenerImpl.playerBrand;
     }
 }

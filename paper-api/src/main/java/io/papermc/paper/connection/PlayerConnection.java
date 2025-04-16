@@ -2,7 +2,9 @@ package io.papermc.paper.connection;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface PlayerConnection {
 
     /**

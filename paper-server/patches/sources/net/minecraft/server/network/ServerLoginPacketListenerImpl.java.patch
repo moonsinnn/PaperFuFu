@@ -25,7 +25,12 @@
      private static final int MAX_TICKS_BEFORE_LOGIN = 600;
      private final byte[] challenge;
      final MinecraftServer server;
-@@ -58,19 +_,40 @@
+@@ -54,23 +_,45 @@
+     public volatile ServerLoginPacketListenerImpl.State state = ServerLoginPacketListenerImpl.State.HELLO;
+     private int tick;
+     @Nullable
+-    String requestedUsername;
++    public String requestedUsername; // Paper
      @Nullable
      public GameProfile authenticatedProfile;
      private final String serverId = "";
@@ -33,6 +38,7 @@
 +    public final boolean transferred; // Paper
 +    public boolean iKnowThisMayNotBeTheBestIdeaButPleaseDisableUsernameValidation = false; // Paper - username validation overriding
 +    private int velocityLoginMessageId = -1; // Paper - Add Velocity IP Forwarding Support
++    public @Nullable java.util.UUID requestedUuid; // Paper
 +    private final io.papermc.paper.connection.PaperPlayerLoginConnection paperLoginConnection; // Paper
  
      public ServerLoginPacketListenerImpl(MinecraftServer server, Connection connection, boolean transferred) {
@@ -92,7 +98,7 @@
      @Override
      public boolean isAcceptingMessages() {
          return this.connection.isConnected();
-@@ -115,7 +_,13 @@
+@@ -115,7 +_,14 @@
      @Override
      public void handleHello(ServerboundHelloPacket packet) {
          Validate.validState(this.state == ServerLoginPacketListenerImpl.State.HELLO, "Unexpected hello packet");
@@ -103,6 +109,7 @@
 +            && !this.iKnowThisMayNotBeTheBestIdeaButPleaseDisableUsernameValidation) {
 +            Validate.validState(StringUtil.isReasonablePlayerName(packet.name()), "Invalid characters in username");
 +        }
++        this.requestedUuid = packet.profileId();
 +        // Paper end - Validate usernames
          this.requestedUsername = packet.name();
          GameProfile singleplayerProfile = this.server.getSingleplayerProfile();

@@ -28,6 +28,12 @@ public class PaperPlayerLoginConnection extends CommonCookieConnection implement
     }
 
     @Override
+    public @Nullable PlayerProfile getUnsafeProfile() {
+        // TODO: may violate the player profile contract -- split out
+        return new CraftPlayerProfile(this.serverLoginPacketListener.requestedUuid,  this.serverLoginPacketListener.requestedUsername);
+    }
+
+    @Override
     public @NotNull InetAddress getAddress() {
         return ((java.net.InetSocketAddress) this.serverLoginPacketListener.connection.getRemoteAddress()).getAddress();
     }

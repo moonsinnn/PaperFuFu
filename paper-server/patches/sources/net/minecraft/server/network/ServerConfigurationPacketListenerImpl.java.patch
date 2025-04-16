@@ -8,8 +8,9 @@
 +    public final GameProfile gameProfile; // Paper
      private final Queue<ConfigurationTask> configurationTasks = new ConcurrentLinkedQueue<>();
      @Nullable
-     private ConfigurationTask currentTask;
+-    private ConfigurationTask currentTask;
 -    private ClientInformation clientInformation;
++    public ConfigurationTask currentTask; // Paper
 +    public ClientInformation clientInformation; // Paper
      @Nullable
      private SynchronizeRegistriesTask synchronizeRegistriesTask;

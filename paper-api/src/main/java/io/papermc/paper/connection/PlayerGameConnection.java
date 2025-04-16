@@ -6,7 +6,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface PlayerGameConnection extends PlayerCommonConnection {
 
-
     /**
      * Bumps the player to the configuration stage.
      * <p>

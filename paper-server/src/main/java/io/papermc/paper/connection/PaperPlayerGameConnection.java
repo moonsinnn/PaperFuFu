@@ -13,42 +13,20 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class PaperPlayerGameConnection extends CommonCookieConnection implements PlayerGameConnection {
-
-    private final ServerGamePacketListenerImpl serverConfigurationPacketListenerImpl;
+public class PaperPlayerGameConnection extends PaperCommonConnection<ServerGamePacketListenerImpl> implements PlayerGameConnection {
 
     public PaperPlayerGameConnection(final ServerGamePacketListenerImpl serverConfigurationPacketListenerImpl) {
-        super(serverConfigurationPacketListenerImpl.connection);
-        this.serverConfigurationPacketListenerImpl = serverConfigurationPacketListenerImpl;
+        super(serverConfigurationPacketListenerImpl);
     }
 
     @Override
     public void enterConfiguration() {
-        this.serverConfigurationPacketListenerImpl.switchToConfig();
+        this.handle.switchToConfig();
     }
 
     @Override
     public Player getPlayer() {
-        return this.serverConfigurationPacketListenerImpl.getCraftPlayer();
+        return this.handle.getCraftPlayer();
     }
 
-    @Override
-    public void transfer(final String host, final int port) {
-        this.serverConfigurationPacketListenerImpl.send(new ClientboundTransferPacket(host, port));
-    }
-
-    @Override
-    public String getBrand() {
-        return this.serverConfigurationPacketListenerImpl.playerBrand;
-    }
-
-    @Override
-    public void disconnect(final Component component) {
-        this.serverConfigurationPacketListenerImpl.disconnect(component);
-    }
-
-    @Override
-    public boolean isTransferred() {
-        return this.serverConfigurationPacketListenerImpl.isTransferred();
-    }
 }

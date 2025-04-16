@@ -7,8 +7,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Indicates that a player connection has entered the configuration stage from the
- * game protocol stage.
+ * Indicates that this player is being reconfigured, meaning that this connection will be held in the configuration
+ * stage unless kicked out through {@link PlayerConfigurationConnection#completeConfiguration()}
  */
 public class PlayerConnectionReconfigurateEvent extends PlayerConfigurationConnectionEvent {
     private static final HandlerList handlers = new HandlerList();

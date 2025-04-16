@@ -113,7 +113,7 @@ public class Main implements Callable<Integer> {
                 return 0;
             }
             if (this.isRewrite) {
-                rewrite(this.sourceSet, this.classpath, this.side.equals("api") ? Rewriters.API : Rewriters.SERVER);
+                rewrite(this.sourceSet, this.classpath, Rewriters.VALUES.get(this.side));
             } else {
                 generate(this.sourceSet, this.side.equals("api") ? Generators.API : Generators.SERVER);
             }
@@ -128,19 +128,18 @@ public class Main implements Callable<Integer> {
     private static void rewrite(Path sourceSet, Set<Path> classpath, Consumer<PatternSourceSetRewriter> rewriters) throws IOException {
         PatternSourceSetRewriter sourceSetRewriter = new PaperPatternSourceSetRewriter(classpath);
         rewriters.accept(sourceSetRewriter);
-        sourceSetRewriter.apply(sourceSet.resolve("src/main/java"));
+        sourceSetRewriter.apply(sourceSet);
     }
 
     private static void generate(Path sourceSet, Collection<SourceGenerator> generators) throws IOException {
-        Path output = sourceSet.resolve("src/generated/java");
-        if (Files.exists(output)) {
-            PathUtils.deleteDirectory(output);
+        if (Files.exists(sourceSet)) {
+            PathUtils.deleteDirectory(sourceSet);
         }
 
         for (SourceGenerator generator : generators) {
-            generator.writeToFile(output);
+            generator.writeToFile(sourceSet);
         }
-        LOGGER.info("Files written to {}", output.toAbsolutePath());
+        LOGGER.info("Files written to {}", sourceSet.toAbsolutePath());
     }
 
     public static void main(String[] args) {

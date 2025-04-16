@@ -30,36 +30,43 @@ val gameVersion = providers.gradleProperty("mcVersion")
 
 val rewriteApi = tasks.registerGenerationTask("rewriteApi", true, "api", {
     bootstrapTags = true
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-api")
+    sourceSet = rootProject.layout.projectDirectory.dir("paper-api/src/main/java")
 }) {
     description = "Rewrite existing API classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
 }
 
 val rewriteImpl = tasks.registerGenerationTask("rewriteImpl", true, "impl", {
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-server")
+    sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/main/java")
 }) {
     description = "Rewrite existing implementation classes"
+    classpath(sourceSets.main.map { it.runtimeClasspath })
+}
+
+val rewriteImplTest = tasks.registerGenerationTask("rewriteImplTest", true, "impl-test", {
+    sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/test/java")
+}) {
+    description = "Rewrite existing implementation test classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
 }
 
 tasks.register("rewrite") {
     group = "generation"
     description = "Rewrite existing API classes and its implementation"
-    dependsOn(rewriteApi, rewriteImpl)
+    dependsOn(rewriteApi, rewriteImpl, rewriteImplTest)
 }
 
 
 val generateApi = tasks.registerGenerationTask("generateApi", false, "api", {
     bootstrapTags = true
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-api")
+    sourceSet = rootProject.layout.projectDirectory.dir("paper-api/src/generated/java")
 }) {
     description = "Generate new API classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
 }
 
 val generateImpl = tasks.registerGenerationTask("generateImpl", false, "impl", {
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-server")
+    sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/generated/java")
 }) {
     description = "Generate new implementation classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
@@ -81,7 +88,7 @@ if (providers.gradleProperty("updatingMinecraft").getOrElse("false").toBoolean()
 
         val projectDirs = listOf("paper-api", "paper-server").map { rootProject.layout.projectDirectory.dir(it) }
         args(projectDirs.map { it.asFile.absolutePath })
-        val workDirs = projectDirs.map { it.dir("src/main/java") }
+        val workDirs = projectDirs.map { it.dir("src/main/java") } // todo test dir
 
         workDirs.forEach { inputs.dir(it) }
         inputs.property("gameVersion", gameVersion)
@@ -114,9 +121,7 @@ fun TaskContainer.registerGenerationTask(
         args(provider)
     }
     argumentProviders.add(provider)
-
-    val targetDir = if (rewrite) "src/main/java" else "src/generated/java"
-    outputs.dir(provider.sourceSet.dir(targetDir))
+    outputs.dir(provider.sourceSet.map { it.asFile })
 
     block(this)
 }

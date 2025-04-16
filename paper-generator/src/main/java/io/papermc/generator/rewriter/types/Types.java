@@ -111,6 +111,10 @@ public final class Types {
 
     public static final ClassNamed FIELD_RENAME = ClassNamed.of(IMPL_PACKAGE + ".legacy", "FieldRename");
 
+    public static final ClassNamed REGISTRIES_ARGUMENT_PROVIDER = ClassNamed.of("org.bukkit.support.provider" , "RegistriesArgumentProvider");
+
+    public static final ClassNamed REGISTRY_CONVERSION_TEST = ClassNamed.of("org.bukkit.registry" , "RegistryConversionTest");
+
     public static final ClassNamed PAPER_REGISTRIES = ClassNamed.of(PAPER_PACKAGE + ".registry", "PaperRegistries");
 
     public static final ClassNamed PAPER_FEATURE_FLAG_PROVIDER_IMPL = ClassNamed.of(PAPER_PACKAGE + ".world.flag", "PaperFeatureFlagProviderImpl");

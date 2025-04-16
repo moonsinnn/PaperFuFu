@@ -8,23 +8,23 @@ import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.EnumRegistryRewriter;
 import io.papermc.generator.rewriter.types.registry.FeatureFlagRewriter;
 import io.papermc.generator.rewriter.types.registry.PaperFeatureFlagMapping;
+import io.papermc.generator.rewriter.types.registry.RegistryConversionTestRewriter;
 import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
 import io.papermc.generator.rewriter.types.registry.RegistryTagRewriter;
 import io.papermc.generator.rewriter.types.registry.TagRewriter;
-import io.papermc.generator.rewriter.types.simple.BlockTypeRewriter;
-import io.papermc.generator.rewriter.types.simple.CraftBlockDataMapping;
 import io.papermc.generator.rewriter.types.simple.CraftBlockEntityStateMapping;
 import io.papermc.generator.rewriter.types.simple.CraftPotionUtilRewriter;
 import io.papermc.generator.rewriter.types.simple.EntityTypeRewriter;
 import io.papermc.generator.rewriter.types.simple.MapPaletteRewriter;
-import io.papermc.generator.rewriter.types.simple.MaterialRewriter;
 import io.papermc.generator.rewriter.types.simple.MemoryKeyRewriter;
 import io.papermc.generator.rewriter.types.simple.StatisticRewriter;
 import io.papermc.generator.rewriter.types.simple.trial.VillagerProfessionRewriter;
 import io.papermc.generator.types.goal.MobGoalNames;
+import io.papermc.generator.rewriter.types.registry.RegistriesArgumentProviderRewriter;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.typewriter.preset.EnumCloneRewriter;
 import io.papermc.typewriter.preset.model.EnumValue;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
 import io.papermc.typewriter.replace.SearchMetadata;
@@ -55,13 +55,18 @@ import static io.papermc.generator.utils.Formatting.quoted;
 @NullMarked
 public final class Rewriters {
 
-    public static void bootstrap(PatternSourceSetRewriter apiSourceSet, PatternSourceSetRewriter serverSourceSet) {
-        bootstrapApi(apiSourceSet);
-        bootstrapServer(serverSourceSet);
+    public static void bootstrap(PatternSourceSetRewriter... sourceSets) {
+        Iterator<Consumer<PatternSourceSetRewriter>> values = VALUES.values().iterator();
+        for (PatternSourceSetRewriter sourceSetRewriter : sourceSets) {
+            values.next().accept(sourceSetRewriter);
+        }
     }
 
-    public static final Consumer<PatternSourceSetRewriter> API = Rewriters::bootstrapApi;
-    public static final Consumer<PatternSourceSetRewriter> SERVER = Rewriters::bootstrapServer;
+    public static final Map<String, Consumer<PatternSourceSetRewriter>> VALUES = Map.of(
+        "api", Rewriters::bootstrapApi,
+        "impl", Rewriters::bootstrapImpl,
+        "impl-test", Rewriters::bootstrapImplTest
+    );
 
     private static void bootstrapApi(PatternSourceSetRewriter sourceSet) {
         sourceSet
@@ -158,7 +163,7 @@ public final class Rewriters {
         RegistryBootstrapper.bootstrapApi(sourceSet);
     }
 
-    private static void bootstrapServer(PatternSourceSetRewriter sourceSet) {
+    private static void bootstrapImpl(PatternSourceSetRewriter sourceSet) {
         sourceSet
             //.register("CraftBlockData#MAP", Types.CRAFT_BLOCK_DATA, new CraftBlockDataMapping())
             .register("CraftBlockEntityStates", Types.CRAFT_BLOCK_STATES, new CraftBlockEntityStateMapping())
@@ -183,5 +188,11 @@ public final class Rewriters {
                 }
             });
         RegistryBootstrapper.bootstrapServer(sourceSet);
+    }
+
+    private static void bootstrapImplTest(PatternSourceSetRewriter sourceSet) {
+        sourceSet
+            .register("RegistriesArgumentProvider#DATA", Types.REGISTRIES_ARGUMENT_PROVIDER, new RegistriesArgumentProviderRewriter())
+            .register("RegistryConversionTest#IGNORE_FOR_DIRECT_HOLDER", Types.REGISTRY_CONVERSION_TEST, new RegistryConversionTestRewriter());
     }
 }

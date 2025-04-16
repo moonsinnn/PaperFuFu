@@ -1,6 +1,7 @@
 package org.bukkit.registry;
 
 import com.google.common.base.Joiner;
+import io.papermc.paper.registry.PaperRegistries;
 import io.papermc.paper.registry.RegistryKey;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,6 +10,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import io.papermc.paper.registry.entry.RegistryEntry;
+import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import net.minecraft.resources.ResourceKey;
 import org.bukkit.Keyed;
 import org.bukkit.Registry;
@@ -263,7 +267,17 @@ public class RegistryConversionTest {
                 Joiner.on('\n').withKeyValueSeparator(" got: ").join(notMatching)));
     }
 
-    static final Set<RegistryKey<?>> IGNORE_FOR_DIRECT_HOLDER = Set.of(RegistryKey.TRIM_MATERIAL, RegistryKey.TRIM_PATTERN, RegistryKey.INSTRUMENT, RegistryKey.PAINTING_VARIANT, RegistryKey.BANNER_PATTERN, RegistryKey.SOUND_EVENT); // Paper
+    static final Set<RegistryKey<?>> IGNORE_FOR_DIRECT_HOLDER = Set.of(
+        // Start generate - RegistryConversionTest#IGNORE_FOR_DIRECT_HOLDER
+        // @GeneratedFrom 1.21.5
+        RegistryKey.SOUND_EVENT,
+        RegistryKey.TRIM_MATERIAL,
+        RegistryKey.TRIM_PATTERN,
+        RegistryKey.BANNER_PATTERN,
+        RegistryKey.PAINTING_VARIANT,
+        RegistryKey.INSTRUMENT
+        // End generate - RegistryConversionTest#IGNORE_FOR_DIRECT_HOLDER
+    );
 
     /**
      * Minecraft registry can return a default key / value

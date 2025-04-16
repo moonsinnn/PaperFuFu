@@ -93,6 +93,10 @@ public final class RegistryEntry<T> implements RegistryIdentifiable<T> {
         return Main.REGISTRY_ACCESS.lookupOrThrow(this.registryKey);
     }
 
+    public Class<T> elementClass() {
+        return this.elementClass;
+    }
+
     public String registryKeyField() {
         return this.registryKeyField.name();
     }

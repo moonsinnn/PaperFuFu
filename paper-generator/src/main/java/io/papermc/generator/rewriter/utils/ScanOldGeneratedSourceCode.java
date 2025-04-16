@@ -35,12 +35,14 @@ public class ScanOldGeneratedSourceCode {
 
     public static void main(String[] args) throws IOException {
         PaperPatternSourceSetRewriter apiSourceSet = new PaperPatternSourceSetRewriter();
-        PaperPatternSourceSetRewriter serverSourceSet = new PaperPatternSourceSetRewriter();
+        PaperPatternSourceSetRewriter implSourceSet = new PaperPatternSourceSetRewriter();
+        PaperPatternSourceSetRewriter implTestSourceSet = new PaperPatternSourceSetRewriter();
 
-        Rewriters.bootstrap(apiSourceSet, serverSourceSet);
+        Rewriters.bootstrap(apiSourceSet, implSourceSet, implTestSourceSet);
 
         checkOutdated(apiSourceSet, Path.of(args[0], "src/main/java"));
-        checkOutdated(serverSourceSet, Path.of(args[1], "src/main/java"));
+        checkOutdated(implSourceSet, Path.of(args[1], "src/main/java"));
+        checkOutdated(implTestSourceSet, Path.of(args[1], "src/test/java"));
     }
 
     private static void checkOutdated(PaperPatternSourceSetRewriter sourceSetRewriter, Path sourceSet) throws IOException {

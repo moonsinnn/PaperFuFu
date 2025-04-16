@@ -1,7 +1,6 @@
 package io.papermc.generator.types.goal;
 
 import com.google.common.base.CaseFormat;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import com.squareup.javapoet.ClassName;
@@ -28,18 +27,16 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class MobGoalNames { // todo sync with MobGoalHelper ideally this should not be duplicated
 
-    private static final Gson GSON = new Gson();
-
     private static final Map<Class<? extends Goal>, ClassName> entityClassCache = new HashMap<>();
     public static final Map<Class<? extends Mob>, ClassName> ENTITY_NAMES;
 
     static {
         Map<Class<? extends Mob>, ClassName> entityNames = new LinkedHashMap<>();
         try (Reader input = new BufferedReader(new InputStreamReader(MobGoalNames.class.getClassLoader().getResourceAsStream("data/entity_class_names.json")))) {
-            JsonObject names = GSON.fromJson(input, JsonObject.class);
+            JsonObject names = SourceCodecs.GSON.fromJson(input, JsonObject.class);
             for (String internalName : names.keySet()) {
                 Class<? extends Mob> mobClass = ClassHelper.classOr(internalName, Mob.class);
-                entityNames.put(mobClass, SourceCodecs.CLASS_NAMED_JAVAPOET.parse(JsonOps.INSTANCE, names.get(internalName)).getOrThrow());
+                entityNames.put(mobClass, SourceCodecs.CLASS_NAME.parse(JsonOps.INSTANCE, names.get(internalName)).getOrThrow());
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);

@@ -3,6 +3,7 @@ package io.papermc.generator.rewriter.types;
 import com.squareup.javapoet.ClassName;
 import io.papermc.typewriter.ClassNamed;
 import org.jspecify.annotations.NullMarked;
+import java.util.ArrayList;
 import java.util.List;
 
 @NullMarked
@@ -45,7 +46,7 @@ public final class Types {
     public static final ClassNamed MATERIAL = ClassNamed.of(API_PACKAGE, "Material");
 
     @Deprecated
-    public static final ClassNamed VILLAGER = ClassNamed.of(API_PACKAGE, "Villager");
+    public static final ClassNamed VILLAGER = ClassNamed.of(API_PACKAGE + ".entity", "Villager");
 
     public static final ClassNamed SNIFFER_STATE = ClassNamed.of(API_PACKAGE + ".entity", "Sniffer", "State");
 
@@ -119,7 +120,7 @@ public final class Types {
     public static final ClassNamed MOB_GOAL_HELPER = ClassNamed.of("com.destroystokyo.paper.entity.ai", "MobGoalHelper");
 
     public static ClassNamed typed(ClassName name) {
-        List<String> names = name.simpleNames();
+        List<String> names = new ArrayList<>(name.simpleNames());
         names.removeLast();
         return ClassNamed.of(name.packageName(), name.simpleName(), names.toArray(new String[0]));
     }

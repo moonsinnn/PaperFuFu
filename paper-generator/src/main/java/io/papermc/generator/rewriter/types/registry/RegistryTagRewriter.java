@@ -1,7 +1,5 @@
 package io.papermc.generator.rewriter.types.registry;
 
-import com.google.common.base.Preconditions;
-import com.mojang.logging.LogUtils;
 import io.papermc.generator.Main;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.rewriter.types.Types;
@@ -9,7 +7,6 @@ import io.papermc.generator.rewriter.utils.Annotations;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.experimental.SingleFlagHolder;
 import io.papermc.typewriter.ClassNamed;
-import io.papermc.typewriter.SourceFile;
 import io.papermc.typewriter.replace.SearchMetadata;
 import io.papermc.typewriter.replace.SearchReplaceRewriter;
 import java.util.Iterator;
@@ -18,7 +15,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
-import org.slf4j.Logger;
 
 import static io.papermc.generator.utils.Formatting.quoted;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -28,8 +24,6 @@ import static javax.lang.model.element.Modifier.STATIC;
 @NullMarked
 @ApiStatus.Obsolete
 public class RegistryTagRewriter<T> extends SearchReplaceRewriter implements RegistryIdentifiable<T> {
-
-    private static final Logger LOGGER = LogUtils.getLogger();
 
     private final ResourceKey<? extends Registry<T>> registryKey;
     private final String fetchMethod = "getTag";
@@ -41,20 +35,6 @@ public class RegistryTagRewriter<T> extends SearchReplaceRewriter implements Reg
     @Override
     public ResourceKey<? extends Registry<T>> getRegistryKey() {
         return this.registryKey;
-    }
-
-    @Override
-    public boolean registerFor(SourceFile file) {
-        ClassNamed holderClass = this.options.targetClass().orElse(file.mainClass());
-        Preconditions.checkState(holderClass.knownClass() != null, "This rewriter can't run without knowing the field class at runtime!");
-        try {
-            holderClass.knownClass().getDeclaredMethod(this.fetchMethod, String.class);
-        } catch (NoSuchMethodException e) {
-            LOGGER.error("Fetch method not found, skipping the rewriter for registry tag fields of {}", this.registryKey, e);
-            return false;
-        }
-
-        return super.registerFor(file);
     }
 
     @Override

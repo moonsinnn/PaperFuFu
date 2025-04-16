@@ -9,6 +9,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.Main;
 import io.papermc.generator.registry.RegistryEntry;
+import io.papermc.generator.rewriter.types.registry.RegistryIdentifiable;
 import io.papermc.generator.types.SimpleGenerator;
 import io.papermc.generator.types.Types;
 import io.papermc.generator.utils.Annotations;
@@ -16,6 +17,8 @@ import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.Javadocs;
 import io.papermc.generator.utils.experimental.SingleFlagHolder;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import org.jspecify.annotations.NullMarked;
 
 import static com.squareup.javapoet.TypeSpec.classBuilder;
@@ -27,13 +30,18 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
 @NullMarked
-public class GeneratedTagKeyType extends SimpleGenerator {
+public class GeneratedTagKeyType<T> extends SimpleGenerator implements RegistryIdentifiable<T> {
 
-    private final RegistryEntry<?> entry;
+    private final RegistryEntry<T> entry;
 
-    public GeneratedTagKeyType(RegistryEntry<?> entry, String packageName) {
+    public GeneratedTagKeyType(RegistryEntry<T> entry, String packageName) {
         super(entry.keyClassName().concat("TagKeys"), packageName);
         this.entry = entry;
+    }
+
+    @Override
+    public ResourceKey<? extends Registry<T>> getRegistryKey() {
+        return this.entry.getRegistryKey();
     }
 
     private MethodSpec.Builder createMethod(TypeName returnType) {
@@ -47,7 +55,7 @@ public class GeneratedTagKeyType extends SimpleGenerator {
             .returns(returnType);
         if (publicCreateKeyMethod) {
             create.addAnnotation(EXPERIMENTAL_API_ANNOTATION); // TODO remove once not experimental
-            create.addJavadoc(Javadocs.CREATED_TAG_KEY_JAVADOC, Types.typed(this.entry.data().api().klass()), this.entry.registryKey().location().toString());
+            create.addJavadoc(Javadocs.CREATED_TAG_KEY_JAVADOC, Types.typed(this.entry.data().api().klass()), this.entry.getRegistryKey().location().toString());
         }
         return create;
     }

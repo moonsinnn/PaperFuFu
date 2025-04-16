@@ -26,8 +26,8 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
         RegistryData data = entry.data();
         if (apiOnly) {
             builder.append("apiOnly(");
-            if (data.api().legacyEnum()) {
-                builder.append(this.importCollector.getShortName(Types.PAPER_SIMPLE_REGISTRY)).append("::").append(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, entry.registryKey().location().getPath()));
+            if (data.api().type() == RegistryData.Api.Type.ENUM) {
+                builder.append(this.importCollector.getShortName(Types.PAPER_SIMPLE_REGISTRY)).append("::").append(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, entry.getRegistryKey().location().getPath()));
             } else {
                 builder.append("() -> ");
                 builder.append(Types.REGISTRY.canonicalName()).append('.').append(data.api().registryField().orElse(entry.registryKeyField()));
@@ -56,7 +56,7 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
                 builder.append(')');
             }, () -> builder.append(".build()"));
         }
-        if (canBeDelayed && data.delayed()) {
+        if (canBeDelayed && data.impl().delayed()) {
             builder.append(".delayed()");
         }
         builder.append(',');

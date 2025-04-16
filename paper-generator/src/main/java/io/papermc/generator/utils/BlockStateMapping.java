@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -64,8 +63,6 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class BlockStateMapping {
-
-    private static final Gson GSON = new Gson();
 
     public record BlockData(String implName, @Nullable Class<?> api,
                             Collection<? extends Property<?>> properties, Map<Property<?>, Field> propertyFields,
@@ -213,7 +210,7 @@ public final class BlockStateMapping {
     static {
         List<PropertyData> propertyData = new ArrayList<>();
         try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state_properties.json")))) {
-            JsonArray properties = GSON.fromJson(input, JsonArray.class);
+            JsonArray properties = SourceCodecs.GSON.fromJson(input, JsonArray.class);
             for (JsonElement element : properties.getAsJsonArray()) {
                 propertyData.add(PropertyData.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
             }
@@ -236,7 +233,7 @@ public final class BlockStateMapping {
     static {
         ImmutableMap.Builder<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed> enumPropertyTypes = ImmutableMap.builder();
         try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/enum_property_types.json")))) {
-            JsonObject properties = GSON.fromJson(input, JsonObject.class);
+            JsonObject properties = SourceCodecs.GSON.fromJson(input, JsonObject.class);
             for (String className : properties.keySet()) {
                 Class<? extends Enum<? extends StringRepresentable>> type = ClassHelper.classOr(className, null);
                 if (type == null) {

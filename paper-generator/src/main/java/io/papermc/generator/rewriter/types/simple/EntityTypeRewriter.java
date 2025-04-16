@@ -1,6 +1,5 @@
 package io.papermc.generator.rewriter.types.simple;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
@@ -29,17 +28,15 @@ import static io.papermc.generator.utils.Formatting.quoted;
 
 public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
 
-    private static final Gson GSON = new Gson();
-
     record Data(ClassNamed api, int legacyId) {
 
         public Data(ClassNamed api) {
-            this(api, 0);
+            this(api, -1);
         }
 
         public static final Codec<Data> DIRECT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             SourceCodecs.CLASS_NAMED.fieldOf("api").forGetter(Data::api),
-            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("legacy_id", 0).deprecated(13).forGetter(Data::legacyId)
+            ExtraCodecs.intRange(-1, Integer.MAX_VALUE).optionalFieldOf("legacy_id", -1).deprecated(13).forGetter(Data::legacyId)
         ).apply(instance, Data::new));
 
         private static final Codec<Data> CLASS_ONLY_CODEC = SourceCodecs.CLASS_NAMED.xmap(Data::new, Data::api);
@@ -51,7 +48,7 @@ public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
     static {
         Map<ResourceKey<? extends EntityType<?>>, Data> data = new IdentityHashMap<>();
         try (Reader input = new BufferedReader(new InputStreamReader(EntityTypeRewriter.class.getClassLoader().getResourceAsStream("data/entity_types.json")))) {
-            JsonObject registries = GSON.fromJson(input, JsonObject.class);
+            JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);
             for (String rawKey : registries.keySet()) {
                 ResourceKey<? extends EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(rawKey));
                 data.put(key, Data.CODEC.parse(JsonOps.INSTANCE, registries.get(rawKey)).getOrThrow());

@@ -22,7 +22,7 @@ public final class Types {
 
     public static final ClassName TYPED_KEY = ClassName.get(PAPER_PACKAGE + ".registry", "TypedKey");
 
-    public static final ClassName GOAL_KEY = ClassName.get(PAPER_PACKAGE + ".registry", "GoalKey");
+    public static final ClassName GOAL_KEY = ClassName.get("com.destroystokyo.paper.entity.ai", "GoalKey");
 
     public static final ClassName GOAL = ClassName.get("com.destroystokyo.paper.entity.ai", "Goal");
 

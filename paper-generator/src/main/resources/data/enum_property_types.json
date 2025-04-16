@@ -1,6 +1,6 @@
 {
     "net.minecraft.world.level.block.state.properties.AttachFace": "org.bukkit.block.data.FaceAttachable.AttachedFace",
-    "net.minecraft.core.Direction.Axis": "org.bukkit.Axis",
+    "net.minecraft.core.Direction$Axis": "org.bukkit.Axis",
     "net.minecraft.world.level.block.state.properties.BambooLeaves": "org.bukkit.block.data.type.Bamboo.Leaves",
     "net.minecraft.world.level.block.state.properties.BedPart": "org.bukkit.block.data.type.Bed.Part",
     "net.minecraft.world.level.block.state.properties.BellAttachType": "org.bukkit.block.data.type.Bell.Attachment",

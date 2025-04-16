@@ -1,6 +1,5 @@
 package io.papermc.generator.registry;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import io.papermc.generator.utils.ClassHelper;
@@ -11,12 +10,16 @@ import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import io.papermc.generator.utils.SourceCodecs;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -60,14 +63,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class RegistryEntries {
 
-    private static final Gson GSON = new Gson();
-
-    private static <T> RegistryEntry<T> entry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass) {
-        RegistryKeyField<T> registryKeyField = (RegistryKeyField<T>) REGISTRY_KEY_FIELDS.get(registryKey);
-        return new RegistryEntry<>(registryKey, registryKeyField, holderElementsClass, REGISTRY_DATA.get(registryKey));
+    private static <T> RegistryEntry.Builder<T> entry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass) {
+        return new RegistryEntry.Builder<>(registryKey, holderElementsClass);
     }
 
-    private static final Map<ResourceKey<? extends Registry<?>>, RegistryData> REGISTRY_DATA;
     private static final Map<ResourceKey<? extends Registry<?>>, RegistryKeyField<?>> REGISTRY_KEY_FIELDS;
     static {
         Map<ResourceKey<? extends Registry<?>>, RegistryKeyField<?>> registryKeyFields = new IdentityHashMap<>();
@@ -88,21 +87,9 @@ public final class RegistryEntries {
             throw new RuntimeException(ex);
         }
         REGISTRY_KEY_FIELDS = Collections.unmodifiableMap(registryKeyFields);
-
-        Map<ResourceKey<? extends Registry<?>>, RegistryData> registryData = new IdentityHashMap<>();
-        try (Reader input = new BufferedReader(new InputStreamReader(RegistryEntries.class.getClassLoader().getResourceAsStream("data/registries.json")))) {
-            JsonObject registries = GSON.fromJson(input, JsonObject.class);
-            for (String rawRegistryKey : registries.keySet()) {
-                ResourceKey<? extends Registry<?>> registryKey = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace(rawRegistryKey));
-                registryData.put(registryKey, RegistryData.CODEC.parse(JsonOps.INSTANCE, registries.get(rawRegistryKey)).getOrThrow());
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        REGISTRY_DATA = Collections.unmodifiableMap(registryData);
     }
 
-    public static final List<RegistryEntry<?>> BUILT_IN = List.of(
+    public static final Map<ResourceKey<? extends Registry<?>>, RegistryEntry.Builder<?>> EXPOSED_REGISTRIES = Stream.of(
         entry(Registries.GAME_EVENT, GameEvent.class),
         entry(Registries.STRUCTURE_TYPE, StructureType.class),
         entry(Registries.MOB_EFFECT, MobEffects.class),
@@ -115,10 +102,7 @@ public final class RegistryEntries {
         entry(Registries.ATTRIBUTE, Attributes.class),
         entry(Registries.FLUID, Fluids.class),
         entry(Registries.SOUND_EVENT, SoundEvents.class),
-        entry(Registries.DATA_COMPONENT_TYPE, DataComponents.class)
-    );
-
-    public static final List<RegistryEntry<?>> DATA_DRIVEN = List.of(
+        entry(Registries.DATA_COMPONENT_TYPE, DataComponents.class),
         entry(Registries.BIOME, Biomes.class),
         entry(Registries.STRUCTURE, BuiltinStructures.class),
         entry(Registries.TRIM_MATERIAL, TrimMaterials.class),
@@ -135,28 +119,60 @@ public final class RegistryEntries {
         entry(Registries.FROG_VARIANT, FrogVariants.class),
         entry(Registries.CHICKEN_VARIANT, ChickenVariants.class),
         entry(Registries.COW_VARIANT, CowVariants.class),
-        entry(Registries.PIG_VARIANT, PigVariants.class)
-    );
-
-    public static final List<RegistryEntry<?>> API_ONLY = List.of(
+        entry(Registries.PIG_VARIANT, PigVariants.class),
         entry(Registries.ENTITY_TYPE, EntityType.class),
         entry(Registries.PARTICLE_TYPE, ParticleTypes.class),
         entry(Registries.POTION, Potions.class),
         entry(Registries.MEMORY_MODULE_TYPE, MemoryModuleType.class)
+    ).collect(Collectors.toMap(RegistryEntry.Builder::getRegistryKey, entry -> entry));
+
+    public static final List<RegistryEntry<?>> BUILT_IN = new ArrayList<>();
+    public static final List<RegistryEntry<?>> DATA_DRIVEN = new ArrayList<>();
+    @Deprecated
+    public static final List<RegistryEntry<?>> API_ONLY = new ArrayList<>();
+
+    @Deprecated
+    public static final List<ResourceKey<? extends Registry<?>>> API_ONLY_KEYS = List.of(
+        Registries.ENTITY_TYPE, Registries.PARTICLE_TYPE,  Registries.POTION, Registries.MEMORY_MODULE_TYPE
     );
+
+    static {
+        for (RegistryEntry.Type type : RegistryEntry.Type.values()) {
+            try (Reader input = new BufferedReader(new InputStreamReader(RegistryEntries.class.getClassLoader().getResourceAsStream("data/registry/%s.json".formatted(type.getSerializedName()))))) {
+                JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);
+                for (String rawRegistryKey : registries.keySet()) {
+                    ResourceKey<? extends Registry<?>> registryKey = ResourceKey.createRegistryKey(ResourceLocation.parse(rawRegistryKey));
+                    RegistryData data = type.getDataCodec().parse(JsonOps.INSTANCE, registries.get(rawRegistryKey)).getOrThrow();
+                    RegistryEntry<?> entry = EXPOSED_REGISTRIES.remove(registryKey)
+                        .type(type)
+                        .registryKeyField((RegistryKeyField) REGISTRY_KEY_FIELDS.get(registryKey))
+                        .data(data)
+                        .build();
+                    entry.validate();
+                    if (API_ONLY_KEYS.contains(registryKey)) {
+                        API_ONLY.add(entry);
+                    } else {
+                        type.getEntries().add(entry);
+                    }
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
 
     public static final Map<ResourceKey<? extends Registry<?>>, RegistryEntry<?>> BY_REGISTRY_KEY;
     static {
         Map<ResourceKey<? extends Registry<?>>, RegistryEntry<?>> byRegistryKey = new IdentityHashMap<>(BUILT_IN.size() + DATA_DRIVEN.size() + API_ONLY.size());
         forEach(entry -> {
-            byRegistryKey.put(entry.registryKey(), entry);
+            byRegistryKey.put(entry.getRegistryKey(), entry);
         }, RegistryEntries.BUILT_IN, RegistryEntries.DATA_DRIVEN, RegistryEntries.API_ONLY);
         BY_REGISTRY_KEY = Collections.unmodifiableMap(byRegistryKey);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> RegistryEntry<T> byRegistryKey(ResourceKey<? extends Registry<T>> registryKey) {
-        return (RegistryEntry<T>) Objects.requireNonNull(BY_REGISTRY_KEY.get(registryKey));
+        return (RegistryEntry<T>) Objects.requireNonNull(BY_REGISTRY_KEY.get(registryKey), "registry not found: " + registryKey);
     }
 
     // real registries

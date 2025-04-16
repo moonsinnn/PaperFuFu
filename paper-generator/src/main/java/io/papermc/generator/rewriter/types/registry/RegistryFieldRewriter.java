@@ -1,7 +1,9 @@
 package io.papermc.generator.rewriter.types.registry;
 
 import com.google.common.base.Suppliers;
-import io.papermc.generator.Main;
+import io.papermc.generator.registry.RegistryData;
+import io.papermc.generator.registry.RegistryEntries;
+import io.papermc.generator.registry.RegistryEntry;
 import io.papermc.generator.rewriter.utils.Annotations;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.experimental.ExperimentalCollector;
@@ -12,7 +14,6 @@ import io.papermc.typewriter.replace.SearchMetadata;
 import io.papermc.typewriter.replace.SearchReplaceRewriter;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -57,8 +58,9 @@ public class RegistryFieldRewriter<T> extends SearchReplaceRewriter implements R
 
     @Override
     protected void insert(SearchMetadata metadata, StringBuilder builder) {
-        boolean isInterface = Objects.requireNonNull(this.fieldClass.knownClass()).isInterface();
-        Registry<T> registry = Main.REGISTRY_ACCESS.lookupOrThrow(this.registryKey);
+        RegistryEntry<T> entry = RegistryEntries.byRegistryKey(this.registryKey);
+        boolean isInterface = entry.data().api().type() == RegistryData.Api.Type.INTERFACE;
+        Registry<T> registry = entry.registry();
         this.experimentalKeys = Suppliers.memoize(() -> ExperimentalCollector.collectDataDrivenElementIds(registry));
         Iterator<Holder.Reference<T>> referenceIterator = registry.listElements().filter(this::canPrintField).sorted(Formatting.alphabeticKeyOrder(reference -> reference.key().location().getPath())).iterator();
 

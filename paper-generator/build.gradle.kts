@@ -20,7 +20,7 @@ dependencies {
     implementation("info.picocli:picocli:4.7.6")
     implementation("io.github.classgraph:classgraph:4.8.47")
     implementation("org.jetbrains:annotations:26.0.2")
-    compileOnlyApi("org.jspecify:jspecify:1.0.0")
+    implementation("org.jspecify:jspecify:1.0.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

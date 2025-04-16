@@ -108,6 +108,10 @@ public class Main implements Callable<Integer> {
         bootStrap(this.tagBootstrap).join();
 
         try {
+            // todo remove once block data is done
+            if (!this.isRewrite && !this.side.equals("api")) {
+                return 0;
+            }
             if (this.isRewrite) {
                 rewrite(this.sourceSet, this.classpath, this.side.equals("api") ? Rewriters.API : Rewriters.SERVER);
             } else {

@@ -2,7 +2,7 @@
     "minecraft:game_event": {
         "api": {
             "class": "org.bukkit.GameEvent",
-            "type": "abstract"
+            "type": "class"
         },
         "impl": "org.bukkit.craftbukkit.CraftGameEvent",
         "builder": {
@@ -13,14 +13,14 @@
     "minecraft:worldgen/structure_type": {
         "api": {
             "class": "org.bukkit.generator.structure.StructureType",
-            "type": "abstract"
+            "type": "class"
         },
         "impl": "org.bukkit.craftbukkit.generator.structure.CraftStructureType"
     },
     "minecraft:mob_effect": {
         "api": {
             "class": "org.bukkit.potion.PotionEffectType",
-            "type": "abstract"
+            "type": "class"
         },
         "impl": "org.bukkit.craftbukkit.potion.CraftPotionEffectType"
     },

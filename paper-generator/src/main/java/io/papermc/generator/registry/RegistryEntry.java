@@ -75,7 +75,7 @@ public final class RegistryEntry<T> implements RegistryIdentifiable<T> {
 
     private @Nullable Map<ResourceKey<T>, String> fieldNames;
 
-    public RegistryEntry(ResourceKey<? extends Registry<T>> registryKey, RegistryKeyField<T> registryKeyField, Class<?> holderElementsClass, Type type, RegistryData data) {
+    private RegistryEntry(ResourceKey<? extends Registry<T>> registryKey, RegistryKeyField<T> registryKeyField, Class<?> holderElementsClass, Type type, RegistryData data) {
         this.registryKey = registryKey;
         this.registryKeyField = registryKeyField;
         this.elementClass = registryKeyField.elementClass();

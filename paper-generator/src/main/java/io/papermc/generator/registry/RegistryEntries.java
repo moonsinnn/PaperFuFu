@@ -1,5 +1,6 @@
 package io.papermc.generator.registry;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import io.papermc.generator.utils.ClassHelper;
@@ -89,7 +90,7 @@ public final class RegistryEntries {
         REGISTRY_KEY_FIELDS = Collections.unmodifiableMap(registryKeyFields);
     }
 
-    public static final Map<ResourceKey<? extends Registry<?>>, RegistryEntry.Builder<?>> EXPOSED_REGISTRIES = Stream.of(
+    private static final Map<ResourceKey<? extends Registry<?>>, RegistryEntry.Builder<?>> EXPOSED_REGISTRIES = Stream.of(
         entry(Registries.GAME_EVENT, GameEvent.class),
         entry(Registries.STRUCTURE_TYPE, StructureType.class),
         entry(Registries.MOB_EFFECT, MobEffects.class),
@@ -137,27 +138,35 @@ public final class RegistryEntries {
     );
 
     static {
+        List<ResourceKey<? extends Registry<?>>> remainingRegistries = new ArrayList<>(EXPOSED_REGISTRIES.keySet());
         for (RegistryEntry.Type type : RegistryEntry.Type.values()) {
             try (Reader input = new BufferedReader(new InputStreamReader(RegistryEntries.class.getClassLoader().getResourceAsStream("data/registry/%s.json".formatted(type.getSerializedName()))))) {
                 JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);
                 for (String rawRegistryKey : registries.keySet()) {
                     ResourceKey<? extends Registry<?>> registryKey = ResourceKey.createRegistryKey(ResourceLocation.parse(rawRegistryKey));
                     RegistryData data = type.getDataCodec().parse(JsonOps.INSTANCE, registries.get(rawRegistryKey)).getOrThrow();
-                    RegistryEntry<?> entry = EXPOSED_REGISTRIES.remove(registryKey)
+                    RegistryEntry<?> entry = EXPOSED_REGISTRIES.get(registryKey)
                         .type(type)
                         .registryKeyField((RegistryKeyField) REGISTRY_KEY_FIELDS.get(registryKey))
                         .data(data)
                         .build();
                     entry.validate();
-                    if (API_ONLY_KEYS.contains(registryKey)) {
-                        API_ONLY.add(entry);
+                    if (remainingRegistries.remove(registryKey)) {
+                        if (API_ONLY_KEYS.contains(registryKey)) {
+                            API_ONLY.add(entry);
+                        } else {
+                            type.getEntries().add(entry);
+                        }
                     } else {
-                        type.getEntries().add(entry);
+                        throw new IllegalStateException("Duplicate registry found in data files: " + registryKey);
                     }
                 }
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+        if (!remainingRegistries.isEmpty()) {
+            throw new IllegalStateException("Registry not found in data files: " + remainingRegistries);
         }
     }
 

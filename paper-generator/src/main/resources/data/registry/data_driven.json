@@ -9,7 +9,7 @@
     "minecraft:worldgen/structure": {
         "api": {
             "class": "org.bukkit.generator.structure.Structure",
-            "type": "abstract"
+            "type": "class"
         },
         "impl": {
             "class": "org.bukkit.craftbukkit.generator.structure.CraftStructure",
@@ -57,7 +57,7 @@
     "minecraft:enchantment": {
         "api": {
             "class": "org.bukkit.enchantments.Enchantment",
-            "type": "abstract"
+            "type": "class"
         },
         "impl": {
             "class": "org.bukkit.craftbukkit.enchantments.CraftEnchantment",
@@ -106,7 +106,7 @@
     "minecraft:instrument": {
         "api": {
             "class": "org.bukkit.MusicInstrument",
-            "type": "abstract"
+            "type": "class"
         },
         "impl": {
             "class": "org.bukkit.craftbukkit.CraftMusicInstrument",

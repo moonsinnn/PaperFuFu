@@ -47,7 +47,6 @@ public record RegistryData(
         public enum Type implements StringRepresentable {
             INTERFACE("interface"),
             CLASS("class"),
-            ABSTRACT("abstract"),
             @Deprecated(since = "1.8")
             ENUM("enum");
 

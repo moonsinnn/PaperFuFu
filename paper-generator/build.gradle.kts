@@ -14,9 +14,7 @@ dependencies {
     implementation(project(":paper-server", "macheMinecraftLibraries"))
 
     implementation("com.squareup:javapoet:1.13.0")
-    implementation("io.papermc.typewriter:typewriter:1.0.1") {
-        isTransitive = false // paper-api already have everything
-    }
+    implementation("io.papermc.typewriter:typewriter:1.0.1")
     implementation("info.picocli:picocli:4.7.6")
     implementation("io.github.classgraph:classgraph:4.8.47")
     implementation("org.jetbrains:annotations:26.0.2")

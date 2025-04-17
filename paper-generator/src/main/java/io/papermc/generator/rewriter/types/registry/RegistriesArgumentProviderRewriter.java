@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class RegistriesArgumentProviderRewriter extends SearchReplaceRewriter {
 
-    private static final Set<ResourceKey<? extends Registry<?>>> NEW_CONVERT_METHODS = Set.of(
+    private static final Set<ResourceKey<? extends Registry<?>>> NEW_BRIDGE_METHODS = Set.of(
         Registries.ITEM,
         Registries.BLOCK
     );
@@ -19,22 +19,17 @@ public class RegistriesArgumentProviderRewriter extends SearchReplaceRewriter {
     @Override
     public void insert(SearchMetadata metadata, StringBuilder builder) {
         RegistryEntries.forEach(entry -> {
-            final String format;
-            if (NEW_CONVERT_METHODS.contains(entry.getRegistryKey())) {
-                format = "%s.%s, %s.class, %s.%s, %s.class, %s.class, true";
-            } else {
-                format = "%s.%s, %s.class, %s.%s, %s.class, %s.class";
-            }
-
             builder.append(metadata.indent());
-            builder.append("register(").append(format.formatted(
+            builder.append("register(").append(
+                "%s.%s, %s.class, %s.%s, %s.class, %s.class, %s".formatted(
                 Types.REGISTRY_KEY.simpleName(),
                 entry.registryKeyField(),
                 this.importCollector.getShortName(entry.data().api().klass()),
                 Registries.class.getSimpleName(),
                 entry.registryKeyField(),
                 this.importCollector.getShortName(entry.data().impl().klass()),
-                this.importCollector.getShortName(entry.elementClass())
+                this.importCollector.getShortName(entry.elementClass()),
+                Boolean.toString(NEW_BRIDGE_METHODS.contains(entry.getRegistryKey()))
             )).append(");");
             builder.append("\n");
         });

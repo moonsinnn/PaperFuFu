@@ -83,7 +83,7 @@ import static io.papermc.paper.registry.entry.RegistryEntryBuilder.start;
 
 public final class PaperRegistries {
 
-    public static final List<RegistryEntry<?, ?>> REGISTRY_ENTRIES;
+    static final List<RegistryEntry<?, ?>> REGISTRY_ENTRIES;
     private static final Map<RegistryKey<?>, RegistryEntry<?, ?>> BY_REGISTRY_KEY;
     private static final Map<ResourceKey<?>, RegistryEntry<?, ?>> BY_RESOURCE_KEY;
     static {

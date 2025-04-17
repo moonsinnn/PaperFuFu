@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import io.papermc.generator.Main;
-import io.papermc.generator.rewriter.types.registry.RegistryIdentifiable;
 import io.papermc.generator.utils.ClassHelper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

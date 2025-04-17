@@ -9,7 +9,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.registry.RegistryEntry;
-import io.papermc.generator.rewriter.types.registry.RegistryIdentifiable;
+import io.papermc.generator.registry.RegistryIdentifiable;
 import io.papermc.generator.types.SimpleGenerator;
 import io.papermc.generator.types.Types;
 import io.papermc.generator.utils.Annotations;

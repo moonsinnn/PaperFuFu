@@ -2,6 +2,7 @@ package io.papermc.generator.rewriter.types.registry;
 
 import io.papermc.generator.Main;
 import io.papermc.generator.registry.RegistryEntries;
+import io.papermc.generator.registry.RegistryIdentifiable;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.utils.Annotations;
 import io.papermc.generator.utils.Formatting;

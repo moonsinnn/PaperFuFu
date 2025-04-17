@@ -2,10 +2,10 @@ package io.papermc.generator.types.goal;
 
 import com.google.common.base.CaseFormat;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.squareup.javapoet.ClassName;
 import io.papermc.generator.types.Types;
-import io.papermc.generator.utils.ClassHelper;
 import io.papermc.generator.utils.SourceCodecs;
 import io.papermc.generator.utils.Formatting;
 import java.io.BufferedReader;
@@ -15,7 +15,6 @@ import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
@@ -29,19 +28,17 @@ public final class MobGoalNames { // todo sync with MobGoalHelper ideally this s
 
     private static final Map<Class<? extends Goal>, ClassName> entityClassCache = new HashMap<>();
     public static final Map<Class<? extends Mob>, ClassName> ENTITY_NAMES;
+    private static final Codec<Map<Class<? extends Mob>, ClassName>> CODEC = Codec.unboundedMap(
+        SourceCodecs.classCodec(Mob.class), SourceCodecs.CLASS_NAME
+    );
 
     static {
-        Map<Class<? extends Mob>, ClassName> entityNames = new LinkedHashMap<>();
         try (Reader input = new BufferedReader(new InputStreamReader(MobGoalNames.class.getClassLoader().getResourceAsStream("data/entity_class_names.json")))) {
             JsonObject names = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            for (String internalName : names.keySet()) {
-                Class<? extends Mob> mobClass = ClassHelper.classOr(internalName, Mob.class);
-                entityNames.put(mobClass, SourceCodecs.CLASS_NAME.parse(JsonOps.INSTANCE, names.get(internalName)).getOrThrow());
-            }
+            ENTITY_NAMES = Collections.unmodifiableMap(CODEC.parse(JsonOps.INSTANCE, names).getOrThrow());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        ENTITY_NAMES = Collections.unmodifiableMap(entityNames);
     }
 
     private static final Map<String, String> deobfuscationMap = new HashMap<>();

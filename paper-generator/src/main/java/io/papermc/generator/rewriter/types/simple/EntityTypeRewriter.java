@@ -14,13 +14,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.EntityType;
 
@@ -45,18 +43,14 @@ public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
     }
 
     private static final Map<ResourceKey<? extends EntityType<?>>, Data> DATA;
+    private static final Codec<Map<ResourceKey<EntityType<?>>, Data>> CODEC = Codec.unboundedMap(ResourceKey.codec(Registries.ENTITY_TYPE), Data.CODEC);
     static {
-        Map<ResourceKey<? extends EntityType<?>>, Data> data = new IdentityHashMap<>();
         try (Reader input = new BufferedReader(new InputStreamReader(EntityTypeRewriter.class.getClassLoader().getResourceAsStream("data/entity_types.json")))) {
             JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            for (String rawKey : registries.keySet()) {
-                ResourceKey<? extends EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(rawKey));
-                data.put(key, Data.CODEC.parse(JsonOps.INSTANCE, registries.get(rawKey)).getOrThrow());
-            }
+            DATA = Collections.unmodifiableMap(CODEC.parse(JsonOps.INSTANCE, registries).getOrThrow());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        DATA = Collections.unmodifiableMap(data);
     }
 
     public EntityTypeRewriter() {

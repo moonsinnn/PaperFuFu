@@ -4,6 +4,7 @@ import com.google.common.base.Suppliers;
 import io.papermc.generator.registry.RegistryData;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.registry.RegistryEntry;
+import io.papermc.generator.registry.RegistryIdentifiable;
 import io.papermc.generator.rewriter.utils.Annotations;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.experimental.ExperimentalCollector;

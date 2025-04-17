@@ -1,7 +1,7 @@
 package io.papermc.generator.rewriter.registration;
 
 import io.papermc.generator.registry.RegistryEntries;
-import io.papermc.generator.rewriter.types.registry.RegistryIdentifiable;
+import io.papermc.generator.registry.RegistryIdentifiable;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.replace.ReplaceOptionsLike;
 import io.papermc.typewriter.replace.SearchReplaceRewriter;

@@ -1,4 +1,4 @@
-package io.papermc.generator.rewriter.types.registry;
+package io.papermc.generator.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -230,22 +231,17 @@ public final class BlockStateMapping {
     }
 
     public static final Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed> ENUM_PROPERTY_TYPES;
+    public static final Codec<Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed>> CODEC = Codec.unboundedMap(
+        SourceCodecs.classCodec(new TypeToken<Enum<? extends StringRepresentable>>() {}), SourceCodecs.CLASS_NAMED
+    );
+
     static {
-        ImmutableMap.Builder<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed> enumPropertyTypes = ImmutableMap.builder();
         try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/enum_property_types.json")))) {
             JsonObject properties = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            for (String className : properties.keySet()) {
-                Class<? extends Enum<? extends StringRepresentable>> type = ClassHelper.classOr(className, null);
-                if (type == null) {
-                    throw new IllegalStateException();
-                }
-
-                enumPropertyTypes.put(type, SourceCodecs.CLASS_NAMED.parse(JsonOps.INSTANCE, properties.get(className)).getOrThrow());
-            }
+            ENUM_PROPERTY_TYPES = Collections.unmodifiableMap(CODEC.parse(JsonOps.INSTANCE, properties).getOrThrow());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        ENUM_PROPERTY_TYPES = enumPropertyTypes.buildOrThrow();
     }
 
     /*

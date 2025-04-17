@@ -212,7 +212,7 @@
     "minecraft:mangrove_chest_boat": "org.bukkit.entity.boat.MangroveChestBoat",
     "minecraft:marker": "org.bukkit.entity.Marker",
     "minecraft:minecart": {
-        "api": "org.bukkit.entity.Minecart",
+        "api": "org.bukkit.entity.RideableMinecart",
         "legacy_id": 42
     },
     "minecraft:mooshroom": {

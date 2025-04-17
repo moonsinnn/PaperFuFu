@@ -15,6 +15,7 @@ import io.papermc.generator.rewriter.types.registry.TagRewriter;
 import io.papermc.generator.rewriter.types.simple.CraftBlockEntityStateMapping;
 import io.papermc.generator.rewriter.types.simple.CraftPotionUtilRewriter;
 import io.papermc.generator.rewriter.types.simple.EntityTypeRewriter;
+import io.papermc.generator.rewriter.types.simple.ItemTypeRewriter;
 import io.papermc.generator.rewriter.types.simple.MapPaletteRewriter;
 import io.papermc.generator.rewriter.types.simple.MemoryKeyRewriter;
 import io.papermc.generator.rewriter.types.simple.StatisticRewriter;
@@ -22,6 +23,7 @@ import io.papermc.generator.rewriter.types.simple.trial.VillagerProfessionRewrit
 import io.papermc.generator.types.goal.MobGoalNames;
 import io.papermc.generator.rewriter.types.registry.RegistriesArgumentProviderRewriter;
 import io.papermc.generator.utils.Formatting;
+import io.papermc.generator.utils.ItemMetaMapping;
 import io.papermc.typewriter.preset.EnumCloneRewriter;
 import io.papermc.typewriter.preset.model.EnumValue;
 import java.util.Iterator;
@@ -155,7 +157,7 @@ public final class Rewriters {
             .register("CowVariant", new RegistryFieldRewriter<>(Registries.COW_VARIANT, "getVariant"))
             .register("PigVariant", new RegistryFieldRewriter<>(Registries.PIG_VARIANT, "getVariant"))
             .register("MemoryKey", new MemoryKeyRewriter())
-            // .register("ItemType", new ItemTypeRewriter()) - disable for now, lynx want the generic type
+            .register("ItemType", new ItemTypeRewriter())
             // .register("BlockType", new BlockTypeRewriter())
             .register("FeatureFlag", Types.FEATURE_FLAG, new FeatureFlagRewriter())
             .register("Tag", Types.TAG, new TagRewriter())

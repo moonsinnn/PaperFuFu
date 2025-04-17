@@ -1,6 +1,5 @@
 package io.papermc.generator.utils;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
@@ -24,11 +23,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,16 +30,10 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import io.papermc.typewriter.ClassNamed;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.level.block.AbstractFurnaceBlock;
-import net.minecraft.world.level.block.BigDripleafStemBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CommandBlock;
-import net.minecraft.world.level.block.IronBarsBlock;
-import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.NoteBlock;
-import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.StructureBlock;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.TestInstanceBlock;
@@ -209,12 +197,10 @@ public final class BlockStateMapping {
     private static final Map<Property<?>, ClassNamed> PROPERTY_TO_DATA;
     private static final Map<Property<?>, ClassNamed> MAIN_PROPERTY_TO_DATA;
     static {
-        List<PropertyData> propertyData = new ArrayList<>();
+        List<PropertyData> propertyData;
         try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state_properties.json")))) {
             JsonArray properties = SourceCodecs.GSON.fromJson(input, JsonArray.class);
-            for (JsonElement element : properties.getAsJsonArray()) {
-                propertyData.add(PropertyData.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow());
-            }
+            propertyData = PropertyData.CODEC.listOf().parse(JsonOps.INSTANCE, properties).getOrThrow();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -231,14 +217,14 @@ public final class BlockStateMapping {
     }
 
     public static final Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed> ENUM_PROPERTY_TYPES;
-    public static final Codec<Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed>> CODEC = Codec.unboundedMap(
+    public static final Codec<Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed>> ENUM_PROPERTY_TYPES_CODEC = Codec.unboundedMap(
         SourceCodecs.classCodec(new TypeToken<Enum<? extends StringRepresentable>>() {}), SourceCodecs.CLASS_NAMED
     );
 
     static {
         try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/enum_property_types.json")))) {
             JsonObject properties = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            ENUM_PROPERTY_TYPES = Collections.unmodifiableMap(CODEC.parse(JsonOps.INSTANCE, properties).getOrThrow());
+            ENUM_PROPERTY_TYPES = ENUM_PROPERTY_TYPES_CODEC.parse(JsonOps.INSTANCE, properties).getOrThrow();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

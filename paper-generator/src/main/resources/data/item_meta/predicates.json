@@ -5,20 +5,18 @@
     "org.bukkit.craftbukkit.inventory.CraftMetaBook": [
         "minecraft:writable_book"
     ],
-    "org.bukkit.craftbukkit.inventory.CraftMetaSkull": [
-        "#minecraft:skulls"
+    "org.bukkit.craftbukkit.inventory.CraftMetaColorableArmor": [
+        "minecraft:leather_boots",
+        "minecraft:leather_leggings",
+        "minecraft:leather_chestplate",
+        "minecraft:leather_helmet",
+        "minecraft:wolf_armor"
     ],
     "org.bukkit.craftbukkit.inventory.CraftMetaArmor": [
         "#minecraft:foot_armor",
         "#minecraft:leg_armor",
         "#minecraft:chest_armor",
         "#minecraft:head_armor"
-    ],
-    "org.bukkit.craftbukkit.inventory.CraftMetaColorableArmor": [
-        "minecraft:leather_boots",
-        "minecraft:leather_leggings",
-        "minecraft:leather_chestplate",
-        "minecraft:leather_helmet"
     ],
     "org.bukkit.craftbukkit.inventory.CraftMetaLeatherArmor": [
         "minecraft:leather_horse_armor"
@@ -27,7 +25,7 @@
         "minecraft:potion",
         "minecraft:splash_potion",
         "minecraft:lingering_potion",
-        "minecraft:tipped_aRROW"
+        "minecraft:tipped_arrow"
     ],
     "org.bukkit.craftbukkit.inventory.CraftMetaMap": [
         "minecraft:filled_map"
@@ -41,12 +39,9 @@
     "org.bukkit.craftbukkit.inventory.CraftMetaEnchantedBook": [
         "minecraft:enchanted_book"
     ],
-    "org.bukkit.craftbukkit.inventory.CraftMetaBanner": [
-        "#minecraft:banners"
-    ],
     "org.bukkit.craftbukkit.inventory.CraftMetaSpawnEgg": [
         {
-            "type": "instanceof",
+            "type": "instance_of",
             "value": "net.minecraft.world.item.SpawnEggItem"
         }
     ],
@@ -56,10 +51,16 @@
     "org.bukkit.craftbukkit.inventory.CraftMetaKnowledgeBook": [
         "minecraft:knowledge_book"
     ],
+    "org.bukkit.craftbukkit.inventory.CraftMetaSkull": [
+        "#minecraft:skulls"
+    ],
+    "org.bukkit.craftbukkit.inventory.CraftMetaBanner": [
+        "#minecraft:banners"
+    ],
     "org.bukkit.craftbukkit.inventory.CraftMetaBlockState": [
         {
-            "type": "instanceof",
-            "value": "net.minecraft.world.level.block.BaseEntityBlock",
+            "type": "instance_of",
+            "value": "net.minecraft.world.level.block.EntityBlock",
             "against_block": true
         }
     ],
@@ -91,12 +92,12 @@
         "minecraft:compass"
     ],
     "org.bukkit.craftbukkit.inventory.CraftMetaBundle": [
-        "#minecraft:bundle"
+        "#minecraft:bundles"
     ],
     "org.bukkit.craftbukkit.inventory.CraftMetaMusicInstrument": [
-        "#minecraft:goat_horn"
+        "minecraft:goat_horn"
     ],
     "org.bukkit.craftbukkit.inventory.CraftMetaOminousBottle": [
-        "#minecraft:ominous_bottle"
+        "minecraft:ominous_bottle"
     ]
 }

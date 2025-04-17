@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
@@ -28,14 +27,14 @@ public final class MobGoalNames { // todo sync with MobGoalHelper ideally this s
 
     private static final Map<Class<? extends Goal>, ClassName> entityClassCache = new HashMap<>();
     public static final Map<Class<? extends Mob>, ClassName> ENTITY_NAMES;
-    private static final Codec<Map<Class<? extends Mob>, ClassName>> CODEC = Codec.unboundedMap(
+    private static final Codec<Map<Class<? extends Mob>, ClassName>> ENTITY_NAMES_CODEC = Codec.unboundedMap(
         SourceCodecs.classCodec(Mob.class), SourceCodecs.CLASS_NAME
     );
 
     static {
         try (Reader input = new BufferedReader(new InputStreamReader(MobGoalNames.class.getClassLoader().getResourceAsStream("data/entity_class_names.json")))) {
             JsonObject names = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            ENTITY_NAMES = Collections.unmodifiableMap(CODEC.parse(JsonOps.INSTANCE, names).getOrThrow());
+            ENTITY_NAMES = ENTITY_NAMES_CODEC.parse(JsonOps.INSTANCE, names).getOrThrow();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

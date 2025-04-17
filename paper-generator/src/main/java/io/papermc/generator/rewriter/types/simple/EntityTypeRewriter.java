@@ -13,9 +13,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -42,12 +42,12 @@ public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
         public static final Codec<Data> CODEC = Codec.withAlternative(CLASS_ONLY_CODEC, DIRECT_CODEC);
     }
 
-    private static final Map<ResourceKey<? extends EntityType<?>>, Data> DATA;
-    private static final Codec<Map<ResourceKey<EntityType<?>>, Data>> CODEC = Codec.unboundedMap(ResourceKey.codec(Registries.ENTITY_TYPE), Data.CODEC);
+    private static final Map<ResourceKey<EntityType<?>>, Data> DATA;
+    private static final Codec<Map<ResourceKey<EntityType<?>>, Data>> DATA_CODEC = Codec.unboundedMap(ResourceKey.codec(Registries.ENTITY_TYPE), Data.CODEC);
     static {
         try (Reader input = new BufferedReader(new InputStreamReader(EntityTypeRewriter.class.getClassLoader().getResourceAsStream("data/entity_types.json")))) {
             JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            DATA = Collections.unmodifiableMap(CODEC.parse(JsonOps.INSTANCE, registries).getOrThrow());
+            DATA = DATA_CODEC.parse(JsonOps.INSTANCE, registries).getOrThrow();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -59,7 +59,7 @@ public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
 
     @Override
     protected EnumValue.Builder rewriteEnumValue(Holder.Reference<EntityType<?>> reference) {
-        Data data = DATA.get(reference.key());
+        Data data = Objects.requireNonNull(DATA.get(reference.key()), () -> "Missing entity type data for " + reference);
         String path = reference.key().location().getPath();
         List<String> arguments = new ArrayList<>(4);
         arguments.add(quoted(path));

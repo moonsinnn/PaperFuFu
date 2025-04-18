@@ -25,21 +25,21 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
         }
 
         // todo shortcut and remove order rule for CraftMetaColorableArmor <-> CraftMetaArmor / CraftMetaBanner|CraftMetaSkull <-> CraftMetaBlockState (create custom tag? or just inline?)
-        ClassNamed implName = null;
+        ClassNamed implMetaName = null;
     mainLoop:
         for (Map.Entry<ClassNamed, List<ItemMetaMapping.ItemPredicate>> entry : ItemMetaMapping.PREDICATES.entrySet()) {
             for (ItemMetaMapping.ItemPredicate predicate : entry.getValue()) {
                 if (predicate.test(reference)) {
-                    implName = entry.getKey();
+                    implMetaName = entry.getKey();
                     break mainLoop;
                 }
             }
         }
 
-        ClassNamed apiName = null;
-        if (implName != null) {
-            apiName = ItemMetaMapping.BRIDGE.get(implName).api();
+        ClassNamed metaName = null;
+        if (implMetaName != null) {
+            metaName = ItemMetaMapping.BRIDGE.get(implMetaName).api();
         }
-        return "%s<%s>".formatted(Types.ITEM_TYPE_TYPED.dottedNestedName(), apiName != null ? this.importCollector.getShortName(apiName) : Types.ITEM_META.simpleName());
+        return "%s<%s>".formatted(Types.ITEM_TYPE_TYPED.dottedNestedName(), metaName != null ? this.importCollector.getShortName(metaName) : Types.ITEM_META.simpleName());
     }
 }

@@ -46,7 +46,7 @@ public class ItemMetaMapping {
     public static final Codec<ItemPredicate> DIRECT_PREDICATE_CODEC = ItemPredicate.Type.CODEC.dispatch("type", ItemPredicate::type, type -> type.codec);
     public static final Codec<ItemPredicate> PREDICATE_CODEC = Codec.either(ItemPredicate.IsElementPredicate.COMPACT_CODEC, DIRECT_PREDICATE_CODEC).xmap(Either::unwrap, Either::right);
 
-    public interface ItemPredicate {
+    public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, ItemPredicate.InstanceOfPredicate, ItemPredicate.IsElementPredicate {
 
         Type type();
 

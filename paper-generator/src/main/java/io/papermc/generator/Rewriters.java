@@ -13,6 +13,7 @@ import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
 import io.papermc.generator.rewriter.types.registry.RegistryTagRewriter;
 import io.papermc.generator.rewriter.types.registry.TagRewriter;
 import io.papermc.generator.rewriter.types.simple.CraftBlockEntityStateMapping;
+import io.papermc.generator.rewriter.types.simple.CraftItemMetasRewriter;
 import io.papermc.generator.rewriter.types.simple.CraftPotionUtilRewriter;
 import io.papermc.generator.rewriter.types.simple.EntityTypeRewriter;
 import io.papermc.generator.rewriter.types.simple.ItemTypeRewriter;
@@ -23,7 +24,6 @@ import io.papermc.generator.rewriter.types.simple.trial.VillagerProfessionRewrit
 import io.papermc.generator.types.goal.MobGoalNames;
 import io.papermc.generator.rewriter.types.registry.RegistriesArgumentProviderRewriter;
 import io.papermc.generator.utils.Formatting;
-import io.papermc.generator.utils.ItemMetaMapping;
 import io.papermc.typewriter.preset.EnumCloneRewriter;
 import io.papermc.typewriter.preset.model.EnumValue;
 import java.util.Iterator;
@@ -169,6 +169,7 @@ public final class Rewriters {
         sourceSet
             //.register("CraftBlockData#MAP", Types.CRAFT_BLOCK_DATA, new CraftBlockDataMapping())
             .register("CraftBlockEntityStates", Types.CRAFT_BLOCK_STATES, new CraftBlockEntityStateMapping())
+            .register("CraftItemMetas#getItemMetaData", Types.CRAFT_ITEM_METAS, new CraftItemMetasRewriter())
             .register(Types.CRAFT_STATISTIC, composite(
                 sameHolder("CraftStatisticCustom", new StatisticRewriter.CraftCustom()),
                 sameHolder("CraftStatisticType", new StatisticRewriter.CraftType())

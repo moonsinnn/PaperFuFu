@@ -35,6 +35,7 @@ val rewriteApi = tasks.registerGenerationTask("rewriteApi", true, "api", {
 }
 
 val rewriteImpl = tasks.registerGenerationTask("rewriteImpl", true, "impl", {
+    bootstrapTags = true // needed for CraftItemMetasRewriter, remove once item meta is gone
     sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/main/java")
 }) {
     description = "Rewrite existing implementation classes"

@@ -105,6 +105,8 @@ public final class Types {
 
     public static final ClassNamed CRAFT_BLOCK_STATES = ClassNamed.of(IMPL_PACKAGE + ".block", "CraftBlockStates");
 
+    public static final ClassNamed CRAFT_ITEM_METAS = ClassNamed.of(IMPL_PACKAGE + ".inventory", "CraftItemMetas");
+
     public static final ClassNamed CRAFT_STATISTIC = ClassNamed.of(IMPL_PACKAGE, "CraftStatistic");
 
     public static final ClassNamed CRAFT_POTION_UTIL = ClassNamed.of(IMPL_PACKAGE + ".potion", "CraftPotionUtil");

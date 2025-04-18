@@ -57,7 +57,11 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
                         break;
                     case ItemMetaMapping.ItemPredicate.IsClassPredicate isClassPredicate: {
                         String itemLikeName = isClassPredicate.againstBlock() ? "blockHandle" : "itemHandle";
-                        builder.append("(%1$s != null && %1$s.getClass().equals(%2$s))".formatted(itemLikeName, this.importCollector.getShortName(isClassPredicate.value())));
+                        if (itemLikeName.equals("itemHandle")) { // itemHandle is never null
+                            builder.append("%s.getClass().equals(%s.class)".formatted(itemLikeName, this.importCollector.getShortName(isClassPredicate.value())));
+                        } else {
+                            builder.append("(%1$s != null && %1$s.getClass().equals(%2$s.class))".formatted(itemLikeName, this.importCollector.getShortName(isClassPredicate.value())));
+                        }
                         break;
                     }
                     case ItemMetaMapping.ItemPredicate.InstanceOfPredicate instanceOfPredicate: {

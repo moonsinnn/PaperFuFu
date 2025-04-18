@@ -24,13 +24,13 @@ public final class SourceCodecs {
         return SourceVersion.isName(name.replace('$', '.')) ? DataResult.success(name) : DataResult.error(() -> "Invalid binary name: %s".formatted(name));
     });
 
-    public static  Codec<Class<?>> CLASS = BINARY_NAME.comapFlatMap(name -> {
-            try {
-                return DataResult.success(Class.forName(name));
-            } catch (ClassNotFoundException e) {
-                return DataResult.error(e::getMessage);
-            }
-        }, Class::toString);
+    public static Codec<Class<?>> CLASS = BINARY_NAME.comapFlatMap(name -> {
+        try {
+            return DataResult.success(Class.forName(name));
+        } catch (ClassNotFoundException e) {
+            return DataResult.error(() -> "Class not found: %s".formatted(e.getMessage()));
+        }
+    }, Class::toString);
 
     public static <T> Codec<Class<? extends T>> classCodec(Class<T> baseClass) {
         return CLASS.comapFlatMap(klass -> {

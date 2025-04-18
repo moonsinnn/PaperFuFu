@@ -14,8 +14,6 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ItemLike;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,7 +44,7 @@ public class ItemMetaMapping {
     }
 
     public static final Codec<ItemPredicate> DIRECT_PREDICATE_CODEC = ItemPredicate.Type.CODEC.dispatch("type", ItemPredicate::type, type -> type.codec);
-    public static final Codec<ItemPredicate> PREDICATE_CODEC = Codec.either(ItemPredicate.IsElementPredicate.INLINED_CODEC, DIRECT_PREDICATE_CODEC).xmap(Either::unwrap, Either::right); // todo this is pretty limited
+    public static final Codec<ItemPredicate> PREDICATE_CODEC = Codec.either(ItemPredicate.IsElementPredicate.COMPACT_CODEC, DIRECT_PREDICATE_CODEC).xmap(Either::unwrap, Either::right);
 
     public interface ItemPredicate {
 
@@ -55,7 +53,7 @@ public class ItemMetaMapping {
         enum Type implements StringRepresentable {
             INSTANCE_OF("instance_of", InstanceOfPredicate.CODEC),
             IS_CLASS("is_class", IsClassPredicate.CODEC),
-            IS_ELEMENT("is_element", IsElementPredicate.DIRECT_CODEC);
+            IS_ELEMENT("is_element", IsElementPredicate.CODEC);
 
             public static final Codec<Type> CODEC = StringRepresentable.fromValues(Type::values);
             private final String name;
@@ -124,11 +122,11 @@ public class ItemMetaMapping {
 
         record IsElementPredicate(ExtraCodecs.TagOrElementLocation value) implements ItemPredicate {
 
-            public static final MapCodec<IsElementPredicate> DIRECT_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            public static final MapCodec<IsElementPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("value").forGetter(IsElementPredicate::value)
             ).apply(instance, IsElementPredicate::new));
 
-            public static final Codec<IsElementPredicate> INLINED_CODEC = ExtraCodecs.TAG_OR_ELEMENT_ID.xmap(IsElementPredicate::new, IsElementPredicate::value);
+            public static final Codec<IsElementPredicate> COMPACT_CODEC = ExtraCodecs.TAG_OR_ELEMENT_ID.xmap(IsElementPredicate::new, IsElementPredicate::value);
 
             @Override
             public Type type() {

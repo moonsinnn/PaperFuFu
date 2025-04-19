@@ -2,7 +2,8 @@ package io.papermc.generator.rewriter.types.simple;
 
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
-import io.papermc.generator.utils.ItemMetaMapping;
+import io.papermc.generator.utils.ItemMetaData;
+import io.papermc.generator.utils.ItemPredicate;
 import io.papermc.typewriter.ClassNamed;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -27,8 +28,8 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
         // todo shortcut and remove order rule for CraftMetaColorableArmor <-> CraftMetaArmor / CraftMetaBanner|CraftMetaSkull <-> CraftMetaBlockState (create custom tag? or just inline?)
         ClassNamed implMetaName = null;
     mainLoop:
-        for (Map.Entry<ClassNamed, List<ItemMetaMapping.ItemPredicate>> entry : ItemMetaMapping.PREDICATES.entrySet()) {
-            for (ItemMetaMapping.ItemPredicate predicate : entry.getValue()) {
+        for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : ItemMetaData.PREDICATES.entrySet()) {
+            for (ItemPredicate predicate : entry.getValue()) {
                 if (predicate.test(reference)) {
                     implMetaName = entry.getKey();
                     break mainLoop;
@@ -38,7 +39,7 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
 
         ClassNamed metaName = null;
         if (implMetaName != null) {
-            metaName = ItemMetaMapping.BRIDGE.get(implMetaName).api();
+            metaName = ItemMetaData.BRIDGE.get(implMetaName).api();
         }
         return "%s<%s>".formatted(Types.ITEM_TYPE_TYPED.dottedNestedName(), metaName != null ? this.importCollector.getShortName(metaName) : Types.ITEM_META.simpleName());
     }

@@ -3,7 +3,8 @@ package io.papermc.generator.rewriter.types.simple;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.utils.Formatting;
-import io.papermc.generator.utils.ItemMetaMapping;
+import io.papermc.generator.utils.ItemMetaData;
+import io.papermc.generator.utils.ItemPredicate;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.context.IndentUnit;
 import io.papermc.typewriter.replace.SearchMetadata;
@@ -26,20 +27,20 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
     protected void insert(SearchMetadata metadata, StringBuilder builder) {
         IndentUnit indentUnit = this.indentUnit();
         ClassNamed itemType = RegistryEntries.byRegistryKey(Registries.ITEM).data().api().klass();
-        for (Map.Entry<ClassNamed, List<ItemMetaMapping.ItemPredicate>> entry : ItemMetaMapping.PREDICATES.entrySet()) {
-            String field = ItemMetaMapping.BRIDGE.get(entry.getKey()).field();
-            Iterator<ItemMetaMapping.ItemPredicate> predicateIterator = entry.getValue().iterator();
+        for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : ItemMetaData.PREDICATES.entrySet()) {
+            String field = ItemMetaData.BRIDGE.get(entry.getKey()).field();
+            Iterator<ItemPredicate> predicateIterator = entry.getValue().iterator();
 
             builder.append(metadata.indent());
             builder.append("if (");
             boolean beginning = true;
             while (predicateIterator.hasNext()) {
-                ItemMetaMapping.ItemPredicate predicate = predicateIterator.next();
+                ItemPredicate predicate = predicateIterator.next();
                 if (!beginning) {
                     builder.append(metadata.indent()).append(indentUnit);
                 }
                 switch (predicate) {
-                    case ItemMetaMapping.ItemPredicate.IsElementPredicate isElementPredicate:
+                    case ItemPredicate.IsElementPredicate isElementPredicate:
                         ExtraCodecs.TagOrElementLocation value = isElementPredicate.value();
                         if (value.tag()) {
                             // flatten tag since they can change at runtime with plugins/data-packs
@@ -55,7 +56,7 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
                             appendElementEquality(builder, itemType, value.id());
                         }
                         break;
-                    case ItemMetaMapping.ItemPredicate.IsClassPredicate isClassPredicate: {
+                    case ItemPredicate.IsClassPredicate isClassPredicate: {
                         String itemLikeName = isClassPredicate.againstBlock() ? "blockHandle" : "itemHandle";
                         if (itemLikeName.equals("itemHandle")) { // itemHandle is never null
                             builder.append("%s.getClass().equals(%s.class)".formatted(itemLikeName, this.importCollector.getShortName(isClassPredicate.value())));
@@ -64,7 +65,7 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
                         }
                         break;
                     }
-                    case ItemMetaMapping.ItemPredicate.InstanceOfPredicate instanceOfPredicate: {
+                    case ItemPredicate.InstanceOfPredicate instanceOfPredicate: {
                         String itemLikeName = instanceOfPredicate.againstBlock() ? "blockHandle" : "itemHandle";
                         builder.append("%s instanceof %s".formatted(itemLikeName, this.importCollector.getShortName(instanceOfPredicate.value())));
                         break;

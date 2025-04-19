@@ -11,6 +11,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.papermc.generator.types.craftblockdata.property.holder.VirtualField;
@@ -47,6 +48,7 @@ import org.bukkit.block.data.type.Furnace;
 import org.bukkit.block.data.type.RedstoneRail;
 import org.bukkit.block.data.type.ResinClump;
 import org.bukkit.block.data.type.Switch;*/
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -180,14 +182,35 @@ public final class BlockStateMapping {
         MAPPING = Collections.unmodifiableMap(map);
     }*/
 
-    record PropertyData(Optional<String> field, Optional<String> name, ClassNamed api, boolean pure) {
+    public record PropertyData(Optional<String> field, Optional<String> name, ClassNamed api, boolean pure) implements Comparable<PropertyData> { // todo either? fieldOrName but keep them separate in the codec
 
-        public static final Codec<PropertyData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+        public static final Codec<PropertyData> UNSAFE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             SourceCodecs.IDENTIFIER.optionalFieldOf("field").forGetter(PropertyData::field),
             Codec.STRING.optionalFieldOf("name").forGetter(PropertyData::name),
             SourceCodecs.CLASS_NAMED.fieldOf("api").forGetter(PropertyData::api),
             Codec.BOOL.optionalFieldOf("pure", false).forGetter(PropertyData::pure)
         ).apply(instance, PropertyData::new));
+
+        public static final Codec<PropertyData> CODEC = UNSAFE_CODEC.validate(data -> {
+            return data.field().isEmpty() && data.name().isEmpty() ? DataResult.error(() -> "Must contains a name or a field") : DataResult.success(data);
+        });
+
+        @Override
+        public int compareTo(@NotNull BlockStateMapping.PropertyData data) {
+            if (this.field().isPresent() && data.field().isPresent()) {
+                return this.field().orElseThrow().compareTo(data.field().orElseThrow());
+            } else if (this.name().isPresent() && data.name().isPresent()) {
+                return this.name().orElseThrow().compareTo(data.name().orElseThrow());
+            } else {
+                if (this.name().isPresent() && data.field().isPresent()) {
+                    return 1;
+                } else if (this.field().isPresent() && data.name().isPresent()) {
+                    return -1;
+                }
+
+                return 0; // shouldn't happen
+            }
+        }
     }
 
     // levelled and ageable are done using the property name
@@ -196,11 +219,12 @@ public final class BlockStateMapping {
     private static final Map<String, ClassNamed> NAME_TO_DATA;
     private static final Map<Property<?>, ClassNamed> PROPERTY_TO_DATA;
     private static final Map<Property<?>, ClassNamed> MAIN_PROPERTY_TO_DATA;
+    public static final Codec<List<PropertyData>> PROPERTY_DATA_CODEC = PropertyData.CODEC.listOf();
     static {
         List<PropertyData> propertyData;
         try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state_properties.json")))) {
             JsonArray properties = SourceCodecs.GSON.fromJson(input, JsonArray.class);
-            propertyData = PropertyData.CODEC.listOf().parse(JsonOps.INSTANCE, properties).getOrThrow();
+            propertyData = PROPERTY_DATA_CODEC.parse(JsonOps.INSTANCE, properties).getOrThrow();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

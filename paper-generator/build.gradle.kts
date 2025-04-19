@@ -77,6 +77,20 @@ tasks.register("generate") {
     dependsOn(generateApi, generateImpl)
 }
 
+tasks.register<JavaExec>("prepareInputFiles") {
+    group = "generation"
+    description = "Prepare input files by sorting them (and updating them if possible)"
+    javaLauncher = javaToolchains.defaultJavaLauncher(project)
+    mainClass.set("io.papermc.generator.utils.PrepareInputFiles")
+    classpath(sourceSets.main.map { it.runtimeClasspath })
+
+    inputs.property("gameVersion", gameVersion)
+    val resourceDir = layout.projectDirectory.dir("src/main/resources")
+    args(resourceDir)
+    inputs.dir(resourceDir)
+    outputs.dir(resourceDir)
+}
+
 if (providers.gradleProperty("updatingMinecraft").getOrElse("false").toBoolean()) {
     val scanOldGeneratedSourceCode by tasks.registering(JavaExec::class) {
         group = "verification"

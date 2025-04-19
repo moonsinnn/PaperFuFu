@@ -1,6 +1,7 @@
 package io.papermc.generator.rewriter.types.simple;
 
 import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -26,24 +27,31 @@ import static io.papermc.generator.utils.Formatting.quoted;
 
 public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
 
-    record Data(ClassNamed api, int legacyId) {
+    public record Data(ClassNamed api, int legacyId) {
+
+        private static final int NO_LEGACY_ID = -1;
 
         public Data(ClassNamed api) {
-            this(api, -1);
+            this(api, NO_LEGACY_ID);
         }
 
         public static final Codec<Data> DIRECT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             SourceCodecs.CLASS_NAMED.fieldOf("api").forGetter(Data::api),
-            ExtraCodecs.intRange(-1, Integer.MAX_VALUE).optionalFieldOf("legacy_id", -1).deprecated(13).forGetter(Data::legacyId)
+            ExtraCodecs.intRange(-1, Integer.MAX_VALUE).optionalFieldOf("legacy_id", NO_LEGACY_ID).deprecated(13).forGetter(Data::legacyId)
         ).apply(instance, Data::new));
 
         private static final Codec<Data> CLASS_ONLY_CODEC = SourceCodecs.CLASS_NAMED.xmap(Data::new, Data::api);
 
-        public static final Codec<Data> CODEC = Codec.withAlternative(CLASS_ONLY_CODEC, DIRECT_CODEC);
+        public static final Codec<Data> CODEC = Codec.either(CLASS_ONLY_CODEC, DIRECT_CODEC).xmap(Either::unwrap, data -> {
+            if (data.legacyId() != NO_LEGACY_ID) {
+                return Either.right(data);
+            }
+            return Either.left(data);
+        });
     }
 
     private static final Map<ResourceKey<EntityType<?>>, Data> DATA;
-    private static final Codec<Map<ResourceKey<EntityType<?>>, Data>> DATA_CODEC = Codec.unboundedMap(ResourceKey.codec(Registries.ENTITY_TYPE), Data.CODEC);
+    public static final Codec<Map<ResourceKey<EntityType<?>>, Data>> DATA_CODEC = Codec.unboundedMap(ResourceKey.codec(Registries.ENTITY_TYPE), Data.CODEC);
     static {
         try (Reader input = new BufferedReader(new InputStreamReader(EntityTypeRewriter.class.getClassLoader().getResourceAsStream("data/entity_types.json")))) {
             JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);

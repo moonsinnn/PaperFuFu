@@ -182,7 +182,7 @@ public final class Rewriters {
             .register("MobGoalHelper#bukkitMap", Types.MOB_GOAL_HELPER, new SearchReplaceRewriter() {
                 @Override
                 protected void insert(SearchMetadata metadata, StringBuilder builder) {
-                    for (Map.Entry<Class<? extends Mob>, ClassName> entry : MobGoalNames.ENTITY_NAMES.entrySet()) {
+                    for (Map.Entry<Class<? extends Mob>, ClassName> entry : MobGoalNames.ENTITY_CLASS_NAMES.entrySet()) {
                         builder.append(metadata.indent()).append("bukkitMap.put(%s.class, %s.class);".formatted(
                             entry.getKey().getCanonicalName(), this.importCollector.getShortName(Types.typed(entry.getValue()))
                         ));

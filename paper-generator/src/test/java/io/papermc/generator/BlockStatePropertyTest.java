@@ -23,17 +23,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class BlockStatePropertyTest {
+public class BlockStatePropertyTest extends BootstrapTest {
 
     private static Set<Class<? extends Comparable<?>>> ENUM_PROPERTY_VALUES;
 
     @BeforeAll
     public static void getAllProperties() {
-        // bootstrap
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
-        Bootstrap.validate();
-
         // get all properties
         Set<Class<? extends Comparable<?>>> enumPropertyValues = Collections.newSetFromMap(new IdentityHashMap<>());
         try {

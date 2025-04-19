@@ -5,12 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.papermc.generator.Main;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
@@ -96,23 +93,21 @@ public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, It
 
     record IsElementPredicate(ExtraCodecs.TagOrElementLocation value) implements ItemPredicate {
 
-        private static final Codec<ExtraCodecs.TagOrElementLocation> ITEM_TAG_OR_ELEMENT_ID = ExtraCodecs.TAG_OR_ELEMENT_ID.validate(
-            value -> {
-                if (value.tag()) {
-                    if (BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, value.id())).isPresent()) {
-                        return DataResult.success(value);
-                    } else {
-                        return DataResult.error(() -> "Invalid tag id: " + value);
-                    }
+        private static final Codec<ExtraCodecs.TagOrElementLocation> ITEM_TAG_OR_ELEMENT_ID = ExtraCodecs.TAG_OR_ELEMENT_ID.validate(value -> {
+            if (value.tag()) {
+                if (BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, value.id())).isPresent()) {
+                    return DataResult.success(value);
                 } else {
-                    if (BuiltInRegistries.ITEM.get(value.id()).isPresent()) {
-                        return DataResult.success(value);
-                    } else {
-                        return DataResult.error(() -> "Invalid element id: " + value);
-                    }
+                    return DataResult.error(() -> "Invalid tag id: " + value);
+                }
+            } else {
+                if (BuiltInRegistries.ITEM.get(value.id()).isPresent()) {
+                    return DataResult.success(value);
+                } else {
+                    return DataResult.error(() -> "Invalid element id: " + value);
                 }
             }
-        );
+        });
 
         public static final MapCodec<IsElementPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             ITEM_TAG_OR_ELEMENT_ID.fieldOf("value").forGetter(IsElementPredicate::value)

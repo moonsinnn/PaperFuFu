@@ -26,15 +26,15 @@ import org.jspecify.annotations.NullMarked;
 public final class MobGoalNames { // todo sync with MobGoalHelper ideally this should not be duplicated
 
     private static final Map<Class<? extends Goal>, ClassName> entityClassCache = new HashMap<>();
-    public static final Map<Class<? extends Mob>, ClassName> ENTITY_NAMES;
-    private static final Codec<Map<Class<? extends Mob>, ClassName>> ENTITY_NAMES_CODEC = Codec.unboundedMap(
+    public static final Map<Class<? extends Mob>, ClassName> ENTITY_CLASS_NAMES;
+    public static final Codec<Map<Class<? extends Mob>, ClassName>> ENTITY_CLASS_NAMES_CODEC = Codec.unboundedMap(
         SourceCodecs.classCodec(Mob.class), SourceCodecs.CLASS_NAME
     );
 
     static {
         try (Reader input = new BufferedReader(new InputStreamReader(MobGoalNames.class.getClassLoader().getResourceAsStream("data/entity_class_names.json")))) {
             JsonObject names = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            ENTITY_NAMES = ENTITY_NAMES_CODEC.parse(JsonOps.INSTANCE, names).getOrThrow();
+            ENTITY_CLASS_NAMES = ENTITY_CLASS_NAMES_CODEC.parse(JsonOps.INSTANCE, names).getOrThrow();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -102,7 +102,7 @@ public final class MobGoalNames { // todo sync with MobGoalHelper ideally this s
     }
 
     private static ClassName toBukkitClass(Class<? extends net.minecraft.world.entity.Mob> nmsClass) {
-        ClassName bukkitClass = ENTITY_NAMES.get(nmsClass);
+        ClassName bukkitClass = ENTITY_CLASS_NAMES.get(nmsClass);
         if (bukkitClass == null) {
             throw new RuntimeException("Can't figure out applicable bukkit entity for nms entity " + nmsClass); // maybe just return Mob?
         }

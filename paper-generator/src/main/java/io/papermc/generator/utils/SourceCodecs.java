@@ -1,17 +1,19 @@
 package io.papermc.generator.utils;
 
 import com.google.common.reflect.TypeToken;
+import com.google.gson.FormattingStyle;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.squareup.javapoet.ClassName;
+import io.papermc.generator.types.SimpleGenerator;
 import io.papermc.typewriter.ClassNamed;
 import javax.lang.model.SourceVersion;
 
 public final class SourceCodecs {
 
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson GSON = new GsonBuilder().setFormattingStyle(FormattingStyle.PRETTY.withIndent(SimpleGenerator.INDENT_UNIT)).create();
 
     private SourceCodecs() {
     }
@@ -30,7 +32,7 @@ public final class SourceCodecs {
         } catch (ClassNotFoundException e) {
             return DataResult.error(() -> "Class not found: %s".formatted(e.getMessage()));
         }
-    }, Class::toString);
+    }, Class::getName);
 
     public static <T> Codec<Class<? extends T>> classCodec(Class<T> baseClass) {
         return CLASS.comapFlatMap(klass -> {

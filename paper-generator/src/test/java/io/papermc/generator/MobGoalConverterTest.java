@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MobGoalConverterTest {
+public class MobGoalConverterTest extends BootstrapTest {
 
     @Test
     public void testBukkitMap() {
@@ -25,7 +25,7 @@ public class MobGoalConverterTest {
 
         List<String> missingClasses = new ArrayList<>();
         for (Class<Mob> nmsClass : classes) {
-            if (!MobGoalNames.ENTITY_NAMES.containsKey(nmsClass)) {
+            if (!MobGoalNames.ENTITY_CLASS_NAMES.containsKey(nmsClass)) {
                 missingClasses.add(nmsClass.getCanonicalName());
             }
         }

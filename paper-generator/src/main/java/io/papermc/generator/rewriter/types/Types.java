@@ -38,12 +38,11 @@ public final class Types {
 
     public static final ClassNamed LOCATION = ClassNamed.of(API_PACKAGE, "Location");
 
-    @Deprecated
-    public static final ClassNamed MUSIC_INSTRUMENT = ClassNamed.of(API_PACKAGE, "MusicInstrument");
-
     public static final ClassNamed FIREWORK_EFFECT = ClassNamed.of(API_PACKAGE, "FireworkEffect");
 
     public static final ClassNamed MATERIAL = ClassNamed.of(API_PACKAGE, "Material");
+
+    public static final ClassNamed POSE = ClassNamed.of(API_PACKAGE + ".entity", "Pose");
 
     @Deprecated
     public static final ClassNamed VILLAGER = ClassNamed.of(API_PACKAGE + ".entity", "Villager");
@@ -77,6 +76,8 @@ public final class Types {
     public static final ClassNamed COMPONENT = ClassNamed.of("net.kyori.adventure.text", "Component");
 
     public static final ClassNamed KEY = typed(io.papermc.generator.types.Types.KEY);
+
+    public static final ClassNamed TAG_KEY = typed(io.papermc.generator.types.Types.TAG_KEY);
 
     public static final ClassNamed REGISTRY_KEY = typed(io.papermc.generator.types.Types.REGISTRY_KEY);
 

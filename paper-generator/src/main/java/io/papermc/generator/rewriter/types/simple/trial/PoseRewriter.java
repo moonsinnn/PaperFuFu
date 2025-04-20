@@ -1,32 +1,35 @@
 package io.papermc.generator.rewriter.types.simple.trial;
 
-import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
 import io.papermc.typewriter.parser.Lexer;
 import io.papermc.typewriter.parser.sequence.SequenceTokens;
 import io.papermc.typewriter.parser.sequence.TokenTaskBuilder;
 import io.papermc.typewriter.parser.token.CharSequenceBlockToken;
 import io.papermc.typewriter.parser.token.CharSequenceToken;
 import io.papermc.typewriter.parser.token.TokenType;
+import io.papermc.typewriter.preset.EnumCloneRewriter;
+import io.papermc.typewriter.preset.model.EnumValue;
 import io.papermc.typewriter.replace.SearchMetadata;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.Pose;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-public class VillagerProfessionRewriter extends RegistryFieldRewriter<VillagerProfession> {
+public class PoseRewriter extends EnumCloneRewriter<Pose> {
 
-    public VillagerProfessionRewriter() {
-        super(Registries.VILLAGER_PROFESSION, "getProfession");
+    public PoseRewriter() {
+        super(Pose.class);
     }
 
     private static final Set<TokenType> FORMAT_TOKENS = EnumSet.of(
         TokenType.COMMENT,
         TokenType.SINGLE_COMMENT
+    );
+
+    private static final Set<TokenType> END_VALUE_MARKERS = EnumSet.of(
+        TokenType.CO,
+        TokenType.SECO
     );
 
     private @MonotonicNonNull Map<String, CharSequenceBlockToken> javadocsPerConstant;
@@ -43,13 +46,13 @@ public class VillagerProfessionRewriter extends RegistryFieldRewriter<VillagerPr
                     .map(TokenType.JAVADOC, token -> {
                         constant.javadocs(((CharSequenceBlockToken) token));
                     }, TokenTaskBuilder::asOptional)
-                    .skipQualifiedName(Predicate.isEqual(TokenType.JAVADOC))
                     .map(TokenType.IDENTIFIER, token -> {
                         constant.name(((CharSequenceToken) token).value());
                     })
-                    .skip(TokenType.IDENTIFIER)
-                    .skipClosure(TokenType.LPAREN, TokenType.RPAREN, true)
-                    .map(TokenType.SECO, $ -> {
+                    .skipClosure(TokenType.LPAREN, TokenType.RPAREN, true, TokenTaskBuilder::asOptional)
+                    .skipClosure(TokenType.LSCOPE, TokenType.RSCOPE, true, TokenTaskBuilder::asOptional)
+                    .map(END_VALUE_MARKERS::contains, $ -> {
+                        // this part will fail for the last entry for enum without end (,;)
                         if (constant.isComplete()) {
                             map.put(constant.name(), constant.javadocs());
                         }
@@ -60,18 +63,31 @@ public class VillagerProfessionRewriter extends RegistryFieldRewriter<VillagerPr
         return map;
     }
 
+    private @MonotonicNonNull SearchMetadata metadata;
+
+    private static final Map<String, String> RENAMES = Map.of(
+        Pose.CROUCHING.name(), "SNEAKING"
+    );
+
     @Override
     protected void insert(SearchMetadata metadata, StringBuilder builder) {
         this.javadocsPerConstant = parseConstantJavadocs(metadata.replacedContent());
+        this.metadata = metadata;
         super.insert(metadata, builder);
     }
 
     @Override
-    protected void rewriteJavadocs(Holder.Reference<VillagerProfession> reference, String replacedContent, String indent, StringBuilder builder) {
-        String constantName = this.rewriteFieldName(reference);
+    protected EnumValue.Builder rewriteEnumValue(Pose item) {
+        return super.rewriteEnumValue(item).rename(name -> RENAMES.getOrDefault(name, name));
+    }
+
+    @Override
+    protected void appendEnumValue(Pose item, StringBuilder builder, String indent, boolean reachEnd) {
+        String constantName = RENAMES.getOrDefault(item.name(), item.name());
         if (this.javadocsPerConstant.containsKey(constantName)) {
             CharSequenceBlockToken token = this.javadocsPerConstant.get(constantName);
-            builder.append(indent).append(replacedContent, token.pos(), token.endPos()).append('\n');
+            builder.append(indent).append(this.metadata.replacedContent(), token.pos(), token.endPos()).append('\n');
         }
+        super.appendEnumValue(item, builder, indent, reachEnd);
     }
 }

@@ -20,6 +20,7 @@ import io.papermc.generator.rewriter.types.simple.ItemTypeRewriter;
 import io.papermc.generator.rewriter.types.simple.MapPaletteRewriter;
 import io.papermc.generator.rewriter.types.simple.MemoryKeyRewriter;
 import io.papermc.generator.rewriter.types.simple.StatisticRewriter;
+import io.papermc.generator.rewriter.types.simple.trial.PoseRewriter;
 import io.papermc.generator.rewriter.types.simple.trial.VillagerProfessionRewriter;
 import io.papermc.generator.types.goal.MobGoalNames;
 import io.papermc.generator.rewriter.types.registry.RegistriesArgumentProviderRewriter;
@@ -89,6 +90,7 @@ public final class Rewriters {
                     return EnumValue.builder(name).argument(quoted(slot.getSerializedName()));
                 }
             })
+            .register("Pose", Types.POSE, new PoseRewriter())
             .register("SnifferState", Types.SNIFFER_STATE, new EnumCloneRewriter<>(Sniffer.State.class))
             .register("PandaGene", Types.PANDA_GENE, new EnumCloneRewriter<>(Panda.Gene.class) {
                 @Override

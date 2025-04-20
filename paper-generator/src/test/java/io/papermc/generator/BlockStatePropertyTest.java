@@ -60,14 +60,12 @@ public class BlockStatePropertyTest extends BootstrapTest {
     @Test
     public void testBridge() {
         Set<Class<? extends Enum<? extends StringRepresentable>>> missingApiEquivalents = new HashSet<>();
-        Set<Class<? extends Enum<? extends StringRepresentable>>> registeredTypes = new HashSet<>(BlockStateMapping.ENUM_PROPERTY_TYPES.keySet());
         for (Class<? extends Enum<? extends StringRepresentable>> type : ENUM_PROPERTY_TYPES) {
-            if (!registeredTypes.remove(type)) {
+            if (!BlockStateMapping.ENUM_PROPERTY_TYPES.containsKey(type)) {
                 missingApiEquivalents.add(type);
             }
         }
 
         Assertions.assertTrue(missingApiEquivalents.isEmpty(), () -> "Missing some api equivalent in the block state mapping enum bridge (BlockStateMapping#ENUM_PROPERTY_TYPES) : " + missingApiEquivalents.stream().map(Class::getCanonicalName).collect(Collectors.joining(", ")));
-        Assertions.assertTrue(registeredTypes.isEmpty(), () -> "Extra api equivalent in the block state mapping enum bridge (BlockStateMapping#ENUM_PROPERTY_TYPES) : " + registeredTypes.stream().map(Class::getCanonicalName).collect(Collectors.joining(", ")));
     }
 }

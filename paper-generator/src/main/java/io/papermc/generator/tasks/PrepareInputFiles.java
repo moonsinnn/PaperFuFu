@@ -180,7 +180,7 @@ public class PrepareInputFiles {
                     LOGGER.info("Added the following elements in {}: {}", filePath, result.added());
                 }
                 if (!result.removed().isEmpty()) {
-                    LOGGER.info("Removed the following keys in {}: {}", filePath, result.removed());
+                    LOGGER.warn("Removed the following keys in {}: {}", filePath, result.removed());
                 }
             }
         }

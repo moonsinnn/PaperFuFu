@@ -1,9 +1,10 @@
-package io.papermc.generator.rewriter.utils;
+package io.papermc.generator.tasks;
 
 import io.papermc.generator.Main;
 import io.papermc.generator.Rewriters;
 import io.papermc.generator.rewriter.registration.PaperPatternSourceSetRewriter;
 import io.papermc.generator.rewriter.types.Types;
+import io.papermc.generator.rewriter.utils.Annotations;
 import io.papermc.typewriter.SourceFile;
 import io.papermc.typewriter.SourceRewriter;
 import io.papermc.typewriter.context.FileMetadata;

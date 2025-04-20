@@ -27,11 +27,13 @@ import io.papermc.generator.utils.Formatting;
 import io.papermc.typewriter.preset.EnumCloneRewriter;
 import io.papermc.typewriter.preset.model.EnumValue;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import io.papermc.typewriter.replace.SearchMetadata;
 import io.papermc.typewriter.replace.SearchReplaceRewriter;
 import javax.lang.model.SourceVersion;
+import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Mob;
@@ -64,11 +66,11 @@ public final class Rewriters {
         }
     }
 
-    public static final Map<String, Consumer<PatternSourceSetRewriter>> VALUES = Map.of(
-        "api", Rewriters::bootstrapApi,
-        "impl", Rewriters::bootstrapImpl,
-        "impl-test", Rewriters::bootstrapImplTest
-    );
+    public static final Map<String, Consumer<PatternSourceSetRewriter>> VALUES = Util.make(new LinkedHashMap<>(), map -> {
+        map.put("api", Rewriters::bootstrapApi);
+        map.put("impl", Rewriters::bootstrapImpl);
+        map.put("impl-test", Rewriters::bootstrapImplTest);
+    });
 
     private static void bootstrapApi(PatternSourceSetRewriter sourceSet) {
         sourceSet

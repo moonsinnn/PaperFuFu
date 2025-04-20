@@ -10,9 +10,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import io.papermc.generator.utils.ClassHelper;
-import net.minecraft.SharedConstants;
-import net.minecraft.server.Bootstrap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.PipeBlock;
@@ -25,12 +25,12 @@ import org.junit.jupiter.api.Test;
 
 public class BlockStatePropertyTest extends BootstrapTest {
 
-    private static Set<Class<? extends Comparable<?>>> ENUM_PROPERTY_VALUES;
+    private static Set<Class<? extends Enum<? extends StringRepresentable>>> ENUM_PROPERTY_TYPES;
 
     @BeforeAll
     public static void getAllProperties() {
         // get all properties
-        Set<Class<? extends Comparable<?>>> enumPropertyValues = Collections.newSetFromMap(new IdentityHashMap<>());
+        Set<Class<? extends Enum<? extends StringRepresentable>>> enumPropertyTypes = Collections.newSetFromMap(new IdentityHashMap<>());
         try {
             for (Field field : BlockStateProperties.class.getDeclaredFields()) {
                 if (ClassHelper.isStaticConstant(field, Modifier.PUBLIC)) {
@@ -38,10 +38,10 @@ public class BlockStatePropertyTest extends BootstrapTest {
                         continue;
                     }
 
-                    enumPropertyValues.add(((EnumProperty<?>) field.get(null)).getValueClass());
+                    enumPropertyTypes.add(((EnumProperty<?>) field.get(null)).getValueClass());
                 }
             }
-            ENUM_PROPERTY_VALUES = Collections.unmodifiableSet(enumPropertyValues);
+            ENUM_PROPERTY_TYPES = Collections.unmodifiableSet(enumPropertyTypes);
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }
@@ -59,13 +59,15 @@ public class BlockStatePropertyTest extends BootstrapTest {
 
     @Test
     public void testBridge() {
-        Set<String> missingApiEquivalents = new HashSet<>();
-        for (Class<? extends Comparable<?>> value : ENUM_PROPERTY_VALUES) {
-            if (!BlockStateMapping.ENUM_PROPERTY_TYPES.containsKey(value)) {
-                missingApiEquivalents.add(value.getCanonicalName());
+        Set<Class<? extends Enum<? extends StringRepresentable>>> missingApiEquivalents = new HashSet<>();
+        Set<Class<? extends Enum<? extends StringRepresentable>>> registeredTypes = new HashSet<>(BlockStateMapping.ENUM_PROPERTY_TYPES.keySet());
+        for (Class<? extends Enum<? extends StringRepresentable>> type : ENUM_PROPERTY_TYPES) {
+            if (!registeredTypes.remove(type)) {
+                missingApiEquivalents.add(type);
             }
         }
 
-        Assertions.assertTrue(missingApiEquivalents.isEmpty(), () -> "Missing some api equivalent in the block state mapping enum bridge (BlockStateMapping#ENUM_PROPERTY_TYPES) : " + String.join(", ", missingApiEquivalents));
+        Assertions.assertTrue(missingApiEquivalents.isEmpty(), () -> "Missing some api equivalent in the block state mapping enum bridge (BlockStateMapping#ENUM_PROPERTY_TYPES) : " + missingApiEquivalents.stream().map(Class::getCanonicalName).collect(Collectors.joining(", ")));
+        Assertions.assertTrue(registeredTypes.isEmpty(), () -> "Extra api equivalent in the block state mapping enum bridge (BlockStateMapping#ENUM_PROPERTY_TYPES) : " + registeredTypes.stream().map(Class::getCanonicalName).collect(Collectors.joining(", ")));
     }
 }

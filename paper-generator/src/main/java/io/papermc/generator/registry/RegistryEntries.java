@@ -1,6 +1,5 @@
 package io.papermc.generator.registry;
 
-import com.google.common.base.Preconditions;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import io.papermc.generator.utils.ClassHelper;

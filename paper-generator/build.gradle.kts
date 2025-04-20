@@ -81,7 +81,7 @@ tasks.register<JavaExec>("prepareInputFiles") {
     group = "generation"
     description = "Prepare input files by sorting them (and updating them if possible)"
     javaLauncher = javaToolchains.defaultJavaLauncher(project)
-    mainClass.set("io.papermc.generator.utils.PrepareInputFiles")
+    mainClass.set("io.papermc.generator.tasks.PrepareInputFiles")
     classpath(sourceSets.main.map { it.runtimeClasspath })
 
     inputs.property("gameVersion", gameVersion)
@@ -96,12 +96,12 @@ if (providers.gradleProperty("updatingMinecraft").getOrElse("false").toBoolean()
         group = "verification"
         description = "Scan source code to detect outdated generated code"
         javaLauncher = javaToolchains.defaultJavaLauncher(project)
-        mainClass.set("io.papermc.generator.rewriter.utils.ScanOldGeneratedSourceCode")
+        mainClass.set("io.papermc.generator.tasks.ScanOldGeneratedSourceCode")
         classpath(sourceSets.main.map { it.runtimeClasspath })
 
         val projectDirs = listOf("paper-api", "paper-server").map { rootProject.layout.projectDirectory.dir(it) }
         args(projectDirs.map { it.asFile.absolutePath })
-        val workDirs = projectDirs.map { it.dir("src/main/java") } // todo test dir
+        val workDirs = projectDirs.map { it.dir("src/main/java") }.plus(rootProject.layout.projectDirectory.dir("paper-server/src/test/java"))
 
         workDirs.forEach { inputs.dir(it) }
         inputs.property("gameVersion", gameVersion)

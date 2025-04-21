@@ -166,10 +166,10 @@ public class PrepareInputFiles {
     );
 
     public static void main(String[] args) throws IOException {
-        String resourceDir = args[0];
+        Path resourceDir = Path.of(args[0]);
         for (DataFile<?> file : DATA_FILES) {
             Path filePath = Path.of("data", file.path());
-            Path resourcePath = Path.of(resourceDir).resolve(filePath);
+            Path resourcePath = resourceDir.resolve(filePath);
             try (Reader input = Files.newBufferedReader(resourcePath, StandardCharsets.UTF_8)) {
                 JsonElement element = SourceCodecs.GSON.fromJson(input, JsonElement.class);
                 MutationResult<?> result = file.transmuteRaw(file.codec().parse(JsonOps.INSTANCE, element).getOrThrow());
@@ -177,10 +177,10 @@ public class PrepareInputFiles {
                 Files.writeString(resourcePath, SourceCodecs.GSON.toJson(element) + "\n", StandardCharsets.UTF_8);
 
                 if (!result.added().isEmpty()) {
-                    LOGGER.info("Added the following elements in {}: {}", filePath, result.added());
+                    LOGGER.info("Added the following elements in {}:\n{}", filePath, result.added().stream().map(Object::toString).collect(Collectors.joining("\n")));
                 }
                 if (!result.removed().isEmpty()) {
-                    LOGGER.warn("Removed the following keys in {}: {}", filePath, result.removed());
+                    LOGGER.warn("Removed the following keys in {}:\n{}", filePath, result.removed().stream().map(Object::toString).collect(Collectors.joining("\n")));
                 }
             }
         }

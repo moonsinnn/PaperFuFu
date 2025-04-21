@@ -51,7 +51,7 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
             });
 
             data.builder().ifPresentOrElse(b -> {
-                builder.append(".writable(");
+                builder.append(".%s(".formatted(b.capability().getSerializedName()));
                 builder.append(this.importCollector.getShortName(b.impl())).append("::new");
                 builder.append(')');
             }, () -> builder.append(".build()"));

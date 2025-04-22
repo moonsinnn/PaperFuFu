@@ -7,6 +7,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class Types {
 
+    public static final ClassName BOXED_INT = ClassName.get("java.lang", "Integer");
+
     public static final String API_PACKAGE = "org.bukkit";
     public static final String PAPER_PACKAGE = "io.papermc.paper";
 
@@ -15,6 +17,16 @@ public final class Types {
     public static final ClassName MINECRAFT_EXPERIMENTAL = ClassName.get(API_PACKAGE, "MinecraftExperimental");
 
     public static final ClassName MINECRAFT_EXPERIMENTAL_REQUIRES = ClassName.get(API_PACKAGE, "MinecraftExperimental", "Requires");
+
+    public static final ClassName AXIS = ClassName.get(API_PACKAGE, "Axis");
+
+    public static final ClassName BLOCK_FACE = ClassName.get(API_PACKAGE + ".block", "BlockFace");
+
+    public static final ClassName VECTOR = ClassName.get(API_PACKAGE + ".util", "Vector");
+
+    public static final ClassName NOTE = ClassName.get(API_PACKAGE, "Note");
+
+    public static final ClassName BLOCK_DATA_RAIL_SHAPE = ClassName.get(API_PACKAGE + ".block.data", "Rail", "Shape");
 
     public static final ClassName KEY = ClassName.get("net.kyori.adventure.key", "Key");
 

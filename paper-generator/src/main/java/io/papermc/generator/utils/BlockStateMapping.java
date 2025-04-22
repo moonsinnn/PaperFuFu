@@ -1,18 +1,18 @@
 package io.papermc.generator.utils;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.TypeToken;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.squareup.javapoet.ClassName;
+import io.papermc.generator.Main;
 import io.papermc.generator.types.craftblockdata.property.holder.VirtualField;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,14 +21,23 @@ import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
+import io.papermc.generator.utils.predicate.BlockPredicate;
 import io.papermc.typewriter.ClassNamed;
+import io.papermc.typewriter.util.ClassNamedView;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CommandBlock;
@@ -38,30 +47,30 @@ import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.TestInstanceBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
-/*
-import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.block.data.type.Dripleaf;
-import org.bukkit.block.data.type.Fence;
-import org.bukkit.block.data.type.Furnace;
-import org.bukkit.block.data.type.RedstoneRail;
-import org.bukkit.block.data.type.ResinClump;
-import org.bukkit.block.data.type.Switch;*/
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class BlockStateMapping {
 
-    public record BlockData(String implName, @Nullable Class<?> api,
+    public record BlockData(String implName, ClassNamed api,
                             Collection<? extends Property<?>> properties, Map<Property<?>, Field> propertyFields,
                             Multimap<Either<Field, VirtualField>, Property<?>> complexPropertyFields) {
     }
-    /*
-    public record BlockData(String implName, @Nullable Class<? extends org.bukkit.block.data.BlockData> api,
-                            Collection<? extends Property<?>> properties, Map<Property<?>, Field> propertyFields,
-                            Multimap<Either<Field, VirtualField>, Property<?>> complexPropertyFields) {
-    }*/
+
+    private static final Map<ClassNamed, List<BlockPredicate>> PREDICATES;
+    public static final Codec<Map<ClassNamed, List<BlockPredicate>>> PREDICATES_CODEC = Codec.unboundedMap(
+        SourceCodecs.CLASS_NAMED, BlockPredicate.CODEC.listOf()
+    );
+
+    static {
+        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state/predicates.json")))) {
+            JsonObject predicates = SourceCodecs.GSON.fromJson(input, JsonObject.class);
+            PREDICATES = PREDICATES_CODEC.parse(RegistryOps.create(JsonOps.INSTANCE, Main.REGISTRY_ACCESS), predicates).getOrThrow();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
     private static final Map<String, String> API_RENAMES = ImmutableMap.<String, String>builder()
         .put("SnowLayer", "Snow")
@@ -100,7 +109,6 @@ public final class BlockStateMapping {
         FALLBACK_GENERIC_FIELDS = fallbackGenericFields.buildOrThrow();
     }
 
-    /*
     public static final Map<Class<? extends Block>, BlockData> MAPPING;
 
     static {
@@ -149,8 +157,8 @@ public final class BlockStateMapping {
             apiName = Formatting.stripWordOfCamelCaseName(apiName, "Base", true);
             apiName = API_RENAMES.getOrDefault(apiName, apiName);
 
-            Class<? extends org.bukkit.block.data.BlockData> api = ClassHelper.classOr("org.bukkit.block.data.type." + apiName, null);
-            if (api == null) {
+            ClassNamedView view = new ClassNamedView(Main.ROOT_DIR.resolve("paper-api/src/main/java"), 1, "org/bukkit/block/data/type");
+            ClassNamed api = view.tryFindFirst("org/bukkit/block/data/type/" + apiName).or(() -> {
                 Class<?> directParent = specialBlock.getSuperclass();
                 if (specialBlocks.containsKey(directParent)) {
                     // if the properties are the same then always consider the parent
@@ -159,92 +167,35 @@ public final class BlockStateMapping {
                         String parentApiName = formatApiName(directParent);
                         parentApiName = Formatting.stripWordOfCamelCaseName(parentApiName, "Base", true);
                         parentApiName = API_RENAMES.getOrDefault(parentApiName, parentApiName);
-                        api = ClassHelper.classOr("org.bukkit.block.data.type." + parentApiName, api);
+                        return view.tryFindFirst("org/bukkit/block/data/type/" + parentApiName);
                     }
                 }
-            }
-            if (api == null) { // todo remove this part
-                if (AbstractFurnaceBlock.class.isAssignableFrom(specialBlock)) {
-                    api = Furnace.class; // for smoker and blast furnace
-                } else if (specialBlock == BigDripleafStemBlock.class) {
-                    api = Dripleaf.class;
-                } else if (specialBlock == IronBarsBlock.class) {
-                    api = Fence.class; // for glass pane (regular) and iron bars
-                } else if (specialBlock == MultifaceBlock.class) {
-                    api = ResinClump.class;
+                return Optional.empty();
+            }).orElseGet(() -> {
+                Set<Property<?>> propertySet = new HashSet<>(entry.getValue());
+                for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : PREDICATES.entrySet()) {
+                    for (BlockPredicate predicate : predicateEntry.getValue()) {
+                        if (predicate.test(specialBlock, propertySet)) {
+                            return predicateEntry.getKey();
+                        }
+                    }
                 }
-            }
 
-            map.put(specialBlock, new BlockData(implName, api, properties, propertyFields, complexPropertyFields));
+                return null;
+            });
+
+            map.put(specialBlock, new BlockData(implName, Objects.requireNonNull(api, () -> "Unknown block data for " + specialBlock.getCanonicalName()), properties, propertyFields, complexPropertyFields));
         }
         MAPPING = Collections.unmodifiableMap(map);
-    }*/
-
-    public record PropertyData(Optional<String> field, Optional<String> name, ClassNamed api, boolean pure) implements Comparable<PropertyData> { // todo either? fieldOrName but keep them separate in the codec
-
-        public static final Codec<PropertyData> UNSAFE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            SourceCodecs.IDENTIFIER.optionalFieldOf("field").forGetter(PropertyData::field),
-            Codec.STRING.optionalFieldOf("name").forGetter(PropertyData::name),
-            SourceCodecs.CLASS_NAMED.fieldOf("api").forGetter(PropertyData::api),
-            Codec.BOOL.optionalFieldOf("pure", false).forGetter(PropertyData::pure)
-        ).apply(instance, PropertyData::new));
-
-        public static final Codec<PropertyData> CODEC = UNSAFE_CODEC.validate(data -> {
-            return data.field().isEmpty() && data.name().isEmpty() ? DataResult.error(() -> "Must contains a name or a field") : DataResult.success(data);
-        });
-
-        @Override
-        public int compareTo(@NotNull BlockStateMapping.PropertyData data) {
-            if (this.field().isPresent() && data.field().isPresent()) {
-                return this.field().orElseThrow().compareTo(data.field().orElseThrow());
-            } else if (this.name().isPresent() && data.name().isPresent()) {
-                return this.name().orElseThrow().compareTo(data.name().orElseThrow());
-            } else {
-                if (this.name().isPresent() && data.field().isPresent()) {
-                    return 1;
-                } else if (this.field().isPresent() && data.name().isPresent()) {
-                    return -1;
-                }
-
-                return 0; // shouldn't happen
-            }
-        }
     }
 
-    // levelled and ageable are done using the property name
-    // multiple facing is done by matching two or more pipe block properties
-
-    private static final Map<String, ClassNamed> NAME_TO_DATA;
-    private static final Map<Property<?>, ClassNamed> PROPERTY_TO_DATA;
-    private static final Map<Property<?>, ClassNamed> MAIN_PROPERTY_TO_DATA;
-    public static final Codec<List<PropertyData>> PROPERTY_DATA_CODEC = PropertyData.CODEC.listOf();
-    static {
-        List<PropertyData> propertyData;
-        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state_properties.json")))) {
-            JsonArray properties = SourceCodecs.GSON.fromJson(input, JsonArray.class);
-            propertyData = PROPERTY_DATA_CODEC.parse(JsonOps.INSTANCE, properties).getOrThrow();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
-        Map<String, Property<?>> propertyByName = FALLBACK_GENERIC_FIELDS.inverse().entrySet().stream()
-            .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
-
-        NAME_TO_DATA = propertyData.stream().filter(data -> !data.pure() && data.name().isPresent())
-            .collect(Collectors.toUnmodifiableMap(data -> data.name().get(), PropertyData::api));
-        MAIN_PROPERTY_TO_DATA = propertyData.stream().filter(data -> data.pure() && data.field().isPresent())
-            .collect(Collectors.toUnmodifiableMap(data -> propertyByName.get(data.field().get()), PropertyData::api));
-        PROPERTY_TO_DATA = propertyData.stream().filter(data -> !data.pure() && data.field().isPresent())
-            .collect(Collectors.toUnmodifiableMap(data -> propertyByName.get(data.field().get()), PropertyData::api));
-    }
-
-    public static final Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed> ENUM_PROPERTY_TYPES;
-    public static final Codec<Map<Class<? extends Enum<? extends StringRepresentable>>, ClassNamed>> ENUM_PROPERTY_TYPES_CODEC = Codec.unboundedMap(
-        SourceCodecs.classCodec(new TypeToken<Enum<? extends StringRepresentable>>() {}), SourceCodecs.CLASS_NAMED
+    public static final Map<Class<? extends Enum<? extends StringRepresentable>>, ClassName> ENUM_PROPERTY_TYPES;
+    public static final Codec<Map<Class<? extends Enum<? extends StringRepresentable>>, ClassName>> ENUM_PROPERTY_TYPES_CODEC = Codec.unboundedMap(
+        SourceCodecs.classCodec(new TypeToken<Enum<? extends StringRepresentable>>() {}), SourceCodecs.CLASS_NAME
     );
 
     static {
-        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/enum_property_types.json")))) {
+        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state/enum_property_types.json")))) {
             JsonObject properties = SourceCodecs.GSON.fromJson(input, JsonObject.class);
             ENUM_PROPERTY_TYPES = ENUM_PROPERTY_TYPES_CODEC.parse(JsonOps.INSTANCE, properties).getOrThrow();
         } catch (IOException ex) {
@@ -252,68 +203,13 @@ public final class BlockStateMapping {
         }
     }
 
-    /*
     public static @Nullable ClassNamed getBestSuitedApiClass(Class<?> block) {
         if (!MAPPING.containsKey(block)) {
             return null;
         }
 
-        return getBestSuitedApiClass(MAPPING.get(block));
+        return MAPPING.get(block).api();
     }
-
-    public static @Nullable ClassNamed getBestSuitedApiClass(BlockData data) {
-        if (data.api() != null) {
-            return data.api();
-        }
-
-        int pipeProps = 0;
-        Set<ClassNamed> extensions = new LinkedHashSet<>();
-        for (Property<?> property : data.properties()) {
-            if (MAIN_PROPERTY_TO_DATA.containsKey(property)) {
-                return MAIN_PROPERTY_TO_DATA.get(property);
-            }
-
-            if (NAME_TO_DATA.containsKey(property.getName())) {
-                extensions.add(NAME_TO_DATA.get(property.getName()));
-                continue;
-            }
-
-            if (PROPERTY_TO_DATA.containsKey(property)) {
-                extensions.add(PROPERTY_TO_DATA.get(property));
-                continue;
-            }
-
-            if (PipeBlock.PROPERTY_BY_DIRECTION.containsValue(property)) {
-                pipeProps++;
-            }
-        }
-
-        if (!extensions.isEmpty()) {
-            if (isExactly(extensions, Switch.class)) {
-                return Switch.class;
-            }
-            if (isExactly(extensions, RedstoneRail.class)) {
-                return RedstoneRail.class;
-            }
-
-            return extensions.iterator().next();
-        }
-
-        for (Property<?> property : data.complexPropertyFields().values()) {
-            if (PipeBlock.PROPERTY_BY_DIRECTION.containsValue(property)) {
-                pipeProps++;
-            }
-        }
-
-        if (pipeProps >= 2) {
-            return MultipleFacing.class;
-        }
-        return null;
-    }
-
-    private static boolean isExactly(Set<Class<? extends org.bukkit.block.data.BlockData>> extensions, Class<? extends org.bukkit.block.data.BlockData> globClass) {
-        return extensions.equals(ClassHelper.getAllInterfaces(globClass, org.bukkit.block.data.BlockData.class, new HashSet<>()));
-    }*/
 
     private static String formatApiName(Class<?> specialBlock) {
         String apiName = specialBlock.getSimpleName();

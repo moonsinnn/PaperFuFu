@@ -66,6 +66,7 @@ val generateApi = tasks.registerGenerationTask("generateApi", false, "api", {
 
 val generateImpl = tasks.registerGenerationTask("generateImpl", false, "impl", {
     sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/generated/java")
+    rootDir = rootProject.layout.projectDirectory
 }) {
     description = "Generate new implementation classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
@@ -86,7 +87,7 @@ tasks.register<JavaExec>("prepareInputFiles") {
 
     inputs.property("gameVersion", gameVersion)
     val resourceDir = layout.projectDirectory.dir("src/main/resources")
-    args(resourceDir)
+    args(resourceDir.asFile.absolutePath)
     inputs.dir(resourceDir)
     outputs.dir(resourceDir)
 }
@@ -130,6 +131,7 @@ fun TaskContainer.registerGenerationTask(
     val provider = objects.newInstance<GenerationArgumentProvider>()
     provider.side = side
     provider.rewrite = rewrite
+    provider.rootDir = rootProject.layout.projectDirectory
     if (args != null) {
         args(provider)
     }
@@ -144,6 +146,10 @@ abstract class GenerationArgumentProvider : CommandLineArgumentProvider {
 
     @get:PathSensitive(PathSensitivity.NONE)
     @get:InputDirectory
+    abstract val rootDir: DirectoryProperty
+
+    @get:PathSensitive(PathSensitivity.NONE)
+    @get:InputDirectory
     abstract val sourceSet: DirectoryProperty
 
     @get:Input
@@ -151,9 +157,6 @@ abstract class GenerationArgumentProvider : CommandLineArgumentProvider {
 
     @get:Input
     abstract val side: Property<String>
-
-    @get:CompileClasspath
-    abstract val serverClassPath: ConfigurableFileCollection
 
     @get:Input
     @get:Optional
@@ -168,15 +171,16 @@ abstract class GenerationArgumentProvider : CommandLineArgumentProvider {
 
         args.add("--sourceset=${sourceSet.get().asFile.absolutePath}")
         args.add("--side=${side.get()}")
-        args.add("--classpath=${serverClassPath.asPath}")
 
         if (rewrite.get()) {
             args.add("--rewrite")
         }
 
         if (bootstrapTags.get()) {
-            args.add(("--bootstrap-tags"))
+            args.add("--bootstrap-tags")
         }
+
+        args.add("--root-dir=${rootDir.get().asFile.absolutePath}")
         return args.toList()
     }
 }

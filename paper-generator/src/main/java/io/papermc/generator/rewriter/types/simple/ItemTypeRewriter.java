@@ -3,7 +3,7 @@ package io.papermc.generator.rewriter.types.simple;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
 import io.papermc.generator.utils.ItemMetaData;
-import io.papermc.generator.utils.ItemPredicate;
+import io.papermc.generator.utils.predicate.ItemPredicate;
 import io.papermc.typewriter.ClassNamed;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -25,7 +25,6 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
             return super.rewriteFieldType(reference);
         }
 
-        // todo shortcut and remove order rule for CraftMetaColorableArmor <-> CraftMetaArmor / CraftMetaBanner|CraftMetaSkull <-> CraftMetaBlockState (create custom tag? or just inline?)
         ClassNamed implMetaName = null;
     mainLoop:
         for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : ItemMetaData.PREDICATES.entrySet()) {

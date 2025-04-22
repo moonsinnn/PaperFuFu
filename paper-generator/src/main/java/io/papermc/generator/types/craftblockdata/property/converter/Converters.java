@@ -10,19 +10,16 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class Converters {
 
-    /*
     private static final Map<Property<?>, ConverterBase> CONVERTERS = Stream.of(
         new RotationConverter(),
         new NoteConverter()
-    ).collect(Collectors.toUnmodifiableMap(Converter::getProperty, key -> key));*/
+    ).collect(Collectors.toUnmodifiableMap(Converter::getProperty, key -> key));
 
     public static ConverterBase getOrDefault(Property<?> property, PropertyMaker maker) {
-        return null;
-        //return CONVERTERS.getOrDefault(property, maker);
+        return CONVERTERS.getOrDefault(property, maker);
     }
 
     public static boolean has(Property<?> property) {
-        return false;
-        //return CONVERTERS.containsKey(property);
+        return CONVERTERS.containsKey(property);
     }
 }

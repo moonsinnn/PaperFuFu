@@ -23,8 +23,8 @@ public class CraftTripWire extends CraftBlockData implements Tripwire {
     private static final BooleanProperty POWERED = TripWireBlock.POWERED;
 
     private static final Map<BlockFace, BooleanProperty> PROPERTY_BY_DIRECTION = Map.of(
-        BlockFace.WEST, TripWireBlock.WEST,
         BlockFace.EAST, TripWireBlock.EAST,
+        BlockFace.WEST, TripWireBlock.WEST,
         BlockFace.NORTH, TripWireBlock.NORTH,
         BlockFace.SOUTH, TripWireBlock.SOUTH
     );

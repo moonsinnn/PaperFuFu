@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -45,11 +44,11 @@ import picocli.CommandLine;
 )
 public class Main implements Callable<Integer> {
 
+    @CommandLine.Option(names = {"--root-dir"}, required = true)
+    Path rootDir;
+
     @CommandLine.Option(names = {"--sourceset"}, required = true)
     Path sourceSet;
-
-    @CommandLine.Option(names = {"-cp", "--classpath"}, split = ":", required = true)
-    Set<Path> classpath;
 
     @CommandLine.Option(names = {"--rewrite"})
     boolean isRewrite;
@@ -62,6 +61,7 @@ public class Main implements Callable<Integer> {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    public static @MonotonicNonNull Path ROOT_DIR;
     public static RegistryAccess.@MonotonicNonNull Frozen REGISTRY_ACCESS;
     public static @MonotonicNonNull Map<TagKey<?>, String> EXPERIMENTAL_TAGS;
 
@@ -108,12 +108,9 @@ public class Main implements Callable<Integer> {
         bootStrap(this.tagBootstrap).join();
 
         try {
-            // todo remove once block data is done
-            if (!this.isRewrite && !this.side.equals("api")) {
-                return 0;
-            }
+            ROOT_DIR = this.rootDir;
             if (this.isRewrite) {
-                rewrite(this.sourceSet, this.classpath, Rewriters.VALUES.get(this.side));
+                rewrite(this.sourceSet, Rewriters.VALUES.get(this.side));
             } else {
                 generate(this.sourceSet, this.side.equals("api") ? Generators.API : Generators.SERVER);
             }
@@ -125,8 +122,8 @@ public class Main implements Callable<Integer> {
         return 0;
     }
 
-    private static void rewrite(Path sourceSet, Set<Path> classpath, Consumer<PatternSourceSetRewriter> rewriters) throws IOException {
-        PatternSourceSetRewriter sourceSetRewriter = new PaperPatternSourceSetRewriter(classpath);
+    private static void rewrite(Path sourceSet, Consumer<PatternSourceSetRewriter> rewriters) throws IOException {
+        PatternSourceSetRewriter sourceSetRewriter = new PaperPatternSourceSetRewriter();
         rewriters.accept(sourceSetRewriter);
         sourceSetRewriter.apply(sourceSet);
     }

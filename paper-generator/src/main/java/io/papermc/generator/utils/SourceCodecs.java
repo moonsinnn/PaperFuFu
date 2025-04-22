@@ -4,12 +4,21 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.FormattingStyle;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.squareup.javapoet.ClassName;
 import io.papermc.generator.types.SimpleGenerator;
 import io.papermc.typewriter.ClassNamed;
 import javax.lang.model.SourceVersion;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.RegistryFixedCodec;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 
 public final class SourceCodecs {
 
@@ -64,4 +73,38 @@ public final class SourceCodecs {
     public static final Codec<ClassName> CLASS_NAME = CLASS_NAMED.xmap(
         io.papermc.generator.types.Types::typed, io.papermc.generator.rewriter.types.Types::typed
     );
+
+    public static <E> Codec<Either<TagKey<E>, Holder<E>>> elementOrTagCodec(ResourceKey<? extends Registry<E>> registryKey) {
+        return Codec.either(RegistryAwareTagKeyCodec.hashedCodec(registryKey), RegistryFixedCodec.create(registryKey));
+    }
+
+    private record RegistryAwareTagKeyCodec<E>(Codec<TagKey<E>> delegate, ResourceKey<? extends Registry<E>> registryKey) implements Codec<TagKey<E>> {
+
+        public static <E> RegistryAwareTagKeyCodec<E> hashedCodec(ResourceKey<? extends Registry<E>> registryKey) {
+            return new RegistryAwareTagKeyCodec<>(TagKey.hashedCodec(registryKey), registryKey);
+        }
+
+        @Override
+        public <T> DataResult<Pair<TagKey<E>, T>> decode(DynamicOps<T> ops, T input) {
+            if (!(ops instanceof RegistryOps<T> registryOps)) {
+                return DataResult.error(() -> "Can't access registry " + this.registryKey);
+            }
+
+            return registryOps.getter(this.registryKey)
+                .map(getter -> {
+                    return this.delegate.decode(ops, input).flatMap(pair -> {
+                        TagKey<E> result = pair.getFirst();
+                        if (getter.get(result).isPresent()) {
+                            return DataResult.success(pair);
+                        }
+                        return DataResult.error(() -> "Missing tag: '" + result.location() + "' in registry '" + result.registry().location() + "'");
+                    });
+                }).orElseGet(() -> DataResult.error(() -> "Can't access registry " + this.registryKey));
+        }
+
+        @Override
+        public <T> DataResult<T> encode(TagKey<E> tagKey, DynamicOps<T> ops, T input) {
+            return this.delegate.encode(tagKey, ops, input);
+        }
+    }
 }

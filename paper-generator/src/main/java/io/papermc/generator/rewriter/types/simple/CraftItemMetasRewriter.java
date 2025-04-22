@@ -1,10 +1,11 @@
 package io.papermc.generator.rewriter.types.simple;
 
+import com.mojang.datafixers.util.Either;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.ItemMetaData;
-import io.papermc.generator.utils.ItemPredicate;
+import io.papermc.generator.utils.predicate.ItemPredicate;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.context.IndentUnit;
 import io.papermc.typewriter.replace.SearchMetadata;
@@ -14,7 +15,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import java.util.Iterator;
 import java.util.List;
@@ -41,10 +41,10 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
                 }
                 switch (predicate) {
                     case ItemPredicate.IsElementPredicate isElementPredicate:
-                        ExtraCodecs.TagOrElementLocation value = isElementPredicate.value();
-                        if (value.tag()) {
+                        Either<TagKey<Item>, Holder<Item>> value = isElementPredicate.value();
+                        if (value.left().isPresent()) {
                             // flatten tag since they can change at runtime with plugins/data-packs
-                            Iterator<Holder<Item>> tagValues = BuiltInRegistries.ITEM.getTagOrEmpty(TagKey.create(Registries.ITEM, value.id())).iterator();
+                            Iterator<Holder<Item>> tagValues = BuiltInRegistries.ITEM.getTagOrEmpty(value.left().get()).iterator();
                             while (tagValues.hasNext()) {
                                 appendElementEquality(builder, itemType, tagValues.next().unwrapKey().orElseThrow().location());
                                 if (tagValues.hasNext()) {
@@ -53,7 +53,7 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
                                 }
                             }
                         } else {
-                            appendElementEquality(builder, itemType, value.id());
+                            appendElementEquality(builder, itemType, value.right().get().unwrapKey().orElseThrow().location());
                         }
                         break;
                     case ItemPredicate.IsClassPredicate isClassPredicate: {

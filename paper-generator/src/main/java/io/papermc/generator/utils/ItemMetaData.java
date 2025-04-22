@@ -4,7 +4,10 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.papermc.generator.Main;
+import io.papermc.generator.utils.predicate.ItemPredicate;
 import io.papermc.typewriter.ClassNamed;
+import net.minecraft.resources.RegistryOps;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,11 +38,11 @@ public final class ItemMetaData {
     }
 
     public static final Map<ClassNamed, List<ItemPredicate>> PREDICATES;
-    public static final Codec<Map<ClassNamed, List<ItemPredicate>>> PREDICATES_CODEC = Codec.unboundedMap(SourceCodecs.CLASS_NAMED, ItemPredicate.CODEC.listOf(1, Integer.MAX_VALUE));
+    public static final Codec<Map<ClassNamed, List<ItemPredicate>>> PREDICATES_CODEC = Codec.unboundedMap(SourceCodecs.CLASS_NAMED, ItemPredicate.CODEC.listOf(0, Integer.MAX_VALUE));
     static {
         try (Reader input = new BufferedReader(new InputStreamReader(ItemMetaData.class.getClassLoader().getResourceAsStream("data/item_meta/predicates.json")))) {
             JsonObject predicates = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            PREDICATES = PREDICATES_CODEC.parse(JsonOps.INSTANCE, predicates).getOrThrow();
+            PREDICATES = PREDICATES_CODEC.parse(RegistryOps.create(JsonOps.INSTANCE, Main.REGISTRY_ACCESS), predicates).getOrThrow();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

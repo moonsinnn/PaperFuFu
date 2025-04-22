@@ -71,6 +71,8 @@ public final class Types {
 
     public static final ClassNamed DAMAGE_TYPE_TAGS = ClassNamed.of(API_PACKAGE + ".tag", "DamageTypeTags");
 
+    public static final ClassNamed BLOCK_DATA = ClassNamed.of(API_PACKAGE + ".block.data", "BlockData");
+
     public static final ClassNamed NAMED_TEXT_COLOR = ClassNamed.of("net.kyori.adventure.text.format", "NamedTextColor");
 
     public static final ClassNamed COMPONENT = ClassNamed.of("net.kyori.adventure.text", "Component");

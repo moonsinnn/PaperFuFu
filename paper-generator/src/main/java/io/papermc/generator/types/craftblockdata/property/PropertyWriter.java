@@ -2,6 +2,7 @@ package io.papermc.generator.types.craftblockdata.property;
 
 import com.google.common.base.Suppliers;
 import com.google.common.primitives.Primitives;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
@@ -23,7 +24,7 @@ import org.jspecify.annotations.NullMarked;
 public class PropertyWriter<T extends Comparable<T>> implements PropertyMaker {
 
     protected final Property<T> property;
-    private final Supplier<Class<?>> apiClassSupplier;
+    private final Supplier<TypeName> apiClassSupplier;
 
     protected PropertyWriter(Property<T> property) {
         this.property = property;
@@ -35,16 +36,16 @@ public class PropertyWriter<T extends Comparable<T>> implements PropertyMaker {
         return TypeName.get(this.property.getClass());
     }
 
-    protected Class<?> processApiType() {
+    protected TypeName processApiType() {
         Class<T> apiClass = this.property.getValueClass();
         if (Primitives.isWrapperType(apiClass)) {
             apiClass = Primitives.unwrap(apiClass);
         }
-        return apiClass;
+        return TypeName.get(apiClass);
     }
 
     @Override
-    public Class<?> getApiType() {
+    public TypeName getApiType() {
         return this.apiClassSupplier.get();
     }
 
@@ -59,7 +60,7 @@ public class PropertyWriter<T extends Comparable<T>> implements PropertyMaker {
     }
 
     @Override
-    public void addExtras(TypeSpec.Builder builder, FieldSpec field, CraftBlockDataGenerator<?> generator, NamingManager naming) {
+    public void addExtras(TypeSpec.Builder builder, FieldSpec field, CraftBlockDataGenerator generator, NamingManager naming) {
         PropertyAppenders.ifPresent(this.property, appender -> appender.addExtras(builder, field, generator, naming));
     }
 

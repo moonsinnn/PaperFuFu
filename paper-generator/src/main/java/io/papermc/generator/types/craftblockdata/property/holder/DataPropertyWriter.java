@@ -28,7 +28,6 @@ import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.properties.Property;
-//import org.bukkit.block.BlockFace;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 
@@ -58,7 +57,8 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
 
     protected final Field field;
     protected @MonotonicNonNull DataHolderType type;
-    protected @MonotonicNonNull Class<?> indexClass, internalIndexClass;
+    protected @MonotonicNonNull TypeName indexClass;
+    protected @MonotonicNonNull Class<?> internalIndexClass;
     protected @MonotonicNonNull TypeName fieldType;
 
     protected DataPropertyWriter(Field field, Collection<? extends Property<?>> properties, Class<? extends Block> blockClass) {
@@ -72,22 +72,26 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
 
         if (field.getType().isArray()) {
             this.type = DataHolderType.ARRAY;
-            this.indexClass = Integer.TYPE;
+            this.indexClass = TypeName.INT;
         } else if (List.class.isAssignableFrom(field.getType())) {
             this.type = DataHolderType.LIST;
-            this.indexClass = Integer.TYPE;
+            this.indexClass = TypeName.INT;
         } else if (Map.class.isAssignableFrom(field.getType()) && field.getGenericType() instanceof ParameterizedType complexType) {
             this.type = DataHolderType.MAP;
             this.internalIndexClass = ClassHelper.eraseType(complexType.getActualTypeArguments()[0]);
             if (this.internalIndexClass.isEnum()) {
-                this.indexClass = null;//BlockStateMapping.ENUM_PROPERTY_TYPES.getOrDefault(this.internalIndexClass, this.internalIndexClass);
+                TypeName indexClass = BlockStateMapping.ENUM_PROPERTY_TYPES.get(this.internalIndexClass);
+                if (indexClass == null) {
+                    indexClass = TypeName.get(this.internalIndexClass);
+                }
+                this.indexClass = indexClass;
                 this.fieldType = ParameterizedTypeName.get(
                     ClassName.get(field.getType()),
-                    ClassName.get(this.indexClass),
+                    this.indexClass,
                     ClassName.get(complexType.getActualTypeArguments()[1])
                 );
             } else {
-                this.indexClass = this.internalIndexClass;
+                this.indexClass = TypeName.get(this.internalIndexClass);
             }
         } else {
             throw new IllegalStateException("Don't know how to turn " + field + " into api");
@@ -99,8 +103,8 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
         FieldSpec.Builder fieldBuilder = FieldSpec.builder(this.fieldType, this.field.getName(), PRIVATE, STATIC, FINAL);
         if (Modifier.isPublic(this.field.getModifiers())) {
             // accessible phew
-            if (this.type == DataHolderType.MAP && true
-                /*this.internalIndexClass == Direction.class && this.indexClass == BlockFace.class*/) { // Direction -> BlockFace
+            if (this.type == DataHolderType.MAP &&
+                this.internalIndexClass == Direction.class && this.indexClass.equals(Types.BLOCK_FACE)) { // Direction -> BlockFace
                 // convert the key manually only this one is needed for now
                 fieldBuilder.initializer("$[$1T.$2L.entrySet().stream()\n.collect($3T.toMap($4L -> $5T.notchToBlockFace($4L.getKey()), $4L -> $4L.getValue()))$]",
                     this.blockClass, this.field.getName(), Collectors.class, CommonVariable.MAP_ENTRY, Types.CRAFT_BLOCK);
@@ -122,7 +126,7 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
     }
 
     @Override
-    public Class<?> getIndexClass() {
+    public TypeName getIndexClass() {
         return this.indexClass;
     }
 
@@ -158,7 +162,7 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
     }
 
     @Override
-    public void addExtras(TypeSpec.Builder builder, FieldSpec field, ParameterSpec indexParameter, ConverterBase childConverter, CraftBlockDataGenerator<?> generator, NamingManager baseNaming) {
+    public void addExtras(TypeSpec.Builder builder, FieldSpec field, ParameterSpec indexParameter, ConverterBase childConverter, CraftBlockDataGenerator generator, NamingManager baseNaming) {
         DataAppenders.ifPresent(this.type, appender -> appender.addExtras(builder, field, indexParameter, childConverter, generator, baseNaming));
     }
 }

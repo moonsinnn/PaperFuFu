@@ -1,15 +1,13 @@
-package io.papermc.generator.utils;
+package io.papermc.generator.utils.predicate;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.papermc.generator.utils.SourceCodecs;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -91,29 +89,13 @@ public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, It
         }
     }
 
-    record IsElementPredicate(ExtraCodecs.TagOrElementLocation value) implements ItemPredicate {
-
-        private static final Codec<ExtraCodecs.TagOrElementLocation> ITEM_TAG_OR_ELEMENT_ID = ExtraCodecs.TAG_OR_ELEMENT_ID.validate(value -> {
-            if (value.tag()) {
-                if (BuiltInRegistries.ITEM.get(TagKey.create(Registries.ITEM, value.id())).isPresent()) {
-                    return DataResult.success(value);
-                } else {
-                    return DataResult.error(() -> "Invalid tag id: " + value);
-                }
-            } else {
-                if (BuiltInRegistries.ITEM.get(value.id()).isPresent()) {
-                    return DataResult.success(value);
-                } else {
-                    return DataResult.error(() -> "Invalid element id: " + value);
-                }
-            }
-        });
+    record IsElementPredicate(Either<TagKey<Item>, Holder<Item>> value) implements ItemPredicate {
 
         public static final MapCodec<IsElementPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            ITEM_TAG_OR_ELEMENT_ID.fieldOf("value").forGetter(IsElementPredicate::value)
+            SourceCodecs.elementOrTagCodec(Registries.ITEM).fieldOf("value").forGetter(IsElementPredicate::value)
         ).apply(instance, IsElementPredicate::new));
 
-        public static final Codec<IsElementPredicate> COMPACT_CODEC = ITEM_TAG_OR_ELEMENT_ID.xmap(IsElementPredicate::new, IsElementPredicate::value);
+        public static final Codec<IsElementPredicate> COMPACT_CODEC = SourceCodecs.elementOrTagCodec(Registries.ITEM).xmap(IsElementPredicate::new, IsElementPredicate::value);
 
         @Override
         public Type type() {
@@ -122,11 +104,7 @@ public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, It
 
         @Override
         public boolean test(Holder.Reference<Item> item) {
-            if (this.value.tag()) {
-                return item.is(TagKey.create(Registries.ITEM, this.value.id()));
-            }
-
-            return item.is(this.value.id());
+            return this.value.map(item::is, item::is);
         }
     }
 }

@@ -36,7 +36,6 @@ import java.lang.reflect.ParameterizedType;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -123,11 +122,6 @@ public class PrepareInputFiles {
     });
 
     private static final List<DataFile<?>> DATA_FILES = List.of(
-        new DataFile<>("block_state_properties.json", BlockStateMapping.PROPERTY_DATA_CODEC, value -> {
-            List<BlockStateMapping.PropertyData> mutableValue = new ArrayList<>(value);
-            mutableValue.sort(Comparator.naturalOrder());
-            return SimpleMutationResult.noMutation(mutableValue);
-        }),
         new DataFile<>("enum_property_types.json", BlockStateMapping.ENUM_PROPERTY_TYPES_CODEC, transmuteDeltaMap(() -> {
                 try {
                     Set<Class<? extends Enum<? extends StringRepresentable>>> enumPropertyTypes = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -145,7 +139,7 @@ public class PrepareInputFiles {
                     throw new RuntimeException(ex);
                 }
             },
-            missingType -> ClassNamed.of("org.bukkit.block.data.type", missingType.getSimpleName()),
+            missingType -> ClassName.get("org.bukkit.block.data.type", missingType.getSimpleName()),
             Comparator.comparing(Class::getCanonicalName))
         ),
         new DataFile<>("entity_types.json", EntityTypeRewriter.DATA_CODEC, transmuteDeltaMap(() -> BuiltInRegistries.ENTITY_TYPE.listElementIds().collect(Collectors.toSet()),
@@ -177,10 +171,12 @@ public class PrepareInputFiles {
                 Files.writeString(resourcePath, SourceCodecs.GSON.toJson(element) + "\n", StandardCharsets.UTF_8);
 
                 if (!result.added().isEmpty()) {
-                    LOGGER.info("Added the following elements in {}:\n{}", filePath, result.added().stream().map(Object::toString).collect(Collectors.joining("\n")));
+                    LOGGER.info("Added the following elements in {}:", filePath);
+                    result.added().stream().map(Object::toString).forEach(LOGGER::info);
                 }
                 if (!result.removed().isEmpty()) {
-                    LOGGER.warn("Removed the following keys in {}:\n{}", filePath, result.removed().stream().map(Object::toString).collect(Collectors.joining("\n")));
+                    LOGGER.warn("Removed the following keys in {}:", filePath);
+                    result.removed().stream().map(Object::toString).forEach(LOGGER::info);
                 }
             }
         }

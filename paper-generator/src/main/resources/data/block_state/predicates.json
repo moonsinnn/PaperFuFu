@@ -1,0 +1,281 @@
+{
+    "org.bukkit.block.data.type.Furnace": [
+        {
+            "type": "instance_of",
+            "value": "net.minecraft.world.level.block.AbstractFurnaceBlock"
+        }
+    ],
+    "org.bukkit.block.data.type.Dripleaf": [
+        {
+            "type": "is_class",
+            "value": "net.minecraft.world.level.block.BigDripleafStemBlock"
+        }
+    ],
+    "org.bukkit.block.data.type.Fence": [
+        {
+            "type": "is_class",
+            "value": "net.minecraft.world.level.block.IronBarsBlock"
+        }
+    ],
+    "org.bukkit.block.data.type.ResinClump": [
+        {
+            "type": "is_class",
+            "value": "net.minecraft.world.level.block.MultifaceBlock"
+        }
+    ],
+    "org.bukkit.block.data.type.Switch": [
+        {
+            "type": "is_class",
+            "value": "net.minecraft.world.level.block.LeverBlock"
+        },
+        {
+            "type": "is_class",
+            "value": "net.minecraft.world.level.block.ButtonBlock"
+        }
+    ],
+    "org.bukkit.block.data.type.RedstoneRail": [
+        {
+            "type": "instance_of",
+            "value": "net.minecraft.world.level.block.BaseRailBlock",
+            "properties": [
+                "powered"
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Rail": [
+        {
+            "type": "instance_of",
+            "value": "net.minecraft.world.level.block.BaseRailBlock"
+        }
+    ],
+    "org.bukkit.block.data.type.Stairs": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "STAIRS_SHAPE"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.type.TechnicalPiston": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "PISTON_TYPE"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.FaceAttachable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "ATTACH_FACE"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Orientable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "AXIS"
+                },
+                {
+                    "type": "is_field",
+                    "value": "HORIZONTAL_AXIS"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Bisected": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "DOUBLE_BLOCK_HALF"
+                },
+                {
+                    "type": "is_field",
+                    "value": "HALF"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Brushable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "DUSTED"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Hangable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "HANGING"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Hatchable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "HATCH"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Directional": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "HORIZONTAL_FACING"
+                },
+                {
+                    "type": "is_field",
+                    "value": "FACING"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Lightable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "LIT"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Openable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "OPEN"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.AnaloguePowerable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "POWER"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Powerable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "POWERED"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Rotatable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "ROTATION_16"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Segmentable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "SEGMENT_AMOUNT"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Snowable": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "SNOWY"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Waterlogged": [
+        {
+            "type": "has_property",
+            "value": [
+                {
+                    "type": "is_field",
+                    "value": "WATERLOGGED"
+                }
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Ageable": [
+        {
+            "type": "has_property",
+            "value": [
+                "age"
+            ]
+        }
+    ],
+    "org.bukkit.block.data.Levelled": [
+        {
+            "type": "has_property",
+            "value": [
+                "level"
+            ]
+        }
+    ],
+    "org.bukkit.block.data.MultipleFacing": [
+        {
+            "type": "contains_property",
+            "value": [
+                "north",
+                "east",
+                "south",
+                "west",
+                "up",
+                "down"
+            ],
+            "threshold": 2,
+            "glob": "at_least"
+        }
+    ]
+}

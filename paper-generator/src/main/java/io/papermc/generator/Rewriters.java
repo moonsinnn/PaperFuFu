@@ -12,12 +12,15 @@ import io.papermc.generator.rewriter.types.registry.RegistryConversionTestRewrit
 import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
 import io.papermc.generator.rewriter.types.registry.RegistryTagRewriter;
 import io.papermc.generator.rewriter.types.registry.TagRewriter;
+import io.papermc.generator.rewriter.types.simple.BlockTypeRewriter;
+import io.papermc.generator.rewriter.types.simple.CraftBlockDataMapping;
 import io.papermc.generator.rewriter.types.simple.CraftBlockEntityStateMapping;
 import io.papermc.generator.rewriter.types.simple.CraftItemMetasRewriter;
 import io.papermc.generator.rewriter.types.simple.CraftPotionUtilRewriter;
 import io.papermc.generator.rewriter.types.simple.EntityTypeRewriter;
 import io.papermc.generator.rewriter.types.simple.ItemTypeRewriter;
 import io.papermc.generator.rewriter.types.simple.MapPaletteRewriter;
+import io.papermc.generator.rewriter.types.simple.MaterialRewriter;
 import io.papermc.generator.rewriter.types.simple.MemoryKeyRewriter;
 import io.papermc.generator.rewriter.types.simple.StatisticRewriter;
 import io.papermc.generator.rewriter.types.simple.trial.PoseRewriter;
@@ -113,12 +116,12 @@ public final class Rewriters {
                     );
                 }
             })
-            /*.register(Types.MATERIAL, composite(
+            .register(Types.MATERIAL, composite(
                 sameHolder("Blocks", new MaterialRewriter.Blocks()),
                 //sameHolder("Material#isTransparent", MaterialRewriter.IsTransparent()),
 
                 sameHolder("Items", new MaterialRewriter.Items())
-            ))*/
+            ))
             .register(Types.STATISTIC, composite(
                 sameHolder("StatisticCustom", new StatisticRewriter.Custom()),
                 sameHolder("StatisticType", new StatisticRewriter.Type())
@@ -162,7 +165,7 @@ public final class Rewriters {
             .register("PigVariant", new RegistryFieldRewriter<>(Registries.PIG_VARIANT, "getVariant"))
             .register("MemoryKey", new MemoryKeyRewriter())
             .register("ItemType", new ItemTypeRewriter())
-            // .register("BlockType", new BlockTypeRewriter())
+            .register("BlockType", new BlockTypeRewriter())
             .register("FeatureFlag", Types.FEATURE_FLAG, new FeatureFlagRewriter())
             .register("Tag", Types.TAG, new TagRewriter())
             .register("MapPalette#colors", Types.MAP_PALETTE, new MapPaletteRewriter());
@@ -171,7 +174,7 @@ public final class Rewriters {
 
     private static void bootstrapImpl(PatternSourceSetRewriter sourceSet) {
         sourceSet
-            //.register("CraftBlockData#MAP", Types.CRAFT_BLOCK_DATA, new CraftBlockDataMapping())
+            .register("CraftBlockData#MAP", Types.CRAFT_BLOCK_DATA, new CraftBlockDataMapping())
             .register("CraftBlockEntityStates", Types.CRAFT_BLOCK_STATES, new CraftBlockEntityStateMapping())
             .register("CraftItemMetas#getItemMetaData", Types.CRAFT_ITEM_METAS, new CraftItemMetasRewriter())
             .register(Types.CRAFT_STATISTIC, composite(

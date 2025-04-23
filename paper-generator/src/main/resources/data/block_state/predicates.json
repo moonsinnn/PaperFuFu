@@ -274,8 +274,8 @@
                 "up",
                 "down"
             ],
-            "threshold": 2,
-            "glob": "at_least"
+            "count": 2,
+            "strategy": "at_least"
         }
     ]
 }

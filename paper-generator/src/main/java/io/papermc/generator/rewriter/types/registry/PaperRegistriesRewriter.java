@@ -9,9 +9,7 @@ import io.papermc.typewriter.replace.SearchMetadata;
 import io.papermc.typewriter.replace.SearchReplaceRewriter;
 import java.lang.constant.ConstantDescs;
 import net.minecraft.core.registries.Registries;
-import org.jspecify.annotations.NullMarked;
 
-@NullMarked
 public class PaperRegistriesRewriter extends SearchReplaceRewriter {
 
     private void appendEntry(String indent, StringBuilder builder, RegistryEntry<?> entry, boolean canBeDelayed, boolean apiOnly) {

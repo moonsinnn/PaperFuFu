@@ -65,7 +65,7 @@ public class MapAppender implements DataAppender {
             String collectVarName = baseNaming.getVariableNameWrapper().post("s").concat();
             MethodSpec.Builder methodBuilder = generator.createMethod(baseNaming.getMethodNameWrapper().post("s").concat());
             methodBuilder.addStatement("$T $L = $T.builder()", ParameterizedTypeName.get(ClassName.get(ImmutableSet.Builder.class), indexParameter.type), collectVarName, ImmutableSet.class);
-            methodBuilder.beginControlFlow("for ($T $N : $N.entrySet())", ParameterizedTypeName.get(ClassName.get(Map.Entry.class), indexParameter.type, ClassName.get(BooleanProperty.class)), CommonVariable.MAP_ENTRY, field);
+            methodBuilder.beginControlFlow("for ($T $N : $N.entrySet())", ParameterizedTypeName.get(ClassName.get(Map.Entry.class), indexParameter.type, TypeName.get(BooleanProperty.class)), CommonVariable.MAP_ENTRY, field);
             {
                 methodBuilder.beginControlFlow("if (" + childConverter.rawGetExprent().formatted("$L.getValue()") + ")", CommonVariable.MAP_ENTRY);
                 {
@@ -81,7 +81,7 @@ public class MapAppender implements DataAppender {
         }
 
         if (SUPPORT_ALLOWED_METHOD.contains(generator.getBaseClass()) &&
-            indexParameter.type instanceof ClassName className && !className.isPrimitive() && !className.isBoxedPrimitive()) {
+            indexParameter.type instanceof ClassName className && !className.isBoxedPrimitive()) {
             NamingManager.NameWrapper indexNaming = NamingManager.NameWrapper.wrap("get", INDEX_NAMES.getOrDefault(className.simpleName(), className.simpleName()));
 
             MethodSpec.Builder methodBuilder = generator.createMethod(indexNaming.pre("Allowed").post("s").concat());

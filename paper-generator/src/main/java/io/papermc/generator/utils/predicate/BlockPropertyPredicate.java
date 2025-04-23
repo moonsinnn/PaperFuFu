@@ -7,30 +7,32 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.papermc.generator.utils.BlockStateMapping;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
+@NullMarked
 public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.IsNamePredicate, BlockPropertyPredicate.IsFieldPredicate {
 
-    Codec<BlockPropertyPredicate> DIRECT_CODEC = Type.CODEC.dispatch("type", BlockPropertyPredicate::type, type -> type.codec.get());
+    Codec<BlockPropertyPredicate> DIRECT_CODEC = Type.CODEC.dispatch("type", BlockPropertyPredicate::type, type -> type.codec);
     Codec<BlockPropertyPredicate> CODEC = Codec.either(BlockPropertyPredicate.IsNamePredicate.COMPACT_CODEC, DIRECT_CODEC).xmap(Either::unwrap, Either::right);
 
+    Codec<Set<BlockPropertyPredicate>> SET_CODEC = CODEC.listOf().xmap(Set::copyOf, List::copyOf);
     Codec<Set<BlockPropertyPredicate>> NON_EMPTY_SET_CODEC = CODEC.listOf(1, Integer.MAX_VALUE).xmap(Set::copyOf, List::copyOf);
 
     Type type();
 
     enum Type implements StringRepresentable {
-        IS_FIELD("is_field", () -> IsFieldPredicate.CODEC),
-        IS_NAME("is_class", () -> IsNamePredicate.CODEC);
+        IS_FIELD("is_field", IsFieldPredicate.CODEC),
+        IS_NAME("is_name", IsNamePredicate.CODEC);
 
         public static final Codec<Type> CODEC = StringRepresentable.fromValues(Type::values);
         private final String name;
-        final Supplier<MapCodec<? extends BlockPropertyPredicate>> codec;
+        final MapCodec<? extends BlockPropertyPredicate> codec;
 
-        Type(final String name, final Supplier<MapCodec<? extends BlockPropertyPredicate>> codec) {
+        Type(final String name, final MapCodec<? extends BlockPropertyPredicate> codec) {
             this.name = name;
             this.codec = codec;
         }
@@ -88,7 +90,7 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
         @Override
         public boolean test(Property<?> property) {
             return BlockPropertyPredicate.testProperty(
-                field -> field.equals(BlockStateMapping.FALLBACK_GENERIC_FIELDS.get(property).getName()),
+                field -> field.equals(BlockStateMapping.GENERIC_FIELDS.get(property).getName()),
                 this.value,
                 true
             );

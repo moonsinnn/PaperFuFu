@@ -24,9 +24,9 @@ public class CraftTripWire extends CraftBlockData implements Tripwire {
 
     private static final Map<BlockFace, BooleanProperty> PROPERTY_BY_DIRECTION = Map.of(
         BlockFace.EAST, TripWireBlock.EAST,
-        BlockFace.WEST, TripWireBlock.WEST,
         BlockFace.NORTH, TripWireBlock.NORTH,
-        BlockFace.SOUTH, TripWireBlock.SOUTH
+        BlockFace.SOUTH, TripWireBlock.SOUTH,
+        BlockFace.WEST, TripWireBlock.WEST
     );
 
     public CraftTripWire(BlockState state) {

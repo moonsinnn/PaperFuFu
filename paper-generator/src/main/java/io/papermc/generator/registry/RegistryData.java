@@ -14,7 +14,6 @@ public record RegistryData(
     Api api,
     Impl impl,
     Optional<Builder> builder,
-    boolean keyClassNameBasedOnApi,
     Optional<String> serializationUpdaterField,
     boolean allowInline
 ) {
@@ -23,20 +22,20 @@ public record RegistryData(
         Api.CODEC.fieldOf("api").forGetter(RegistryData::api),
         Impl.CODEC.fieldOf("impl").forGetter(RegistryData::impl),
         Builder.CODEC.optionalFieldOf("builder").forGetter(RegistryData::builder),
-        Codec.BOOL.optionalFieldOf("key_class_name_based_on_api", false).forGetter(RegistryData::keyClassNameBasedOnApi),
         SourceCodecs.IDENTIFIER.optionalFieldOf("serialization_updater_field").forGetter(RegistryData::serializationUpdaterField),
         Codec.BOOL.optionalFieldOf("allow_inline", false).forGetter(RegistryData::allowInline)
     ).apply(instance, RegistryData::new));
 
-    public record Api(ClassNamed klass, Optional<ClassNamed> holders, Type type, Optional<String> registryField) {
+    public record Api(ClassNamed klass, Optional<ClassNamed> holders, Type type, boolean keyClassNameRelate, Optional<String> registryField) {
         public Api(ClassNamed klass) {
-            this(klass, Optional.of(klass), Type.INTERFACE, Optional.empty());
+            this(klass, Optional.of(klass), Type.INTERFACE, false, Optional.empty());
         }
 
         public static final Codec<Api> DIRECT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             SourceCodecs.CLASS_NAMED.fieldOf("class").forGetter(Api::klass),
             SourceCodecs.CLASS_NAMED.optionalFieldOf("holders").forGetter(Api::holders),
             Type.CODEC.optionalFieldOf("type", Type.INTERFACE).forGetter(Api::type),
+            Codec.BOOL.optionalFieldOf("key_class_name_relate", false).forGetter(Api::keyClassNameRelate),
             SourceCodecs.IDENTIFIER.optionalFieldOf("registry_field").forGetter(Api::registryField)
         ).apply(instance, Api::new));
 

@@ -7,9 +7,7 @@ import io.papermc.typewriter.replace.SearchReplaceRewriter;
 import java.util.Iterator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlags;
-import org.jspecify.annotations.NullMarked;
 
-@NullMarked
 public class PaperFeatureFlagMapping extends SearchReplaceRewriter {
 
     @Override

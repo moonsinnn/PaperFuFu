@@ -6,18 +6,9 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
-import com.squareup.javapoet.ClassName;
 import io.papermc.generator.Main;
 import io.papermc.generator.types.craftblockdata.property.holder.VirtualField;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -37,8 +28,6 @@ import io.papermc.generator.utils.predicate.BlockPredicate;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.util.ClassNamedView;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CommandBlock;
 import net.minecraft.world.level.block.NoteBlock;
@@ -56,20 +45,6 @@ public final class BlockStateMapping {
     public record BlockData(String implName, ClassNamed api,
                             Collection<? extends Property<?>> properties, Map<Property<?>, Field> propertyFields,
                             Multimap<Either<Field, VirtualField>, Property<?>> complexPropertyFields) {
-    }
-
-    private static final Map<ClassNamed, List<BlockPredicate>> PREDICATES;
-    public static final Codec<Map<ClassNamed, List<BlockPredicate>>> PREDICATES_CODEC = Codec.unboundedMap(
-        SourceCodecs.CLASS_NAMED, BlockPredicate.CODEC.listOf()
-    );
-
-    static {
-        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state/predicates.json")))) {
-            JsonObject predicates = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            PREDICATES = PREDICATES_CODEC.parse(RegistryOps.create(JsonOps.INSTANCE, Main.REGISTRY_ACCESS), predicates).getOrThrow();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     private static final Map<String, String> API_RENAMES = ImmutableMap.<String, String>builder()
@@ -101,12 +76,12 @@ public final class BlockStateMapping {
     public static final ImmutableMultimap<Class<?>, VirtualField> VIRTUAL_NODES = ImmutableMultimap.<Class<?>, VirtualField>builder()
         .build();
 
-    public static final BiMap<Property<?>, Field> FALLBACK_GENERIC_FIELDS;
+    public static final BiMap<Property<?>, Field> GENERIC_FIELDS;
 
     static {
-        ImmutableBiMap.Builder<Property<?>, Field> fallbackGenericFields = ImmutableBiMap.builder();
-        fetchProperties(BlockStateProperties.class, (field, property) -> fallbackGenericFields.put(property, field), null);
-        FALLBACK_GENERIC_FIELDS = fallbackGenericFields.buildOrThrow();
+        ImmutableBiMap.Builder<Property<?>, Field> genericFields = ImmutableBiMap.builder();
+        fetchProperties(BlockStateProperties.class, (field, property) -> genericFields.put(property, field), null);
+        GENERIC_FIELDS = genericFields.buildOrThrow();
     }
 
     public static final Map<Class<? extends Block>, BlockData> MAPPING;
@@ -173,7 +148,7 @@ public final class BlockStateMapping {
                 return Optional.empty();
             }).orElseGet(() -> {
                 Set<Property<?>> propertySet = new HashSet<>(entry.getValue());
-                for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : PREDICATES.entrySet()) {
+                for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : BlockStateData.PREDICATES.entrySet()) {
                     for (BlockPredicate predicate : predicateEntry.getValue()) {
                         if (predicate.test(specialBlock, propertySet)) {
                             return predicateEntry.getKey();
@@ -187,20 +162,6 @@ public final class BlockStateMapping {
             map.put(specialBlock, new BlockData(implName, Objects.requireNonNull(api, () -> "Unknown block data for " + specialBlock.getCanonicalName()), properties, propertyFields, complexPropertyFields));
         }
         MAPPING = Collections.unmodifiableMap(map);
-    }
-
-    public static final Map<Class<? extends Enum<? extends StringRepresentable>>, ClassName> ENUM_PROPERTY_TYPES;
-    public static final Codec<Map<Class<? extends Enum<? extends StringRepresentable>>, ClassName>> ENUM_PROPERTY_TYPES_CODEC = Codec.unboundedMap(
-        SourceCodecs.classCodec(new TypeToken<Enum<? extends StringRepresentable>>() {}), SourceCodecs.CLASS_NAME
-    );
-
-    static {
-        try (Reader input = new BufferedReader(new InputStreamReader(BlockStateMapping.class.getClassLoader().getResourceAsStream("data/block_state/enum_property_types.json")))) {
-            JsonObject properties = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            ENUM_PROPERTY_TYPES = ENUM_PROPERTY_TYPES_CODEC.parse(JsonOps.INSTANCE, properties).getOrThrow();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     public static @Nullable ClassNamed getBestSuitedApiClass(Class<?> block) {

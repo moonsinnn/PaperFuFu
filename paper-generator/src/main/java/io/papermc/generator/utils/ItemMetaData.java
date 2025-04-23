@@ -38,7 +38,7 @@ public final class ItemMetaData {
     }
 
     public static final Map<ClassNamed, List<ItemPredicate>> PREDICATES;
-    public static final Codec<Map<ClassNamed, List<ItemPredicate>>> PREDICATES_CODEC = Codec.unboundedMap(SourceCodecs.CLASS_NAMED, ItemPredicate.CODEC.listOf(0, Integer.MAX_VALUE));
+    public static final Codec<Map<ClassNamed, List<ItemPredicate>>> PREDICATES_CODEC = Codec.unboundedMap(SourceCodecs.CLASS_NAMED, ItemPredicate.CODEC.listOf(1, Integer.MAX_VALUE));
     static {
         try (Reader input = new BufferedReader(new InputStreamReader(ItemMetaData.class.getClassLoader().getResourceAsStream("data/item_meta/predicates.json")))) {
             JsonObject predicates = SourceCodecs.GSON.fromJson(input, JsonObject.class);

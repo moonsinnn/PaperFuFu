@@ -38,8 +38,6 @@ public final class Types {
 
     public static final ClassNamed LOCATION = ClassNamed.of(API_PACKAGE, "Location");
 
-    public static final ClassNamed FIREWORK_EFFECT = ClassNamed.of(API_PACKAGE, "FireworkEffect");
-
     public static final ClassNamed MATERIAL = ClassNamed.of(API_PACKAGE, "Material");
 
     public static final ClassNamed POSE = ClassNamed.of(API_PACKAGE + ".entity", "Pose");
@@ -75,27 +73,11 @@ public final class Types {
 
     public static final ClassNamed NAMED_TEXT_COLOR = ClassNamed.of("net.kyori.adventure.text.format", "NamedTextColor");
 
-    public static final ClassNamed COMPONENT = ClassNamed.of("net.kyori.adventure.text", "Component");
-
-    public static final ClassNamed KEY = typed(io.papermc.generator.types.Types.KEY);
-
-    public static final ClassNamed TAG_KEY = typed(io.papermc.generator.types.Types.TAG_KEY);
-
     public static final ClassNamed REGISTRY_KEY = typed(io.papermc.generator.types.Types.REGISTRY_KEY);
 
     public static final ClassNamed REGISTRY_EVENTS = ClassNamed.of(PAPER_PACKAGE + ".registry.event", "RegistryEvents");
 
     public static final ClassNamed REGISTRY_EVENT_PROVIDER = ClassNamed.of(PAPER_PACKAGE + ".registry.event", "RegistryEventProvider");
-
-    public static final ClassNamed DATA_COMPONENT_VALUED = ClassNamed.of(PAPER_PACKAGE + ".datacomponent", "DataComponentType", "Valued");
-
-    public static final ClassNamed DATA_COMPONENT_NON_VALUED = ClassNamed.of(PAPER_PACKAGE + ".datacomponent", "DataComponentType", "NonValued");
-
-    public static final ClassNamed BLOCK_ITEM_DATA_PROPERTIES = ClassNamed.of(PAPER_PACKAGE + ".datacomponent.item", "BlockItemDataProperties");
-
-    public static final ClassNamed ITEM_ADVENTURE_PREDICATE = ClassNamed.of(PAPER_PACKAGE + ".datacomponent.item", "ItemAdventurePredicate");
-
-    public static final ClassNamed ITEM_ARMOR_TRIM = ClassNamed.of(PAPER_PACKAGE + ".datacomponent.item", "ItemArmorTrim");
 
     public static final ClassNamed ITEM_USE_ANIMATION = ClassNamed.of(PAPER_PACKAGE + ".datacomponent.item.consumable", "ItemUseAnimation");
 
@@ -130,7 +112,7 @@ public final class Types {
 
     public static ClassNamed typed(ClassName name) {
         List<String> names = new ArrayList<>(name.simpleNames());
-        names.removeLast();
-        return ClassNamed.of(name.packageName(), name.simpleName(), names.toArray(new String[0]));
+        String topName = names.removeFirst();
+        return ClassNamed.of(name.packageName(), topName, names.toArray(new String[0]));
     }
 }

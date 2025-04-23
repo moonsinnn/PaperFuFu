@@ -25,14 +25,18 @@
         "impl": "org.bukkit.craftbukkit.potion.CraftPotionEffectType"
     },
     "minecraft:block": {
-        "api": "org.bukkit.block.BlockType",
-        "impl": "org.bukkit.craftbukkit.block.CraftBlockType",
-        "key_class_name_based_on_api": true
+        "api": {
+            "class": "org.bukkit.block.BlockType",
+            "key_class_name_relate": true
+        },
+        "impl": "org.bukkit.craftbukkit.block.CraftBlockType"
     },
     "minecraft:item": {
-        "api": "org.bukkit.inventory.ItemType",
-        "impl": "org.bukkit.craftbukkit.inventory.CraftItemType",
-        "key_class_name_based_on_api": true
+        "api": {
+            "class": "org.bukkit.inventory.ItemType",
+            "key_class_name_relate": true
+        },
+        "impl": "org.bukkit.craftbukkit.inventory.CraftItemType"
     },
     "minecraft:villager_profession": {
         "api": "org.bukkit.entity.Villager$Profession",

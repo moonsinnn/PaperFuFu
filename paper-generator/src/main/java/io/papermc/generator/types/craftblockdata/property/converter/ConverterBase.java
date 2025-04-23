@@ -1,6 +1,5 @@
 package io.papermc.generator.types.craftblockdata.property.converter;
 
-import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;

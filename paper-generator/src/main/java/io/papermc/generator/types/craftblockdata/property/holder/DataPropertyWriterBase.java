@@ -7,6 +7,7 @@ import io.papermc.generator.utils.Formatting;
 import it.unimi.dsi.fastutil.Pair;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,10 @@ public abstract class DataPropertyWriterBase implements DataPropertyMaker {
         this.blockClass = blockClass;
     }
 
+    private Iterator<? extends Property<?>> sortedIterator() {
+        return this.properties.stream().sorted(Comparator.comparing(Property::getName)).iterator();
+    }
+
     protected void createSyntheticCollection(CodeBlock.Builder code, boolean isArray, Map<Property<?>, Field> fields) {
         if (isArray) {
             code.add("{\n");
@@ -32,7 +37,7 @@ public abstract class DataPropertyWriterBase implements DataPropertyMaker {
             code.add("$T.of(\n", List.class);
         }
         code.indent();
-        Iterator<? extends Property<?>> it = this.properties.iterator();
+        Iterator<? extends Property<?>> it = this.sortedIterator();
         while (it.hasNext()) {
             Property<?> property = it.next();
             Pair<Class<?>, String> fieldName = PropertyWriter.referenceField(this.blockClass, property, fields);
@@ -48,7 +53,7 @@ public abstract class DataPropertyWriterBase implements DataPropertyMaker {
     protected void createSyntheticMap(CodeBlock.Builder code, TypeName indexClass, Map<Property<?>, Field> fields) {
         // assume indexClass is an enum with its values matching the property names
         code.add("$T.of(\n", Map.class).indent();
-        Iterator<? extends Property<?>> it = this.properties.iterator();
+        Iterator<? extends Property<?>> it = this.sortedIterator();
         while (it.hasNext()) {
             Property<?> property = it.next();
             String name = Formatting.formatKeyAsField(property.getName());

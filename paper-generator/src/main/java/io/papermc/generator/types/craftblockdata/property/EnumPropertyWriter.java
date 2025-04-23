@@ -1,11 +1,10 @@
 package io.papermc.generator.types.craftblockdata.property;
 
-import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
-import io.papermc.generator.utils.BlockStateMapping;
+import io.papermc.generator.utils.BlockStateData;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.NullMarked;
@@ -28,11 +27,7 @@ public class EnumPropertyWriter<T extends Enum<T> & StringRepresentable> extends
     @Override
     protected TypeName processApiType() {
         Class<?> rawClass = this.property.getValueClass();
-        TypeName apiClass = BlockStateMapping.ENUM_PROPERTY_TYPES.get(rawClass);
-        if (apiClass == null) {
-            throw new IllegalStateException("Unknown enum type for " + this.property);
-        }
-        return apiClass;
+        return BlockStateData.ENUM_PROPERTY_TYPES.get(rawClass);
     }
 
     @Override

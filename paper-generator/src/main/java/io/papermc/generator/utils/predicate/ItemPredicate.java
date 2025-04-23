@@ -11,7 +11,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, ItemPredicate.InstanceOfPredicate, ItemPredicate.IsElementPredicate {
 
     Codec<ItemPredicate> DIRECT_CODEC = Type.CODEC.dispatch("type", ItemPredicate::type, type -> type.codec);

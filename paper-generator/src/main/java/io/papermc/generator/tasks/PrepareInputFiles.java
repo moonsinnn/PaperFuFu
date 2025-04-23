@@ -12,12 +12,13 @@ import io.papermc.generator.Main;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.rewriter.types.simple.EntityTypeRewriter;
 import io.papermc.generator.types.goal.MobGoalNames;
-import io.papermc.generator.utils.BlockStateMapping;
+import io.papermc.generator.utils.BlockStateData;
 import io.papermc.generator.utils.ClassHelper;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.ItemMetaData;
 import io.papermc.generator.utils.SourceCodecs;
 import io.papermc.typewriter.ClassNamed;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -25,6 +26,8 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.slf4j.Logger;
@@ -122,7 +125,7 @@ public class PrepareInputFiles {
     });
 
     private static final List<DataFile<?>> DATA_FILES = List.of(
-        new DataFile<>("enum_property_types.json", BlockStateMapping.ENUM_PROPERTY_TYPES_CODEC, transmuteDeltaMap(() -> {
+        new DataFile<>("block_state/enum_property_types.json", BlockStateData.ENUM_PROPERTY_TYPES_CODEC, transmuteDeltaMap(() -> {
                 try {
                     Set<Class<? extends Enum<? extends StringRepresentable>>> enumPropertyTypes = Collections.newSetFromMap(new IdentityHashMap<>());
                     for (Field field : BlockStateProperties.class.getDeclaredFields()) {
@@ -143,7 +146,19 @@ public class PrepareInputFiles {
             Comparator.comparing(Class::getCanonicalName))
         ),
         new DataFile<>("entity_types.json", EntityTypeRewriter.DATA_CODEC, transmuteDeltaMap(() -> BuiltInRegistries.ENTITY_TYPE.listElementIds().collect(Collectors.toSet()),
-            missingType -> new EntityTypeRewriter.Data(ClassNamed.of("org.bukkit.entity", ENTITY_TYPE_GENERICS.get(missingType).getSimpleName())),
+            missingType -> {
+                Holder.Reference<EntityType<?>> reference = Main.REGISTRY_ACCESS.get(missingType).orElseThrow();
+                Class<?> genericType = ENTITY_TYPE_GENERICS.get(missingType);
+
+                String packageName = "org.bukkit.entity";
+                if (AbstractBoat.class.isAssignableFrom(genericType)) {
+                    packageName += ".boat";
+                } else if (AbstractMinecart.class.isAssignableFrom(genericType)) {
+                    packageName += ".minecart";
+                }
+
+                return new EntityTypeRewriter.Data(ClassNamed.of(packageName, genericType.getSimpleName()));
+            },
             Formatting.alphabeticKeyOrder(key -> key.location().getPath()))
         ),
         new DataFile<>("entity_class_names.json", MobGoalNames.ENTITY_CLASS_NAMES_CODEC, transmuteDeltaMap(() -> {

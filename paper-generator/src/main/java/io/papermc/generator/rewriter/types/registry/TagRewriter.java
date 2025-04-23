@@ -16,11 +16,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.ApiStatus;
-import org.jspecify.annotations.NullMarked;
 
 import static io.papermc.generator.utils.Formatting.quoted;
 
-@NullMarked
 @ApiStatus.Obsolete
 public class TagRewriter extends SearchReplaceRewriter {
 

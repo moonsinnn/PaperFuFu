@@ -8,8 +8,10 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jspecify.annotations.NullMarked;
 import java.util.Set;
 
+@NullMarked
 public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPredicate, BlockPredicate.InstanceOfPredicate, BlockPredicate.IsClassPredicate {
 
     Codec<BlockPredicate> CODEC = Type.CODEC.dispatch("type", BlockPredicate::type, type -> type.codec);
@@ -60,7 +62,7 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
 
         public static final MapCodec<InstanceOfPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SourceCodecs.classCodec(Block.class).fieldOf("value").forGetter(InstanceOfPredicate::value),
-            BlockPropertyPredicate.NON_EMPTY_SET_CODEC.optionalFieldOf("properties", Set.of()).forGetter(InstanceOfPredicate::propertyPredicates)
+            BlockPropertyPredicate.SET_CODEC.optionalFieldOf("properties", Set.of()).forGetter(InstanceOfPredicate::propertyPredicates)
         ).apply(instance, InstanceOfPredicate::new));
 
         @Override
@@ -89,17 +91,17 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
         }
     }
 
-    record ContainsPropertyPredicate(Set<BlockPropertyPredicate> value, int threshold, Glob glob) implements BlockPredicate {
+    record ContainsPropertyPredicate(Set<BlockPropertyPredicate> value, int count, Strategy strategy) implements BlockPredicate {
 
         public static final MapCodec<ContainsPropertyPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             BlockPropertyPredicate.NON_EMPTY_SET_CODEC.fieldOf("value").forGetter(ContainsPropertyPredicate::value),
-            ExtraCodecs.POSITIVE_INT.fieldOf("threshold").forGetter(ContainsPropertyPredicate::threshold),
-            Glob.CODEC.fieldOf("glob").forGetter(ContainsPropertyPredicate::glob)
+            ExtraCodecs.POSITIVE_INT.fieldOf("count").forGetter(ContainsPropertyPredicate::count),
+            Strategy.CODEC.fieldOf("strategy").forGetter(ContainsPropertyPredicate::strategy)
         ).apply(instance, ContainsPropertyPredicate::new));
 
         public static final MapCodec<ContainsPropertyPredicate> SINGLE_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            BlockPropertyPredicate.NON_EMPTY_SET_CODEC.optionalFieldOf("value", Set.of()).forGetter(ContainsPropertyPredicate::value)
-        ).apply(instance, value -> new ContainsPropertyPredicate(value, 1, Glob.AT_LEAST)));
+            BlockPropertyPredicate.NON_EMPTY_SET_CODEC.fieldOf("value").forGetter(ContainsPropertyPredicate::value)
+        ).apply(instance, value -> new ContainsPropertyPredicate(value, 1, Strategy.AT_LEAST)));
 
         @Override
         public Type type() {
@@ -112,28 +114,25 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
             for (BlockPropertyPredicate predicate : this.value) {
                 for (Property<?> property : properties) {
                     if (predicate.test(property)) {
-                        if (exceedLimit(++found)) {
+                        found++;
+                        if (this.strategy == Strategy.AT_LEAST && found == this.count) {
                             return true;
                         }
                     }
                 }
             }
 
-            return false;
+            return this.strategy == Strategy.EXACT && found == this.count;
         }
 
-        private boolean exceedLimit(int count) {
-            return this.glob == Glob.AT_LEAST ? (count >= this.threshold) : (count == this.threshold);
-        }
-
-        public enum Glob implements StringRepresentable {
+        public enum Strategy implements StringRepresentable {
             EXACT("exact"),
             AT_LEAST("at_least");
 
             private final String name;
-            static final Codec<Glob> CODEC = StringRepresentable.fromEnum(Glob::values);
+            static final Codec<Strategy> CODEC = StringRepresentable.fromEnum(Strategy::values);
 
-            Glob(String name) {
+            Strategy(String name) {
                 this.name = name;
             }
 

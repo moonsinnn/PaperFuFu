@@ -4,13 +4,12 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Either;
-import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import io.papermc.generator.types.OverriddenUnsafeClassGenerator;
+import io.papermc.generator.types.OverriddenClassGenerator;
 import io.papermc.generator.types.Types;
 import io.papermc.generator.types.craftblockdata.property.PropertyMaker;
 import io.papermc.generator.types.craftblockdata.property.PropertyWriter;
@@ -24,7 +23,6 @@ import io.papermc.generator.utils.Annotations;
 import io.papermc.generator.utils.BlockStateMapping;
 import io.papermc.generator.utils.CommonVariable;
 import io.papermc.generator.utils.NamingManager;
-import io.papermc.typewriter.ClassNamed;
 import it.unimi.dsi.fastutil.Pair;
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -45,7 +43,7 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
 @NullMarked
-public class CraftBlockDataGenerator extends OverriddenUnsafeClassGenerator {
+public class CraftBlockDataGenerator extends OverriddenClassGenerator {
 
     private final Class<? extends Block> blockClass;
     private final BlockStateMapping.BlockData blockData;
@@ -164,7 +162,7 @@ public class CraftBlockDataGenerator extends OverriddenUnsafeClassGenerator {
                 String paramName = propertyNaming.paramName(apiType);
                 ParameterSpec parameter = ParameterSpec.builder(apiType, paramName, FINAL).build();
 
-                MethodSpec.Builder methodBuilder = createUnsafeMethod(propertyNaming.simpleSetterName(name -> !name.startsWith("is_")), apiType).addParameter(parameter);
+                MethodSpec.Builder methodBuilder = createUnsafeMethod(propertyNaming.simpleSetterName(name -> !name.startsWith("is_"))).addParameter(parameter);
                 if (!apiType.isPrimitive()) {
                     methodBuilder.addStatement("$T.checkArgument($N != null, $S)", Preconditions.class, parameter, "%s cannot be null!".formatted(paramName));
                 }
@@ -207,7 +205,7 @@ public class CraftBlockDataGenerator extends OverriddenUnsafeClassGenerator {
 
             // get
             {
-                MethodSpec.Builder methodBuilder = createUnsafeMethod(baseNaming.simpleGetterName(name -> true), dataPropertyMaker.getIndexClass())
+                MethodSpec.Builder methodBuilder = createUnsafeMethod(baseNaming.simpleGetterName(name -> true))
                     .addParameter(indexParameter);
                 if (!dataPropertyMaker.getIndexClass().isPrimitive()) {
                     methodBuilder.addStatement("$T.checkArgument($N != null, $S)", Preconditions.class, indexParameter, "%s cannot be null!".formatted(indexParameter.name));
@@ -223,7 +221,7 @@ public class CraftBlockDataGenerator extends OverriddenUnsafeClassGenerator {
                 String paramName = baseNaming.paramName(apiClass);
                 ParameterSpec parameter = ParameterSpec.builder(apiClass, paramName, FINAL).build();
 
-                MethodSpec.Builder methodBuilder = createUnsafeMethod(baseNaming.simpleSetterName(name -> true), dataPropertyMaker.getIndexClass(), apiClass)
+                MethodSpec.Builder methodBuilder = createUnsafeMethod(baseNaming.simpleSetterName(name -> true))
                     .addParameter(indexParameter)
                     .addParameter(parameter);
                 if (!dataPropertyMaker.getIndexClass().isPrimitive()) {

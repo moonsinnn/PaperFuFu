@@ -1,6 +1,5 @@
 package io.papermc.generator.rewriter.types.simple;
 
-import com.mojang.datafixers.util.Either;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.utils.Formatting;
@@ -14,7 +13,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import java.util.Iterator;
 import java.util.List;
@@ -41,20 +39,19 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
                 }
                 switch (predicate) {
                     case ItemPredicate.IsElementPredicate isElementPredicate:
-                        Either<TagKey<Item>, Holder<Item>> value = isElementPredicate.value();
-                        if (value.left().isPresent()) {
-                            // flatten tag since they can change at runtime with plugins/data-packs
-                            Iterator<Holder<Item>> tagValues = BuiltInRegistries.ITEM.getTagOrEmpty(value.left().get()).iterator();
-                            while (tagValues.hasNext()) {
-                                appendElementEquality(builder, itemType, tagValues.next().unwrapKey().orElseThrow().location());
-                                if (tagValues.hasNext()) {
-                                    builder.append(" ||").append("\n");
-                                    builder.append(metadata.indent()).append(indentUnit);
+                        isElementPredicate.value()
+                            .ifLeft(tagKey -> {
+                                // flatten tag since they can change at runtime with plugins/data-packs
+                                Iterator<Holder<Item>> tagValues = BuiltInRegistries.ITEM.getTagOrEmpty(tagKey).iterator();
+                                while (tagValues.hasNext()) {
+                                    appendElementEquality(builder, itemType, tagValues.next().unwrapKey().orElseThrow().location());
+                                    if (tagValues.hasNext()) {
+                                        builder.append(" ||").append("\n");
+                                        builder.append(metadata.indent()).append(indentUnit);
+                                    }
                                 }
-                            }
-                        } else {
-                            appendElementEquality(builder, itemType, value.right().get().unwrapKey().orElseThrow().location());
-                        }
+                            })
+                            .ifRight(element -> appendElementEquality(builder, itemType, element.unwrapKey().orElseThrow().location()));
                         break;
                     case ItemPredicate.IsClassPredicate isClassPredicate: {
                         String itemLikeName = isClassPredicate.againstBlock() ? "blockHandle" : "itemHandle";

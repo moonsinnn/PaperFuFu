@@ -28,7 +28,7 @@ val gameVersion = providers.gradleProperty("mcVersion")
 
 val rewriteApi = tasks.registerGenerationTask("rewriteApi", true, "api", {
     bootstrapTags = true
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-api/src/main/java")
+    sourceSet = "paper-api/src/main/java"
 }) {
     description = "Rewrite existing API classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
@@ -36,14 +36,14 @@ val rewriteApi = tasks.registerGenerationTask("rewriteApi", true, "api", {
 
 val rewriteImpl = tasks.registerGenerationTask("rewriteImpl", true, "impl", {
     bootstrapTags = true // needed for CraftItemMetasRewriter, remove once item meta is gone
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/main/java")
+    sourceSet = "paper-server/src/main/java"
 }) {
     description = "Rewrite existing implementation classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
 }
 
 val rewriteImplTest = tasks.registerGenerationTask("rewriteImplTest", true, "impl-test", {
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/test/java")
+    sourceSet = "paper-server/src/test/java"
 }) {
     description = "Rewrite existing implementation test classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
@@ -58,15 +58,14 @@ tasks.register("rewrite") {
 
 val generateApi = tasks.registerGenerationTask("generateApi", false, "api", {
     bootstrapTags = true
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-api/src/generated/java")
+    sourceSet = "paper-api/src/generated/java"
 }) {
     description = "Generate new API classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
 }
 
 val generateImpl = tasks.registerGenerationTask("generateImpl", false, "impl", {
-    sourceSet = rootProject.layout.projectDirectory.dir("paper-server/src/generated/java")
-    rootDir = rootProject.layout.projectDirectory
+    sourceSet = "paper-server/src/generated/java"
 }) {
     description = "Generate new implementation classes"
     classpath(sourceSets.main.map { it.runtimeClasspath })
@@ -106,7 +105,6 @@ if (providers.gradleProperty("updatingMinecraft").getOrElse("false").toBoolean()
 
         workDirs.forEach { inputs.dir(it) }
         inputs.property("gameVersion", gameVersion)
-        outputs.dirs(workDirs)
     }
     tasks.check {
         dependsOn(scanOldGeneratedSourceCode)
@@ -124,7 +122,7 @@ fun TaskContainer.registerGenerationTask(
     dependsOn(project.tasks.test)
     javaLauncher = project.javaToolchains.defaultJavaLauncher(project)
     inputs.property("gameVersion", gameVersion)
-    inputs.dir(layout.projectDirectory.dir("src/main/java")).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(layout.projectDirectory.dir("src/main/")).withPathSensitivity(PathSensitivity.RELATIVE)
     mainClass.set("io.papermc.generator.Main")
     systemProperty("paper.updatingMinecraft", providers.gradleProperty("updatingMinecraft").getOrElse("false").toBoolean())
 
@@ -136,7 +134,7 @@ fun TaskContainer.registerGenerationTask(
         args(provider)
     }
     argumentProviders.add(provider)
-    outputs.dir(provider.sourceSet.map { it.asFile })
+    // outputs.dir(provider.sourceSet)
 
     block(this)
 }
@@ -148,9 +146,8 @@ abstract class GenerationArgumentProvider : CommandLineArgumentProvider {
     @get:InputDirectory
     abstract val rootDir: DirectoryProperty
 
-    @get:PathSensitive(PathSensitivity.NONE)
-    @get:InputDirectory
-    abstract val sourceSet: DirectoryProperty
+    @get:Input
+    abstract val sourceSet: Property<String>
 
     @get:Input
     abstract val rewrite: Property<Boolean>
@@ -169,7 +166,8 @@ abstract class GenerationArgumentProvider : CommandLineArgumentProvider {
     override fun asArguments(): Iterable<String> {
         val args = mutableListOf<String>()
 
-        args.add("--sourceset=${sourceSet.get().asFile.absolutePath}")
+        args.add("--root-dir=${rootDir.get().asFile.absolutePath}")
+        args.add("--sourceset=${rootDir.get().dir(sourceSet.get()).asFile.absolutePath}")
         args.add("--side=${side.get()}")
 
         if (rewrite.get()) {
@@ -180,7 +178,6 @@ abstract class GenerationArgumentProvider : CommandLineArgumentProvider {
             args.add("--bootstrap-tags")
         }
 
-        args.add("--root-dir=${rootDir.get().asFile.absolutePath}")
         return args.toList()
     }
 }

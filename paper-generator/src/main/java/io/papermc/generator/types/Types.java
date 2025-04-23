@@ -7,8 +7,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class Types {
 
-    public static final ClassName BOXED_INT = ClassName.get("java.lang", "Integer");
-
     public static final String API_PACKAGE = "org.bukkit";
     public static final String PAPER_PACKAGE = "io.papermc.paper";
 

@@ -35,7 +35,7 @@ public final class SourceCodecs {
         return SourceVersion.isName(name.replace('$', '.')) ? DataResult.success(name) : DataResult.error(() -> "Invalid binary name: %s".formatted(name));
     });
 
-    public static Codec<Class<?>> CLASS = BINARY_NAME.comapFlatMap(name -> {
+    public static final Codec<Class<?>> CLASS = BINARY_NAME.comapFlatMap(name -> {
         try {
             return DataResult.success(Class.forName(name));
         } catch (ClassNotFoundException e) {

@@ -113,7 +113,7 @@ public final class RegistryEntry<T> implements RegistryIdentifiable<T> {
     }
 
     public String keyClassName() {
-        if (this.data.keyClassNameBasedOnApi()) {
+        if (this.data.api().keyClassNameRelate()) {
             return this.data.api().klass().simpleName();
         }
 
@@ -184,9 +184,9 @@ public final class RegistryEntry<T> implements RegistryIdentifiable<T> {
     public enum Type implements StringRepresentable {
 
         DATA_DRIVEN("data_driven", RegistryEntries.DATA_DRIVEN),
-        BUILT_IN("built_in", RegistryEntries.BUILT_IN, Codec.lazyInitialized(() -> RegistryData.UNSAFE_CODEC.validate(data -> {
+        BUILT_IN("built_in", RegistryEntries.BUILT_IN, RegistryData.UNSAFE_CODEC.validate(data -> {
             return data.impl().delayed() ? DataResult.error(() -> "Built-in registry cannot be delayed!") : DataResult.success(data);
-        })));
+        }));
 
         private final String name;
         private final List<RegistryEntry<?>> entries;

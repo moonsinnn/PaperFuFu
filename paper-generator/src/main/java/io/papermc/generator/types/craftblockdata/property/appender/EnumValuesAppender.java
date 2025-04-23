@@ -4,6 +4,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.types.craftblockdata.CraftBlockDataGenerator;
 import io.papermc.generator.utils.NamingManager;
@@ -16,10 +17,10 @@ import org.jspecify.annotations.NullMarked;
 public class EnumValuesAppender<T extends Enum<T> & StringRepresentable, A extends Enum<A>> implements PropertyAppender<T> {
 
     private final EnumProperty<T> property;
-    private final ClassName apiType;
+    private final TypeName apiType;
     private final String methodName;
 
-    public EnumValuesAppender(EnumProperty<T> property, ClassName apiType, String methodName) {
+    public EnumValuesAppender(EnumProperty<T> property, TypeName apiType, String methodName) {
         this.property = property;
         this.apiType = apiType;
         this.methodName = methodName;
@@ -31,7 +32,7 @@ public class EnumValuesAppender<T extends Enum<T> & StringRepresentable, A exten
     }
 
     @Override
-    public ClassName getApiType() {
+    public TypeName getApiType() {
         return this.apiType;
     }
 

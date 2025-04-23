@@ -15,14 +15,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.ApiStatus;
-import org.jspecify.annotations.NullMarked;
 
 import static io.papermc.generator.utils.Formatting.quoted;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
-@NullMarked
 @ApiStatus.Obsolete
 public class RegistryTagRewriter<T> extends SearchReplaceRewriter implements RegistryIdentifiable<T> {
 

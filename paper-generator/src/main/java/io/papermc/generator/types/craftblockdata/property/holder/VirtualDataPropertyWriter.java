@@ -8,10 +8,9 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import io.papermc.generator.types.Types;
 import io.papermc.generator.types.craftblockdata.CraftBlockDataGenerator;
 import io.papermc.generator.types.craftblockdata.property.converter.ConverterBase;
-import io.papermc.generator.utils.BlockStateMapping;
+import io.papermc.generator.utils.BlockStateData;
 import io.papermc.generator.utils.NamingManager;
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -55,12 +54,12 @@ public class VirtualDataPropertyWriter extends DataPropertyWriterBase {
                 } else {
                     Class<?> valueClass = this.properties.iterator().next().getValueClass();
                     if (valueClass.isEnum()) {
-                        this.indexClass = BlockStateMapping.ENUM_PROPERTY_TYPES.get(this.indexClass);
+                        this.indexClass = BlockStateData.ENUM_PROPERTY_TYPES.get(valueClass);
                     } else {
                         this.indexClass = TypeName.get(valueClass);
                     }
                 }
-                this.fieldType = ParameterizedTypeName.get(ClassName.get(Map.class), this.indexClass, ClassName.get(virtualField.valueType()));
+                this.fieldType = ParameterizedTypeName.get(ClassName.get(Map.class), this.indexClass, TypeName.get(virtualField.valueType()));
             }
         }
     }

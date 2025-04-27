@@ -11,9 +11,9 @@ import io.papermc.generator.types.Types;
 import io.papermc.generator.types.craftblockdata.CraftBlockDataGenerator;
 import io.papermc.generator.types.craftblockdata.property.converter.ConverterBase;
 import io.papermc.generator.types.craftblockdata.property.holder.appender.DataAppenders;
-import io.papermc.generator.utils.BlockStateData;
 import io.papermc.generator.utils.ClassHelper;
 import io.papermc.generator.utils.CommonVariable;
+import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.utils.NamingManager;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -80,7 +80,7 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
             this.type = DataHolderType.MAP;
             this.internalIndexClass = ClassHelper.eraseType(complexType.getActualTypeArguments()[0]);
             if (this.internalIndexClass.isEnum()) {
-                TypeName indexClass = BlockStateData.ENUM_PROPERTY_TYPES.get(this.internalIndexClass);
+                TypeName indexClass = DataFileLoader.BlockState.ENUM_PROPERTY_TYPES.get().get(this.internalIndexClass);
                 if (indexClass == null) {
                     indexClass = TypeName.get(this.internalIndexClass);
                 }

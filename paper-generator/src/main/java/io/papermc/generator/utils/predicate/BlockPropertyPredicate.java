@@ -5,6 +5,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.papermc.generator.utils.BlockStateMapping;
+import io.papermc.generator.utils.SourceCodecs;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.NullMarked;
@@ -20,7 +22,7 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
     Codec<BlockPropertyPredicate> CODEC = Codec.either(BlockPropertyPredicate.IsNamePredicate.COMPACT_CODEC, DIRECT_CODEC).xmap(Either::unwrap, Either::right);
 
     Codec<Set<BlockPropertyPredicate>> SET_CODEC = CODEC.listOf().xmap(Set::copyOf, List::copyOf);
-    Codec<Set<BlockPropertyPredicate>> NON_EMPTY_SET_CODEC = CODEC.listOf(1, Integer.MAX_VALUE).xmap(Set::copyOf, List::copyOf);
+    Codec<Set<BlockPropertyPredicate>> NON_EMPTY_SET_CODEC = ExtraCodecs.nonEmptyList(CODEC.listOf()).xmap(Set::copyOf, List::copyOf);
 
     Type type();
 
@@ -79,7 +81,7 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
     record IsFieldPredicate(String value) implements BlockPropertyPredicate {
 
         public static final MapCodec<IsFieldPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.STRING.fieldOf("value").forGetter(IsFieldPredicate::value)
+            SourceCodecs.IDENTIFIER.fieldOf("value").forGetter(IsFieldPredicate::value)
         ).apply(instance, IsFieldPredicate::new));
 
         @Override

@@ -1,13 +1,8 @@
 package io.papermc.generator;
 
-import net.minecraft.SharedConstants;
-import net.minecraft.server.Bootstrap;
-
-public class BootstrapTest {
+public abstract class BootstrapTest {
 
     static {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
-        Bootstrap.validate();
+        Main.bootStrap(true);
     }
 }

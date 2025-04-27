@@ -1,65 +1,19 @@
 package io.papermc.generator.rewriter.types.simple;
 
-import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.rewriter.types.registry.EnumRegistryRewriter;
-import io.papermc.generator.utils.SourceCodecs;
-import io.papermc.typewriter.ClassNamed;
+import io.papermc.generator.resources.EntityTypeData;
 import io.papermc.typewriter.preset.model.EnumValue;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.EntityType;
 
 import static io.papermc.generator.utils.Formatting.quoted;
 
 public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
-
-    public record Data(ClassNamed api, int legacyId) {
-
-        private static final int NO_LEGACY_ID = -1;
-
-        public Data(ClassNamed api) {
-            this(api, NO_LEGACY_ID);
-        }
-
-        public static final Codec<Data> DIRECT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            SourceCodecs.CLASS_NAMED.fieldOf("api").forGetter(Data::api),
-            ExtraCodecs.intRange(-1, Integer.MAX_VALUE).optionalFieldOf("legacy_id", NO_LEGACY_ID).deprecated(13).forGetter(Data::legacyId)
-        ).apply(instance, Data::new));
-
-        private static final Codec<Data> CLASS_ONLY_CODEC = SourceCodecs.CLASS_NAMED.xmap(Data::new, Data::api);
-
-        public static final Codec<Data> CODEC = Codec.either(CLASS_ONLY_CODEC, DIRECT_CODEC).xmap(Either::unwrap, data -> {
-            if (data.legacyId() != NO_LEGACY_ID) {
-                return Either.right(data);
-            }
-            return Either.left(data);
-        });
-    }
-
-    private static final Map<ResourceKey<EntityType<?>>, Data> DATA;
-    public static final Codec<Map<ResourceKey<EntityType<?>>, Data>> DATA_CODEC = Codec.unboundedMap(ResourceKey.codec(Registries.ENTITY_TYPE), Data.CODEC);
-    static {
-        try (Reader input = new BufferedReader(new InputStreamReader(EntityTypeRewriter.class.getClassLoader().getResourceAsStream("data/entity_types.json")))) {
-            JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-            DATA = DATA_CODEC.parse(JsonOps.INSTANCE, registries).getOrThrow();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 
     public EntityTypeRewriter() {
         super(Registries.ENTITY_TYPE, false);
@@ -67,7 +21,7 @@ public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
 
     @Override
     protected EnumValue.Builder rewriteEnumValue(Holder.Reference<EntityType<?>> reference) {
-        Data data = Objects.requireNonNull(DATA.get(reference.key()), () -> "Missing entity type data for " + reference);
+        EntityTypeData data = Objects.requireNonNull(DataFileLoader.ENTITY_TYPES.get().get(reference.key()), () -> "Missing entity type data for " + reference);
         String path = reference.key().location().getPath();
         List<String> arguments = new ArrayList<>(4);
         arguments.add(quoted(path));

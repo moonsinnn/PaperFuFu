@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.NullMarked;
@@ -18,16 +19,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public abstract class DataPropertyWriterBase implements DataPropertyMaker {
 
-    protected final Collection<? extends Property<?>> properties;
+    protected final Stream<? extends Property<?>> properties;
     protected final Class<? extends Block> blockClass;
 
     protected DataPropertyWriterBase(Collection<? extends Property<?>> properties, Class<? extends Block> blockClass) {
-        this.properties = properties;
+        this.properties = properties.stream().sorted(Comparator.comparing(Property::getName));
         this.blockClass = blockClass;
-    }
-
-    private Iterator<? extends Property<?>> sortedIterator() {
-        return this.properties.stream().sorted(Comparator.comparing(Property::getName)).iterator();
     }
 
     protected void createSyntheticCollection(CodeBlock.Builder code, boolean isArray, Map<Property<?>, Field> fields) {
@@ -37,12 +34,12 @@ public abstract class DataPropertyWriterBase implements DataPropertyMaker {
             code.add("$T.of(\n", List.class);
         }
         code.indent();
-        Iterator<? extends Property<?>> it = this.sortedIterator();
-        while (it.hasNext()) {
-            Property<?> property = it.next();
+        Iterator<? extends Property<?>> properties = this.properties.iterator();
+        while (properties.hasNext()) {
+            Property<?> property = properties.next();
             Pair<Class<?>, String> fieldName = PropertyWriter.referenceField(this.blockClass, property, fields);
             code.add("$T.$L", fieldName.left(), fieldName.right());
-            if (it.hasNext()) {
+            if (properties.hasNext()) {
                 code.add(",");
             }
             code.add("\n");
@@ -53,13 +50,13 @@ public abstract class DataPropertyWriterBase implements DataPropertyMaker {
     protected void createSyntheticMap(CodeBlock.Builder code, TypeName indexClass, Map<Property<?>, Field> fields) {
         // assume indexClass is an enum with its values matching the property names
         code.add("$T.of(\n", Map.class).indent();
-        Iterator<? extends Property<?>> it = this.sortedIterator();
-        while (it.hasNext()) {
-            Property<?> property = it.next();
+        Iterator<? extends Property<?>> properties = this.properties.iterator();
+        while (properties.hasNext()) {
+            Property<?> property = properties.next();
             String name = Formatting.formatKeyAsField(property.getName());
             Pair<Class<?>, String> fieldName = PropertyWriter.referenceField(this.blockClass, property, fields);
             code.add("$T.$L, $T.$L", indexClass, name, fieldName.left(), fieldName.right());
-            if (it.hasNext()) {
+            if (properties.hasNext()) {
                 code.add(",");
             }
             code.add("\n");

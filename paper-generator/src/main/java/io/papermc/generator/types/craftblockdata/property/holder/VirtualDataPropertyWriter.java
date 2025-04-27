@@ -10,7 +10,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.types.craftblockdata.CraftBlockDataGenerator;
 import io.papermc.generator.types.craftblockdata.property.converter.ConverterBase;
-import io.papermc.generator.utils.BlockStateData;
+import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.utils.NamingManager;
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -54,7 +54,7 @@ public class VirtualDataPropertyWriter extends DataPropertyWriterBase {
                 } else {
                     Class<?> valueClass = this.properties.iterator().next().getValueClass();
                     if (valueClass.isEnum()) {
-                        this.indexClass = BlockStateData.ENUM_PROPERTY_TYPES.get(valueClass);
+                        this.indexClass = DataFileLoader.BlockState.ENUM_PROPERTY_TYPES.get().get(valueClass);
                     } else {
                         this.indexClass = TypeName.get(valueClass);
                     }

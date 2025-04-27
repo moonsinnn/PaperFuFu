@@ -1,4 +1,4 @@
-package io.papermc.generator.registry;
+package io.papermc.generator.resources;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -18,7 +18,7 @@ public record RegistryData(
     boolean allowInline
 ) {
 
-    public static final Codec<RegistryData> UNSAFE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<RegistryData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Api.CODEC.fieldOf("api").forGetter(RegistryData::api),
         Impl.CODEC.fieldOf("impl").forGetter(RegistryData::impl),
         Builder.CODEC.optionalFieldOf("builder").forGetter(RegistryData::builder),

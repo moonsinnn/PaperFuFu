@@ -1,9 +1,9 @@
 package io.papermc.generator.rewriter.types.simple;
 
 import io.papermc.generator.registry.RegistryEntries;
+import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.utils.Formatting;
-import io.papermc.generator.utils.ItemMetaData;
 import io.papermc.generator.utils.predicate.ItemPredicate;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.context.IndentUnit;
@@ -25,8 +25,8 @@ public class CraftItemMetasRewriter extends SearchReplaceRewriter {
     protected void insert(SearchMetadata metadata, StringBuilder builder) {
         IndentUnit indentUnit = this.indentUnit();
         ClassNamed itemType = RegistryEntries.byRegistryKey(Registries.ITEM).data().api().klass();
-        for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : ItemMetaData.PREDICATES.entrySet()) {
-            String field = ItemMetaData.BRIDGE.get(entry.getKey()).field();
+        for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : DataFileLoader.ItemMeta.PREDICATES.get().entrySet()) {
+            String field = DataFileLoader.ItemMeta.BRIDGE.get().get(entry.getKey()).field();
             Iterator<ItemPredicate> predicateIterator = entry.getValue().iterator();
 
             builder.append(metadata.indent());

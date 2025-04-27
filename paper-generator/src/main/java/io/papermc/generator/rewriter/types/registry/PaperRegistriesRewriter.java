@@ -1,7 +1,7 @@
 package io.papermc.generator.rewriter.types.registry;
 
 import com.google.common.base.CaseFormat;
-import io.papermc.generator.registry.RegistryData;
+import io.papermc.generator.resources.RegistryData;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.registry.RegistryEntry;
 import io.papermc.generator.rewriter.types.Types;
@@ -12,7 +12,7 @@ import net.minecraft.core.registries.Registries;
 
 public class PaperRegistriesRewriter extends SearchReplaceRewriter {
 
-    private void appendEntry(String indent, StringBuilder builder, RegistryEntry<?> entry, boolean canBeDelayed, boolean apiOnly) {
+    private void appendEntry(String indent, StringBuilder builder, RegistryEntry<?> entry, boolean apiOnly) {
         builder.append(indent);
         builder.append("start");
         builder.append('(');
@@ -54,7 +54,7 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
                 builder.append(')');
             }, () -> builder.append(".build()"));
         }
-        if (canBeDelayed && data.impl().delayed()) {
+        if (data.impl().delayed()) {
             builder.append(".delayed()");
         }
         builder.append(',');
@@ -63,27 +63,22 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
 
     @Override
     public void insert(SearchMetadata metadata, StringBuilder builder) {
-        builder.append(metadata.indent()).append("// built-in");
-        builder.append('\n');
+        for (RegistryEntry.Type type : RegistryEntry.Type.values()) {
+            builder.append(metadata.indent()).append("// ").append(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, type.getSerializedName()));
+            builder.append('\n');
 
-        for (RegistryEntry<?> entry : RegistryEntries.BUILT_IN) {
-            appendEntry(metadata.indent(), builder, entry, false, false);
+            for (RegistryEntry<?> entry : RegistryEntries.byType(type)) {
+                appendEntry(metadata.indent(), builder, entry, false);
+            }
+
+            builder.append('\n');
         }
 
-        builder.append('\n');
-        builder.append(metadata.indent()).append("// data-driven");
-        builder.append('\n');
-
-        for (RegistryEntry<?> entry : RegistryEntries.DATA_DRIVEN) {
-            appendEntry(metadata.indent(), builder, entry, true, false);
-        }
-
-        builder.append('\n');
         builder.append(metadata.indent()).append("// api-only");
         builder.append('\n');
 
         for (RegistryEntry<?> entry : RegistryEntries.API_ONLY) {
-            appendEntry(metadata.indent(), builder, entry, false, true);
+            appendEntry(metadata.indent(), builder, entry, true);
         }
 
         builder.deleteCharAt(builder.length() - 2); // delete extra comma...

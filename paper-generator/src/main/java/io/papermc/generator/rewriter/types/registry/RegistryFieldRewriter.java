@@ -1,7 +1,7 @@
 package io.papermc.generator.rewriter.types.registry;
 
 import com.google.common.base.Suppliers;
-import io.papermc.generator.registry.RegistryData;
+import io.papermc.generator.resources.RegistryData;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.registry.RegistryEntry;
 import io.papermc.generator.registry.RegistryIdentifiable;

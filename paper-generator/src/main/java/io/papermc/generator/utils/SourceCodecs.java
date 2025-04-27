@@ -1,16 +1,12 @@
 package io.papermc.generator.utils;
 
 import com.google.common.reflect.TypeToken;
-import com.google.gson.FormattingStyle;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.squareup.javapoet.ClassName;
-import io.papermc.generator.types.SimpleGenerator;
 import io.papermc.typewriter.ClassNamed;
 import javax.lang.model.SourceVersion;
 import net.minecraft.core.Holder;
@@ -18,11 +14,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class SourceCodecs {
-
-    public static final Gson GSON = new GsonBuilder().setFormattingStyle(FormattingStyle.PRETTY.withIndent(SimpleGenerator.INDENT_UNIT)).create();
 
     private SourceCodecs() {
     }
@@ -73,6 +70,8 @@ public final class SourceCodecs {
     public static final Codec<ClassName> CLASS_NAME = CLASS_NAMED.xmap(
         io.papermc.generator.types.Types::typed, io.papermc.generator.rewriter.types.Types::typed
     );
+
+    public static final Codec<ResourceKey<? extends Registry<?>>> REGISTRY_KEY = ResourceLocation.CODEC.xmap(ResourceKey::createRegistryKey, ResourceKey::location);
 
     public static <E> Codec<Either<TagKey<E>, Holder<E>>> elementOrTagCodec(ResourceKey<? extends Registry<E>> registryKey) {
         return Codec.either(RegistryAwareTagKeyCodec.hashedCodec(registryKey), RegistryFixedCodec.create(registryKey));

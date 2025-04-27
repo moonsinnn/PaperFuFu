@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Either;
 import io.papermc.generator.Main;
+import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.types.craftblockdata.property.holder.VirtualField;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -148,7 +149,7 @@ public final class BlockStateMapping {
                 return Optional.empty();
             }).orElseGet(() -> {
                 Set<Property<?>> propertySet = new HashSet<>(entry.getValue());
-                for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : BlockStateData.PREDICATES.entrySet()) {
+                for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : DataFileLoader.BlockState.PREDICATES.get().entrySet()) {
                     for (BlockPredicate predicate : predicateEntry.getValue()) {
                         if (predicate.test(specialBlock, propertySet)) {
                             return predicateEntry.getKey();

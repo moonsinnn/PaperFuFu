@@ -1,8 +1,8 @@
 package io.papermc.generator.rewriter.types.simple;
 
+import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.RegistryFieldRewriter;
-import io.papermc.generator.utils.ItemMetaData;
 import io.papermc.generator.utils.predicate.ItemPredicate;
 import io.papermc.typewriter.ClassNamed;
 import net.minecraft.core.Holder;
@@ -27,7 +27,7 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
 
         ClassNamed implMetaName = null;
     mainLoop:
-        for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : ItemMetaData.PREDICATES.entrySet()) {
+        for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : DataFileLoader.ItemMeta.PREDICATES.get().entrySet()) {
             for (ItemPredicate predicate : entry.getValue()) {
                 if (predicate.test(reference)) {
                     implMetaName = entry.getKey();
@@ -38,7 +38,7 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
 
         ClassNamed metaName = null;
         if (implMetaName != null) {
-            metaName = ItemMetaData.BRIDGE.get(implMetaName).api();
+            metaName = DataFileLoader.ItemMeta.BRIDGE.get().get(implMetaName).api();
         }
         return "%s<%s>".formatted(Types.ITEM_TYPE_TYPED.dottedNestedName(), metaName != null ? this.importCollector.getShortName(metaName) : Types.ITEM_META.simpleName());
     }

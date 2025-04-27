@@ -3,6 +3,7 @@ package io.papermc.generator;
 import com.squareup.javapoet.ClassName;
 import io.papermc.generator.registry.RegistryBootstrapper;
 import io.papermc.generator.registry.RegistryEntries;
+import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.rewriter.registration.PatternSourceSetRewriter;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.EnumRegistryRewriter;
@@ -25,7 +26,6 @@ import io.papermc.generator.rewriter.types.simple.MemoryKeyRewriter;
 import io.papermc.generator.rewriter.types.simple.StatisticRewriter;
 import io.papermc.generator.rewriter.types.simple.trial.PoseRewriter;
 import io.papermc.generator.rewriter.types.simple.trial.VillagerProfessionRewriter;
-import io.papermc.generator.types.goal.MobGoalNames;
 import io.papermc.generator.rewriter.types.registry.RegistriesArgumentProviderRewriter;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.typewriter.preset.EnumCloneRewriter;
@@ -189,7 +189,7 @@ public final class Rewriters {
             .register("MobGoalHelper#bukkitMap", Types.MOB_GOAL_HELPER, new SearchReplaceRewriter() {
                 @Override
                 protected void insert(SearchMetadata metadata, StringBuilder builder) {
-                    for (Map.Entry<Class<? extends Mob>, ClassName> entry : MobGoalNames.ENTITY_CLASS_NAMES.entrySet()) {
+                    for (Map.Entry<Class<? extends Mob>, ClassName> entry : DataFileLoader.ENTITY_CLASS_NAMES.get().entrySet()) {
                         builder.append(metadata.indent()).append("bukkitMap.put(%s.class, %s.class);".formatted(
                             entry.getKey().getCanonicalName(), this.importCollector.getShortName(Types.typed(entry.getValue()))
                         ));

@@ -16,7 +16,7 @@ dependencies {
     implementation("com.squareup:javapoet:1.13.0")
     implementation("io.papermc.typewriter:typewriter:1.0.1")
     implementation("info.picocli:picocli:4.7.6")
-    implementation("io.github.classgraph:classgraph:4.8.47")
+    implementation("io.github.classgraph:classgraph:4.8.179")
     implementation("org.jetbrains:annotations:26.0.2")
     implementation("org.jspecify:jspecify:1.0.0")
 
@@ -184,6 +184,9 @@ abstract class GenerationArgumentProvider : CommandLineArgumentProvider {
 
 tasks.test {
     useJUnitPlatform()
+}
+tasks.compileTestJava {
+    options.compilerArgs.add("-parameters")
 }
 
 group = "io.papermc.paper"

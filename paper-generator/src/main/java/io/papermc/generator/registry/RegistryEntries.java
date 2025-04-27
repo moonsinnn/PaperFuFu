@@ -1,16 +1,15 @@
 package io.papermc.generator.registry;
 
-import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import io.papermc.generator.resources.DataFileLoader;
+import io.papermc.generator.resources.RegistryData;
 import io.papermc.generator.utils.ClassHelper;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -19,13 +18,12 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import io.papermc.generator.utils.SourceCodecs;
+import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
@@ -63,11 +61,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class RegistryEntries {
 
-    private static <T> RegistryEntry.Builder<T> entry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass) {
-        return new RegistryEntry.Builder<>(registryKey, holderElementsClass);
+    private static <T> RegistryIntern<T> entry(ResourceKey<? extends Registry<T>> registryKey, Class<?> holderElementsClass) {
+        return new RegistryIntern<>(registryKey, holderElementsClass);
     }
 
-    private static final Map<ResourceKey<? extends Registry<?>>, RegistryKeyField<?>> REGISTRY_KEY_FIELDS;
+    public static final Map<ResourceKey<? extends Registry<?>>, RegistryKeyField<?>> REGISTRY_KEY_FIELDS;
     static {
         Map<ResourceKey<? extends Registry<?>>, RegistryKeyField<?>> registryKeyFields = new IdentityHashMap<>();
         try {
@@ -89,7 +87,7 @@ public final class RegistryEntries {
         REGISTRY_KEY_FIELDS = Collections.unmodifiableMap(registryKeyFields);
     }
 
-    private static final Map<ResourceKey<? extends Registry<?>>, RegistryEntry.Builder<?>> EXPOSED_REGISTRIES = Stream.of(
+    private static final Map<ResourceKey<? extends Registry<?>>, RegistryIntern<?>> EXPOSED_REGISTRIES = Stream.of(
         entry(Registries.GAME_EVENT, GameEvent.class),
         entry(Registries.STRUCTURE_TYPE, StructureType.class),
         entry(Registries.MOB_EFFECT, MobEffects.class),
@@ -124,57 +122,49 @@ public final class RegistryEntries {
         entry(Registries.PARTICLE_TYPE, ParticleTypes.class),
         entry(Registries.POTION, Potions.class),
         entry(Registries.MEMORY_MODULE_TYPE, MemoryModuleType.class)
-    ).collect(Collectors.toMap(RegistryEntry.Builder::getRegistryKey, entry -> entry));
+    ).collect(Collectors.toMap(RegistryIntern::getRegistryKey, entry -> entry));
 
-    public static final List<RegistryEntry<?>> BUILT_IN = new ArrayList<>();
-    public static final List<RegistryEntry<?>> DATA_DRIVEN = new ArrayList<>();
     @Deprecated
     public static final List<RegistryEntry<?>> API_ONLY = new ArrayList<>();
 
     @Deprecated
     public static final List<ResourceKey<? extends Registry<?>>> API_ONLY_KEYS = List.of(
-        Registries.ENTITY_TYPE, Registries.PARTICLE_TYPE,  Registries.POTION, Registries.MEMORY_MODULE_TYPE
+        Registries.ENTITY_TYPE, Registries.PARTICLE_TYPE, Registries.POTION, Registries.MEMORY_MODULE_TYPE
     );
 
-    static {
+    public static final Multimap<RegistryEntry.Type, RegistryEntry<?>> REGISTRIES = Util.make(MultimapBuilder.enumKeys(RegistryEntry.Type.class).arrayListValues().build(), map -> {
         List<ResourceKey<? extends Registry<?>>> remainingRegistries = new ArrayList<>(EXPOSED_REGISTRIES.keySet());
-        for (RegistryEntry.Type type : RegistryEntry.Type.values()) {
-            try (Reader input = new BufferedReader(new InputStreamReader(RegistryEntries.class.getClassLoader().getResourceAsStream("data/registry/%s.json".formatted(type.getSerializedName()))))) {
-                JsonObject registries = SourceCodecs.GSON.fromJson(input, JsonObject.class);
-                for (String rawRegistryKey : registries.keySet()) {
-                    ResourceKey<? extends Registry<?>> registryKey = ResourceKey.createRegistryKey(ResourceLocation.parse(rawRegistryKey));
-                    RegistryData data = type.getDataCodec().parse(JsonOps.INSTANCE, registries.get(rawRegistryKey)).getOrThrow();
-                    RegistryEntry<?> entry = EXPOSED_REGISTRIES.get(registryKey)
-                        .type(type)
-                        .registryKeyField((RegistryKeyField) REGISTRY_KEY_FIELDS.get(registryKey))
-                        .data(data)
-                        .build();
-                    entry.validate();
-                    if (remainingRegistries.remove(registryKey)) {
-                        if (API_ONLY_KEYS.contains(registryKey)) {
-                            API_ONLY.add(entry);
-                        } else {
-                            type.getEntries().add(entry);
-                        }
+        DataFileLoader.REGISTRIES.forEach((type, file) -> {
+            Map<ResourceKey<? extends Registry<?>>, RegistryData> registries = file.get();
+            for (Map.Entry<ResourceKey<? extends Registry<?>>, RegistryData> registry : registries.entrySet()) {
+                ResourceKey<? extends Registry<?>> registryKey = registry.getKey();
+                RegistryEntry<?> entry = EXPOSED_REGISTRIES.get(registryKey).bind(registry.getValue());
+                entry.validate(type);
+                if (remainingRegistries.remove(registryKey)) {
+                    if (API_ONLY_KEYS.contains(registryKey)) {
+                        API_ONLY.add(entry);
                     } else {
-                        throw new IllegalStateException("Duplicate registry found in data files: " + registryKey);
+                        map.put(type, entry);
                     }
                 }
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
             }
-        }
+        });
+
         if (!remainingRegistries.isEmpty()) {
             throw new IllegalStateException("Registry not found in data files: " + remainingRegistries);
         }
+    });
+
+    public static Collection<RegistryEntry<?>> byType(RegistryEntry.Type type) {
+        return REGISTRIES.get(type);
     }
 
     public static final Map<ResourceKey<? extends Registry<?>>, RegistryEntry<?>> BY_REGISTRY_KEY;
     static {
-        Map<ResourceKey<? extends Registry<?>>, RegistryEntry<?>> byRegistryKey = new IdentityHashMap<>(BUILT_IN.size() + DATA_DRIVEN.size() + API_ONLY.size());
+        Map<ResourceKey<? extends Registry<?>>, RegistryEntry<?>> byRegistryKey = new IdentityHashMap<>(REGISTRIES.size() + API_ONLY.size());
         forEach(entry -> {
             byRegistryKey.put(entry.getRegistryKey(), entry);
-        }, RegistryEntries.BUILT_IN, RegistryEntries.DATA_DRIVEN, RegistryEntries.API_ONLY);
+        }, REGISTRIES.values(), API_ONLY);
         BY_REGISTRY_KEY = Collections.unmodifiableMap(byRegistryKey);
     }
 
@@ -185,12 +175,12 @@ public final class RegistryEntries {
 
     // real registries
     public static void forEach(Consumer<RegistryEntry<?>> callback) {
-        forEach(callback, RegistryEntries.BUILT_IN, RegistryEntries.DATA_DRIVEN);
+        forEach(callback, REGISTRIES.values());
     }
 
     @SafeVarargs
-    public static void forEach(Consumer<RegistryEntry<?>> callback, List<RegistryEntry<?>>... datas) {
-        for (List<RegistryEntry<?>> data : datas) {
+    public static void forEach(Consumer<RegistryEntry<?>> callback, Collection<RegistryEntry<?>>... datas) {
+        for (Collection<RegistryEntry<?>> data : datas) {
             for (RegistryEntry<?> entry : data) {
                 callback.accept(entry);
             }

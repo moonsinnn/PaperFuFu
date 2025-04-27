@@ -1,6 +1,6 @@
 package io.papermc.generator.rewriter.types.registry;
 
-import io.papermc.generator.registry.RegistryData;
+import io.papermc.generator.resources.RegistryData;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.typewriter.replace.SearchMetadata;
@@ -16,17 +16,17 @@ public class RegistryEventsRewriter extends SearchReplaceRewriter {
     public void insert(SearchMetadata metadata, StringBuilder builder) {
         RegistryEntries.forEach(entry -> {
             RegistryData data = entry.data();
-            if (data.builder().isPresent()) {
+            data.builder().ifPresent(b -> {
                 builder.append(metadata.indent());
                 builder.append("%s %s %s ".formatted(PUBLIC, STATIC, FINAL));
                 builder.append(Types.REGISTRY_EVENT_PROVIDER.simpleName());
-                builder.append("<").append(this.importCollector.getShortName(data.api().klass())).append(", ").append(this.importCollector.getShortName(data.builder().get().api())).append('>');
+                builder.append("<").append(this.importCollector.getShortName(data.api().klass())).append(", ").append(this.importCollector.getShortName(b.api())).append('>');
                 builder.append(' ');
                 builder.append(entry.registryKeyField());
                 builder.append(" = ");
                 builder.append("create(").append(Types.REGISTRY_KEY.simpleName()).append('.').append(entry.registryKeyField()).append(");");
                 builder.append('\n');
-            }
+            });
         });
     }
 }

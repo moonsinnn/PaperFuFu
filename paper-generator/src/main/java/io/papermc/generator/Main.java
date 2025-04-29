@@ -2,7 +2,6 @@ package io.papermc.generator;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import com.mojang.logging.LogUtils;
-import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.rewriter.registration.PaperPatternSourceSetRewriter;
 import io.papermc.generator.rewriter.registration.PatternSourceSetRewriter;
 import io.papermc.generator.types.SourceGenerator;
@@ -109,7 +108,6 @@ public class Main implements Callable<Integer> {
         bootStrap(this.tagBootstrap).join();
 
         ROOT_DIR = this.rootDir;
-        DataFileLoader.init();
         try {
             if (this.isRewrite) {
                 rewrite(this.sourceSet, Rewriters.VALUES.get(this.side));

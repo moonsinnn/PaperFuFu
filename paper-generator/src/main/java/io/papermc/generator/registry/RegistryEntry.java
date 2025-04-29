@@ -58,13 +58,12 @@ public class RegistryEntry<T> implements RegistryIdentifiable<T> {
     }
 
     protected void validate(Type type) {
-        Preconditions.checkState(type != Type.BUILT_IN || !this.data.impl().delayed(), "Built-in registry '%s' cannot be delayed!", this.registryKey.location());
-
         boolean isBuiltIn = type == Type.BUILT_IN;
         Type realType = type == Type.BUILT_IN ? Type.DATA_DRIVEN : Type.BUILT_IN;
         Preconditions.checkState(isBuiltIn == BuiltInRegistries.REGISTRY.containsKey(this.registryKey.location()), // type is checked at runtime and not guessed in case api/impl change is needed
-            "Mismatch type, registry '%s' is %s but was in registry/%s.json".formatted(this.registryKey.location(), realType.getSerializedName(), type.getSerializedName())
+            "Mismatch type, registry '%s' is %s but was in registry/%s.json", this.registryKey.location(), realType.getSerializedName(), type.getSerializedName()
         );
+        Preconditions.checkState(type != Type.BUILT_IN || !this.data.impl().delayed(), "Built-in registry '%s' cannot be delayed!", this.registryKey.location());
     }
 
     public String keyClassName() {

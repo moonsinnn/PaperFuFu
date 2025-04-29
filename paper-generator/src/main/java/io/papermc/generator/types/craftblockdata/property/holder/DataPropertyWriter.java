@@ -7,6 +7,7 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import io.papermc.generator.resources.DataFiles;
 import io.papermc.generator.types.Types;
 import io.papermc.generator.types.craftblockdata.CraftBlockDataGenerator;
 import io.papermc.generator.types.craftblockdata.property.converter.ConverterBase;
@@ -80,7 +81,7 @@ public class DataPropertyWriter extends DataPropertyWriterBase {
             this.type = DataHolderType.MAP;
             this.internalIndexClass = ClassHelper.eraseType(complexType.getActualTypeArguments()[0]);
             if (this.internalIndexClass.isEnum()) {
-                TypeName indexClass = DataFileLoader.BlockState.ENUM_PROPERTY_TYPES.get().get(this.internalIndexClass);
+                TypeName indexClass = DataFileLoader.get(DataFiles.BLOCK_STATE_ENUM_PROPERTY_TYPES).get(this.internalIndexClass);
                 if (indexClass == null) {
                     indexClass = TypeName.get(this.internalIndexClass);
                 }

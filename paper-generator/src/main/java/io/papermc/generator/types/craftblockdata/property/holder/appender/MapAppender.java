@@ -10,6 +10,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.resources.DataFileLoader;
+import io.papermc.generator.resources.DataFiles;
 import io.papermc.generator.types.Types;
 import io.papermc.generator.types.craftblockdata.CraftBlockDataGenerator;
 import io.papermc.generator.types.craftblockdata.property.converter.ConverterBase;
@@ -56,7 +57,7 @@ public class MapAppender implements DataAppender {
             builder.addMethod(methodBuilder.build());
         }
 
-        if (DataFileLoader.BlockState.EXTRA_ALLOWED_METHOD.get().contains(generator.getBaseClass()) &&
+        if (DataFileLoader.get(DataFiles.BLOCK_STATE_EXTRA_ALLOWED_METHOD).contains(generator.getBaseClass()) &&
             indexParameter.type instanceof ClassName className && !className.isBoxedPrimitive()) {
             NamingManager.NameWrapper indexNaming = NamingManager.NameWrapper.wrap("get", INDEX_NAMES.getOrDefault(className.simpleName(), className.simpleName()));
 

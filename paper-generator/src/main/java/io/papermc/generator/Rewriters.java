@@ -4,6 +4,7 @@ import com.squareup.javapoet.ClassName;
 import io.papermc.generator.registry.RegistryBootstrapper;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.resources.DataFileLoader;
+import io.papermc.generator.resources.DataFiles;
 import io.papermc.generator.rewriter.registration.PatternSourceSetRewriter;
 import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.rewriter.types.registry.EnumRegistryRewriter;
@@ -189,7 +190,7 @@ public final class Rewriters {
             .register("MobGoalHelper#bukkitMap", Types.MOB_GOAL_HELPER, new SearchReplaceRewriter() {
                 @Override
                 protected void insert(SearchMetadata metadata, StringBuilder builder) {
-                    for (Map.Entry<Class<? extends Mob>, ClassName> entry : DataFileLoader.ENTITY_CLASS_NAMES.get().entrySet()) {
+                    for (Map.Entry<Class<? extends Mob>, ClassName> entry : DataFileLoader.get(DataFiles.ENTITY_CLASS_NAMES).entrySet()) {
                         builder.append(metadata.indent()).append("bukkitMap.put(%s.class, %s.class);".formatted(
                             entry.getKey().getCanonicalName(), this.importCollector.getShortName(Types.typed(entry.getValue()))
                         ));

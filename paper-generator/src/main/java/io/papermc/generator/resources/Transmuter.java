@@ -5,10 +5,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface Transmuter<V, A, R> {
 
-    MutationResult<V, A, R> transmute(V value);
+    SliceResult<A, R> examine(V original);
 
     interface Mutable<V, A, R> extends Transmuter<V, A, R> {
 
-        V applyChanges(MutationResult<V, A, R> result);
+        V apply(V original, SliceResult<A, R> result);
     }
 }

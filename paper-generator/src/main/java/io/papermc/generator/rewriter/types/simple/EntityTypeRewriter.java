@@ -1,6 +1,7 @@
 package io.papermc.generator.rewriter.types.simple;
 
 import io.papermc.generator.resources.DataFileLoader;
+import io.papermc.generator.resources.DataFiles;
 import io.papermc.generator.rewriter.types.registry.EnumRegistryRewriter;
 import io.papermc.generator.resources.EntityTypeData;
 import io.papermc.typewriter.preset.model.EnumValue;
@@ -21,7 +22,7 @@ public class EntityTypeRewriter extends EnumRegistryRewriter<EntityType<?>> {
 
     @Override
     protected EnumValue.Builder rewriteEnumValue(Holder.Reference<EntityType<?>> reference) {
-        EntityTypeData data = Objects.requireNonNull(DataFileLoader.ENTITY_TYPES.get().get(reference.key()), () -> "Missing entity type data for " + reference);
+        EntityTypeData data = Objects.requireNonNull(DataFileLoader.get(DataFiles.ENTITY_TYPES).get(reference.key()), () -> "Missing entity type data for " + reference);
         String path = reference.key().location().getPath();
         List<String> arguments = new ArrayList<>(4);
         arguments.add(quoted(path));

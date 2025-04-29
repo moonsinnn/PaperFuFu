@@ -5,6 +5,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import io.papermc.generator.resources.DataFileLoader;
+import io.papermc.generator.resources.DataFiles;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.NullMarked;
@@ -27,7 +28,7 @@ public class EnumPropertyWriter<T extends Enum<T> & StringRepresentable> extends
     @Override
     protected TypeName processApiType() {
         Class<?> rawClass = this.property.getValueClass();
-        return DataFileLoader.BlockState.ENUM_PROPERTY_TYPES.get().get(rawClass);
+        return DataFileLoader.get(DataFiles.BLOCK_STATE_ENUM_PROPERTY_TYPES).get(rawClass);
     }
 
     @Override

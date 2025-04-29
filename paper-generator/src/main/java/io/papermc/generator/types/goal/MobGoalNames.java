@@ -3,6 +3,7 @@ package io.papermc.generator.types.goal;
 import com.google.common.base.CaseFormat;
 import com.squareup.javapoet.ClassName;
 import io.papermc.generator.resources.DataFileLoader;
+import io.papermc.generator.resources.DataFiles;
 import io.papermc.generator.types.Types;
 import io.papermc.generator.utils.Formatting;
 import java.lang.reflect.Constructor;
@@ -80,7 +81,7 @@ public final class MobGoalNames { // todo sync with MobGoalHelper ideally this s
     }
 
     private static ClassName toBukkitClass(Class<? extends net.minecraft.world.entity.Mob> nmsClass) {
-        ClassName bukkitClass = DataFileLoader.ENTITY_CLASS_NAMES.get().get(nmsClass);
+        ClassName bukkitClass = DataFileLoader.get(DataFiles.ENTITY_CLASS_NAMES).get(nmsClass);
         if (bukkitClass == null) {
             throw new RuntimeException("Can't figure out applicable bukkit entity for nms entity " + nmsClass); // maybe just return Mob?
         }

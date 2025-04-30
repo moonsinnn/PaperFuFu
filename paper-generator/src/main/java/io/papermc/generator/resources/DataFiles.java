@@ -17,8 +17,8 @@ public final class DataFiles {
 
     private static final ResourceKey<Registry<DataFile<?, ?, ?>>> REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("paper", "data_file"));
 
+    public static final ResourceKey<DataFile.Map<String, List<String>>> BLOCK_STATE_AMBIGUOUS_NAMES = store("block_state/ambiguous_names");
     public static final ResourceKey<DataFile.Map<Class<? extends Enum<? extends StringRepresentable>>, ClassName>> BLOCK_STATE_ENUM_PROPERTY_TYPES = store("block_state/enum_property_types");
-    public static final ResourceKey<DataFile.List<ClassNamed>> BLOCK_STATE_EXTRA_ALLOWED_METHOD = store("block_state/extra_allowed_method");
     public static final ResourceKey<DataFile.Map<ClassNamed, List<BlockPredicate>>> BLOCK_STATE_PREDICATES = store("block_state/predicates");
 
     public static final ResourceKey<DataFile.Map<ClassNamed, ItemMetaData>> ITEM_META_BRIDGE = store("item_meta/bridge");

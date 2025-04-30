@@ -135,8 +135,8 @@ public abstract class DataFile<V, A, R> {
                 java.util.Map<K, V> removed = new HashMap<>(result.removed().size());
                 result.removed().forEach(key -> removed.put(key, null));
 
-                JsonElement dropEntriesElement = this.codec.encodeStart(this.writeOps(), removed).getOrThrow();
-                if (dropEntriesElement instanceof JsonObject object) {
+                JsonElement dropElement = this.codec.encodeStart(this.writeOps(), removed).getOrThrow();
+                if (dropElement instanceof JsonObject object) {
                     JsonArray array = new JsonArray(object.size());
                     for (String key : object.keySet()) {
                         array.add(key);
@@ -170,7 +170,7 @@ public abstract class DataFile<V, A, R> {
             }
 
             if (!result.removed().isEmpty()) {
-                dropEntries = this.toJsonString(java.util.List.copyOf(result.added()));
+                dropEntries = this.toJsonString(java.util.List.copyOf(result.removed()));
             }
 
             return new FlattenSliceResult<>(

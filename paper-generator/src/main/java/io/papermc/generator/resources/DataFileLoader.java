@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 public class DataFileLoader {
 
     private static <K, V> Transmuter<Map<K, V>, Map.Entry<K, V>, K> sortedMap(Comparator<K> comparator) {
-        return transmuteMap(map -> SliceResult.empty(), comparator);
+        return transmuteMap(SliceResult::empty, comparator);
     }
 
     private static <K, V> Transmuter<Map<K, V>, Map.Entry<K, V>, K> transmuteMap(Supplier<Set<K>> typesProvider, Function<K, V> onMissing, Comparator<K> comparator) {
@@ -107,6 +107,14 @@ public class DataFileLoader {
     }));
 
     static {
+        // todo remove Orientation once the duplicate enum is gone and then possibly check enum property types conflict instead
+        register(DataFiles.BLOCK_STATE_AMBIGUOUS_NAMES, () -> Codec.unboundedMap(
+                SourceCodecs.IDENTIFIER, ExtraCodecs.nonEmptyList(SourceCodecs.IDENTIFIER.listOf())
+            ),
+            (path, codec) -> new DataFile.Map<>(
+                path, codec, SliceResult::empty
+            ));
+
         register(DataFiles.BLOCK_STATE_ENUM_PROPERTY_TYPES, () -> Codec.unboundedMap(
                 SourceCodecs.classCodec(new TypeToken<Enum<? extends StringRepresentable>>() {}), SourceCodecs.CLASS_NAME
             ),
@@ -131,13 +139,6 @@ public class DataFileLoader {
                     },
                     missingType -> ClassName.get("org.bukkit.block.data.type", missingType.getSimpleName()),
                     Comparator.comparing(Class::getCanonicalName))
-            ));
-
-        // add classes that extends MultipleFacing and RedstoneWire
-        // no real rule here some has some don't mossy carpet and wall could have it
-        register(DataFiles.BLOCK_STATE_EXTRA_ALLOWED_METHOD, SourceCodecs.CLASS_NAMED::listOf,
-            (path, codec) -> new DataFile.List<>(
-                path, codec, SliceResult::empty
             ));
 
         // order matter: instance_of / is_class -> has_property -> contains_property

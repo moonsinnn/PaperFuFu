@@ -71,6 +71,10 @@ public final class Types {
 
     public static final ClassNamed BLOCK_DATA = ClassNamed.of(API_PACKAGE + ".block.data", "BlockData");
 
+    public static final ClassNamed BLOCK_DATA_REDSTONE_WIRE = ClassNamed.of(API_PACKAGE + ".block.data.type", "RedstoneWire");
+
+    public static final ClassNamed BLOCK_DATA_MULTIPLE_FACING = ClassNamed.of(API_PACKAGE + ".block.data", "MultipleFacing");
+
     public static final ClassNamed NAMED_TEXT_COLOR = ClassNamed.of("net.kyori.adventure.text.format", "NamedTextColor");
 
     public static final ClassNamed REGISTRY_KEY = typed(io.papermc.generator.types.Types.REGISTRY_KEY);

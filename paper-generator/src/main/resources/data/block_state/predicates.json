@@ -267,12 +267,30 @@
         {
             "type": "contains_property",
             "value": [
-                "north",
-                "east",
-                "south",
-                "west",
-                "up",
-                "down"
+                {
+                    "type": "is_field",
+                    "value": "NORTH"
+                },
+                {
+                    "type": "is_field",
+                    "value": "EAST"
+                },
+                {
+                    "type": "is_field",
+                    "value": "SOUTH"
+                },
+                {
+                    "type": "is_field",
+                    "value": "WEST"
+                },
+                {
+                    "type": "is_field",
+                    "value": "UP"
+                },
+                {
+                    "type": "is_field",
+                    "value": "DOWN"
+                }
             ],
             "count": 2,
             "strategy": "at_least"

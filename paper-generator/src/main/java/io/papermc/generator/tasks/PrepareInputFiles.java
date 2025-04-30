@@ -28,18 +28,19 @@ public class PrepareInputFiles {
     private static <V, A, R> void upgrade(Path resourceDir, DataFile<V, A, R> file) throws IOException {
         Path filePath = Path.of(file.path());
         SliceResult<A, R> result = file.upgrade(resourceDir.resolve(filePath));
+        if (result.isEmpty()) {
+            return;
+        }
 
-        if (!result.isEmpty()) {
-            FlattenSliceResult<String, String> printedResult = file.print(result);
-            if (printedResult.added() != null) {
-                LOGGER.info("Added the following elements in {}:", filePath);
-                LOGGER.info(printedResult.added());
-            }
+        FlattenSliceResult<String, String> printedResult = file.print(result);
+        if (printedResult.added() != null) {
+            LOGGER.info("Added the following elements in {}:", filePath);
+            LOGGER.info(printedResult.added());
+        }
 
-            if (printedResult.removed() != null) {
-                LOGGER.warn("Removed the following keys in {}:", filePath);
-                LOGGER.warn(printedResult.removed());
-            }
+        if (printedResult.removed() != null) {
+            LOGGER.warn("Removed the following keys in {}:", filePath);
+            LOGGER.warn(printedResult.removed());
         }
     }
 }

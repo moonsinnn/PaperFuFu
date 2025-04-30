@@ -9,6 +9,8 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import io.papermc.generator.resources.DataFileLoader;
+import io.papermc.generator.resources.DataFiles;
 import io.papermc.generator.types.OverriddenClassGenerator;
 import io.papermc.generator.types.Types;
 import io.papermc.generator.types.craftblockdata.property.PropertyMaker;
@@ -26,6 +28,7 @@ import io.papermc.generator.utils.NamingManager;
 import it.unimi.dsi.fastutil.Pair;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.world.level.block.Block;
@@ -53,6 +56,10 @@ public class CraftBlockDataGenerator extends OverriddenClassGenerator {
         this.blockClass = blockClass;
         this.blockData = blockData;
         this.printWarningOnMissingOverride = true;
+    }
+
+    public Class<? extends Block> getBlock() {
+        return this.blockClass;
     }
 
     // default keywords: get/set
@@ -90,19 +97,20 @@ public class CraftBlockDataGenerator extends OverriddenClassGenerator {
         }
     );
 
-    private static final String[] AMBIGUOUS_NAMES = {
-        "Tilt", // CraftBigDripleaf
-        "Orientation", // CraftCrafter / CraftJigsaw
-        "Half", // CraftStair / CraftTrapDoor and copper variant
-    };
-
     private TypeSpec.Builder propertyHolder() {
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(this.className)
             .addModifiers(PUBLIC)
             .addAnnotation(Annotations.GENERATED_FROM)
             .superclass(Types.CRAFT_BLOCK_DATA)
-            .addSuperinterface(Types.typed(this.baseClass))
-            .alwaysQualify(AMBIGUOUS_NAMES); // since javapoet lack of context (doesn't know the api anymore), type clash with the super interface
+            .addSuperinterface(Types.typed(this.baseClass));
+
+        // since javapoet lack of context (doesn't know the api anymore), type clash with the super interface
+        Map<String, List<String>> ambiguousNames = DataFileLoader.get(DataFiles.BLOCK_STATE_AMBIGUOUS_NAMES);
+        for (Map.Entry<String, List<String>> entry : ambiguousNames.entrySet()) {
+            if (entry.getValue().contains(this.blockData.implName())) {
+                typeBuilder.alwaysQualify(entry.getKey());
+            }
+        }
 
         ParameterSpec parameter = ParameterSpec.builder(BlockState.class, "state").build();
         MethodSpec constructor = MethodSpec.constructorBuilder()

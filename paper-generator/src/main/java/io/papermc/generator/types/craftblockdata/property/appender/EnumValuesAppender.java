@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class EnumValuesAppender<T extends Enum<T> & StringRepresentable, A extends Enum<A>> implements PropertyAppender<T> {
+public class EnumValuesAppender<T extends Enum<T> & StringRepresentable> implements PropertyAppender<T> {
 
     private final EnumProperty<T> property;
     private final TypeName apiType;

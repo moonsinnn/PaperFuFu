@@ -12,7 +12,7 @@ public record SliceResult<A, R>(Set<A> added, Set<R> removed) {
     }
 
     static <V, A, R> SliceResult<A, R> empty(V value) {
-        return new SliceResult<>(Collections.emptySet(), Collections.emptySet());
+        return empty();
     }
 
     public boolean isEmpty() {

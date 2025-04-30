@@ -29,6 +29,7 @@ import java.util.function.BiConsumer;
 import io.papermc.generator.utils.predicate.BlockPredicate;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.util.ClassNamedView;
+import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CommandBlock;
@@ -86,26 +87,27 @@ public final class BlockStateMapping {
         GENERIC_FIELDS = genericFields.buildOrThrow();
     }
 
+    public static final Map<Class<? extends Block>, Collection<Property<?>>> STATEFUL_BLOCKS = Collections.unmodifiableMap(Util.make(new IdentityHashMap<>(), map -> {
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!block.getStateDefinition().getProperties().isEmpty()) {
+                map.put(block.getClass(), block.getStateDefinition().getProperties());
+            }
+        }
+    }));
+
     public static final Map<Class<? extends Block>, BlockData> MAPPING;
 
     static {
-        Map<Class<? extends Block>, Collection<Property<?>>> specialBlocks = new IdentityHashMap<>();
-        for (Block block : BuiltInRegistries.BLOCK) {
-            if (!block.getStateDefinition().getProperties().isEmpty()) {
-                specialBlocks.put(block.getClass(), block.getStateDefinition().getProperties());
-            }
-        }
-
         Map<Class<? extends Block>, BlockData> map = new IdentityHashMap<>();
-        for (Map.Entry<Class<? extends Block>, Collection<Property<?>>> entry : specialBlocks.entrySet()) {
-            Class<? extends Block> specialBlock = entry.getKey();
+        for (Map.Entry<Class<? extends Block>, Collection<Property<?>>> entry : STATEFUL_BLOCKS.entrySet()) {
+            Class<? extends Block> statefulBlock = entry.getKey();
 
             Collection<Property<?>> properties = new ArrayList<>(entry.getValue());
 
             Map<Property<?>, Field> propertyFields = new HashMap<>(properties.size());
             Multimap<Either<Field, VirtualField>, Property<?>> complexPropertyFields = ArrayListMultimap.create();
 
-            fetchProperties(specialBlock, (field, property) -> {
+            fetchProperties(statefulBlock, (field, property) -> {
                 if (properties.contains(property)) {
                     propertyFields.put(property, field);
                 }
@@ -116,19 +118,19 @@ public final class BlockStateMapping {
             });
 
             // virtual nodes
-            if (VIRTUAL_NODES.containsKey(specialBlock)) {
-                for (VirtualField virtualField : VIRTUAL_NODES.get(specialBlock)) {
+            if (VIRTUAL_NODES.containsKey(statefulBlock)) {
+                for (VirtualField virtualField : VIRTUAL_NODES.get(statefulBlock)) {
                     for (Property<?> property : virtualField.values()) {
                         if (properties.remove(property)) {
                             complexPropertyFields.put(Either.right(virtualField), property);
                         } else {
-                            throw new IllegalStateException("Unhandled virtual node " + virtualField.name() + " for " + property + " in " + specialBlock.getCanonicalName());
+                            throw new IllegalStateException("Unhandled virtual node " + virtualField.name() + " for " + property + " in " + statefulBlock.getCanonicalName());
                         }
                     }
                 }
             }
 
-            String apiName = formatApiName(specialBlock);
+            String apiName = formatApiName(statefulBlock);
             String implName = "Craft".concat(apiName); // before renames
 
             apiName = Formatting.stripWordOfCamelCaseName(apiName, "Base", true);
@@ -136,11 +138,11 @@ public final class BlockStateMapping {
 
             ClassNamedView view = new ClassNamedView(Main.ROOT_DIR.resolve("paper-api/src/main/java"), 1, "org/bukkit/block/data/type");
             ClassNamed api = view.tryFindFirst("org/bukkit/block/data/type/" + apiName).or(() -> {
-                Class<?> directParent = specialBlock.getSuperclass();
-                if (specialBlocks.containsKey(directParent)) {
+                Class<?> directParent = statefulBlock.getSuperclass();
+                if (STATEFUL_BLOCKS.containsKey(directParent)) {
                     // if the properties are the same then always consider the parent
                     // check deeper in the tree?
-                    if (specialBlocks.get(directParent).equals(entry.getValue())) {
+                    if (STATEFUL_BLOCKS.get(directParent).equals(entry.getValue())) {
                         String parentApiName = formatApiName(directParent);
                         parentApiName = Formatting.stripWordOfCamelCaseName(parentApiName, "Base", true);
                         parentApiName = API_RENAMES.getOrDefault(parentApiName, parentApiName);
@@ -152,7 +154,7 @@ public final class BlockStateMapping {
                 Set<Property<?>> propertySet = new HashSet<>(entry.getValue());
                 for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : DataFileLoader.get(DataFiles.BLOCK_STATE_PREDICATES).entrySet()) {
                     for (BlockPredicate predicate : predicateEntry.getValue()) {
-                        if (predicate.test(specialBlock, propertySet)) {
+                        if (predicate.test(statefulBlock, propertySet)) {
                             return predicateEntry.getKey();
                         }
                     }
@@ -161,7 +163,7 @@ public final class BlockStateMapping {
                 return null;
             });
 
-            map.put(specialBlock, new BlockData(implName, Objects.requireNonNull(api, () -> "Unknown block data for " + specialBlock.getCanonicalName()), properties, propertyFields, complexPropertyFields));
+            map.put(statefulBlock, new BlockData(implName, Objects.requireNonNull(api, () -> "Unknown block data for " + statefulBlock.getCanonicalName()), properties, propertyFields, complexPropertyFields));
         }
         MAPPING = Collections.unmodifiableMap(map);
     }

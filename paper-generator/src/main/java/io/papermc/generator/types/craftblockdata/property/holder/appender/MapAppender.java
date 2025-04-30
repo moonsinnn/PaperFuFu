@@ -1,6 +1,5 @@
 package io.papermc.generator.types.craftblockdata.property.holder.appender;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -11,25 +10,27 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.papermc.generator.resources.DataFileLoader;
 import io.papermc.generator.resources.DataFiles;
-import io.papermc.generator.types.Types;
+import io.papermc.generator.rewriter.types.Types;
 import io.papermc.generator.types.craftblockdata.CraftBlockDataGenerator;
 import io.papermc.generator.types.craftblockdata.property.converter.ConverterBase;
 import io.papermc.generator.types.craftblockdata.property.holder.DataHolderType;
+import io.papermc.generator.utils.BlockStateMapping;
 import io.papermc.generator.utils.CommonVariable;
 import io.papermc.generator.utils.NamingManager;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import io.papermc.generator.utils.predicate.BlockPredicate;
+import io.papermc.typewriter.ClassNamed;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class MapAppender implements DataAppender {
-
-    private static final Map<String, String> INDEX_NAMES = ImmutableMap.<String, String>builder()
-        .put(Types.BLOCK_FACE.simpleName(), "Face")
-        .buildOrThrow();
-    // todo find another way for extra method and clean up those hardcoded things ^
 
     @Override
     public DataHolderType getType() {
@@ -57,15 +58,33 @@ public class MapAppender implements DataAppender {
             builder.addMethod(methodBuilder.build());
         }
 
-        if (DataFileLoader.get(DataFiles.BLOCK_STATE_EXTRA_ALLOWED_METHOD).contains(generator.getBaseClass()) &&
-            indexParameter.type instanceof ClassName className && !className.isBoxedPrimitive()) {
-            NamingManager.NameWrapper indexNaming = NamingManager.NameWrapper.wrap("get", INDEX_NAMES.getOrDefault(className.simpleName(), className.simpleName()));
+        if (indexParameter.type instanceof ClassName className) {
+            if (generator.getBaseClass().equals(Types.BLOCK_DATA_MULTIPLE_FACING) ||
+                generator.getBaseClass().equals(Types.BLOCK_DATA_REDSTONE_WIRE) ||
+                isImplementing(generator.getBlock(), Types.BLOCK_DATA_MULTIPLE_FACING)) {
 
-            MethodSpec.Builder methodBuilder = generator.createMethod(indexNaming.pre("Allowed").post("s").concat());
-            methodBuilder.addStatement("return $T.unmodifiableSet($N.keySet())", Collections.class, field);
-            methodBuilder.returns(ParameterizedTypeName.get(ClassName.get(Set.class), className));
+                MethodSpec.Builder methodBuilder = generator.createMethod(baseNaming.getMethodNameWrapper().pre("Allowed").post("s").concat());
+                methodBuilder.addStatement("return $T.unmodifiableSet($N.keySet())", Collections.class, field);
+                methodBuilder.returns(ParameterizedTypeName.get(ClassName.get(Set.class), className));
 
-            builder.addMethod(methodBuilder.build());
+                builder.addMethod(methodBuilder.build());
+            }
         }
+    }
+
+    public boolean isImplementing(Class<? extends Block> block, ClassNamed type) {
+        Set<Property<?>> propertySet = new HashSet<>(BlockStateMapping.STATEFUL_BLOCKS.get(block));
+        for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : DataFileLoader.get(DataFiles.BLOCK_STATE_PREDICATES).entrySet()) {
+            for (BlockPredicate predicate : predicateEntry.getValue()) {
+                if (!predicate.test(block, propertySet)) {
+                    continue;
+                }
+                if (predicateEntry.getKey().equals(type)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

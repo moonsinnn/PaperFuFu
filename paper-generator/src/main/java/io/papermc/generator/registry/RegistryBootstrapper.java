@@ -8,13 +8,14 @@ import io.papermc.generator.types.SourceGenerator;
 import io.papermc.generator.types.registry.GeneratedKeyType;
 import io.papermc.generator.types.registry.GeneratedTagKeyType;
 import java.util.List;
+import io.papermc.generator.utils.BasePackage;
 import net.minecraft.core.registries.Registries;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class RegistryBootstrapper {
 
-    private static final String PAPER_REGISTRY_PACKAGE = "io.papermc.paper.registry";
+    private static final String PAPER_REGISTRY_PACKAGE = BasePackage.PAPER.impl() + ".registry";
 
     public static void bootstrap(List<SourceGenerator> generators) {
         // typed/tag keys

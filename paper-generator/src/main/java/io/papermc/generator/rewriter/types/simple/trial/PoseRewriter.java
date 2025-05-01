@@ -43,15 +43,15 @@ public class PoseRewriter extends EnumCloneRewriter<Pose> {
             .group(action -> {
                 ProtoConstant constant = new ProtoConstant();
                 action
-                    .map(TokenType.JAVADOC, token -> {
+                    .map(TokenType.JAVADOC, token -> { // /** */
                         constant.javadocs(((CharSequenceBlockToken) token));
                     }, TokenTaskBuilder::asOptional)
-                    .map(TokenType.IDENTIFIER, token -> {
+                    .map(TokenType.IDENTIFIER, token -> { // <name>
                         constant.name(((CharSequenceToken) token).value());
                     })
-                    .skipClosure(TokenType.LPAREN, TokenType.RPAREN, true, TokenTaskBuilder::asOptional)
-                    .skipClosure(TokenType.LSCOPE, TokenType.RSCOPE, true, TokenTaskBuilder::asOptional)
-                    .map(END_VALUE_MARKERS::contains, $ -> {
+                    .skipClosure(TokenType.LPAREN, TokenType.RPAREN, true, TokenTaskBuilder::asOptional) // (*)?
+                    .skipClosure(TokenType.LSCOPE, TokenType.RSCOPE, true, TokenTaskBuilder::asOptional) // {*}?
+                    .map(END_VALUE_MARKERS::contains, $ -> { // ;|,
                         // this part will fail for the last entry for enum without end (,;)
                         if (constant.isComplete()) {
                             map.put(constant.name(), constant.javadocs());

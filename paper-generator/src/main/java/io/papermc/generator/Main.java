@@ -1,6 +1,5 @@
 package io.papermc.generator;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import com.mojang.logging.LogUtils;
 import io.papermc.generator.rewriter.registration.PaperPatternSourceSetRewriter;
 import io.papermc.generator.rewriter.registration.PatternSourceSetRewriter;
@@ -64,15 +63,16 @@ public class Main implements Callable<Integer> {
     public static @MonotonicNonNull Path ROOT_DIR;
     public static RegistryAccess.@MonotonicNonNull Frozen REGISTRY_ACCESS;
     public static @MonotonicNonNull Map<TagKey<?>, String> EXPERIMENTAL_TAGS;
+    public static final boolean IS_UPDATING = Boolean.getBoolean("paper.updatingMinecraft");
 
     public static CompletableFuture<Void> bootStrap(boolean withTags) {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         Bootstrap.validate();
 
-        PackRepository resourceRepository = ServerPacksSource.createVanillaTrustedRepository();
-        resourceRepository.reload();
-        MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.SERVER_DATA, resourceRepository.getAvailablePacks().stream().map(Pack::open).toList());
+        PackRepository packRepository = ServerPacksSource.createVanillaTrustedRepository();
+        packRepository.reload();
+        MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.SERVER_DATA, packRepository.getAvailablePacks().stream().map(Pack::open).toList());
         LayeredRegistryAccess<RegistryLayer> layers = RegistryLayer.createRegistryAccess();
         List<Registry.PendingTags<?>> pendingTags = TagLoader.loadTagsForExistingRegistries(resourceManager, layers.getLayer(RegistryLayer.STATIC));
         List<HolderLookup.RegistryLookup<?>> worldGenLayer = TagLoader.buildUpdatedLookups(layers.getAccessForLoading(RegistryLayer.WORLDGEN), pendingTags);
@@ -84,11 +84,11 @@ public class Main implements Callable<Integer> {
                 resourceManager,
                 layers,
                 pendingTags,
-                FeatureFlags.VANILLA_SET,
+                FeatureFlags.REGISTRY.allFlags(),
                 Commands.CommandSelection.DEDICATED,
-                0,
-                MoreExecutors.directExecutor(),
-                MoreExecutors.directExecutor()
+                Commands.LEVEL_GAMEMASTERS,
+                Runnable::run,
+                Runnable::run
             ).whenComplete((result, ex) -> {
                 if (ex != null) {
                     resourceManager.close();

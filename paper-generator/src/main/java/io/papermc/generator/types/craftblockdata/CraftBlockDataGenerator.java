@@ -22,6 +22,7 @@ import io.papermc.generator.types.craftblockdata.property.holder.VirtualField;
 import io.papermc.generator.types.craftblockdata.property.holder.converter.DataConverter;
 import io.papermc.generator.types.craftblockdata.property.holder.converter.DataConverters;
 import io.papermc.generator.utils.Annotations;
+import io.papermc.generator.utils.BasePackage;
 import io.papermc.generator.utils.BlockStateMapping;
 import io.papermc.generator.utils.CommonVariable;
 import io.papermc.generator.utils.NamingManager;
@@ -52,7 +53,7 @@ public class CraftBlockDataGenerator extends OverriddenClassGenerator {
     private final BlockStateMapping.BlockData blockData;
 
     protected CraftBlockDataGenerator(Class<? extends Block> blockClass, BlockStateMapping.BlockData blockData) {
-        super(blockData.api(), blockData.implName(), Types.IMPL_PACKAGE + ".block.impl");
+        super(blockData.api(), blockData.implName(), BasePackage.BUKKIT.impl().concat(".block.impl"));
         this.blockClass = blockClass;
         this.blockData = blockData;
         this.printWarningOnMissingOverride = true;

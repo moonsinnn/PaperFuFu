@@ -4,11 +4,11 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.mojang.serialization.Codec;
-import com.squareup.javapoet.ClassName;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import io.papermc.generator.registry.RegistryEntries;
 import io.papermc.generator.registry.RegistryEntry;
+import io.papermc.generator.utils.BasePackage;
 import io.papermc.generator.utils.ClassHelper;
 import io.papermc.generator.utils.Formatting;
 import io.papermc.generator.utils.SourceCodecs;
@@ -137,7 +137,7 @@ public class DataFileLoader {
                             throw new RuntimeException(ex);
                         }
                     },
-                    missingType -> ClassName.get("org.bukkit.block.data.type", missingType.getSimpleName()),
+                    missingType -> BasePackage.BUKKIT.relativeClass("block.data.type", missingType.getSimpleName()),
                     Comparator.comparing(Class::getCanonicalName))
             ));
 
@@ -169,7 +169,7 @@ public class DataFileLoader {
                     missingType -> {
                         Class<?> genericType = ENTITY_TYPE_GENERICS.get().get(missingType);
 
-                        String packageName = "org.bukkit.entity";
+                        String packageName = BasePackage.BUKKIT.api().concat(".entity");
                         if (AbstractBoat.class.isAssignableFrom(genericType)) {
                             packageName += ".boat";
                         } else if (AbstractMinecart.class.isAssignableFrom(genericType)) {
@@ -195,7 +195,7 @@ public class DataFileLoader {
                             return Collections.unmodifiableSet(classes);
                         }
                     },
-                    missingType -> ClassName.get("org.bukkit.entity", missingType.getSimpleName()),
+                    missingType -> BasePackage.BUKKIT.relativeClass("entity", missingType.getSimpleName()),
                     Comparator.comparing(Class::getCanonicalName))
             ));
     }

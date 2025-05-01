@@ -4,51 +4,51 @@ import com.squareup.javapoet.ClassName;
 import io.papermc.typewriter.ClassNamed;
 import org.jspecify.annotations.NullMarked;
 
+import static io.papermc.generator.utils.BasePackage.BUKKIT;
+import static io.papermc.generator.utils.BasePackage.PAPER;
+import static io.papermc.generator.utils.BasePackage.PAPER_LEGACY;
+
 @NullMarked
 public final class Types {
 
-    public static final String API_PACKAGE = "org.bukkit";
-    public static final String PAPER_PACKAGE = "io.papermc.paper";
+    public static final ClassName NAMESPACED_KEY = BUKKIT.className("NamespacedKey");
 
-    public static final ClassName NAMESPACED_KEY = ClassName.get(API_PACKAGE, "NamespacedKey");
+    public static final ClassName MINECRAFT_EXPERIMENTAL = BUKKIT.className("MinecraftExperimental");
 
-    public static final ClassName MINECRAFT_EXPERIMENTAL = ClassName.get(API_PACKAGE, "MinecraftExperimental");
+    public static final ClassName MINECRAFT_EXPERIMENTAL_REQUIRES = BUKKIT.className("MinecraftExperimental", "Requires");
 
-    public static final ClassName MINECRAFT_EXPERIMENTAL_REQUIRES = ClassName.get(API_PACKAGE, "MinecraftExperimental", "Requires");
+    public static final ClassName AXIS = BUKKIT.className("Axis");
 
-    public static final ClassName AXIS = ClassName.get(API_PACKAGE, "Axis");
+    public static final ClassName BLOCK_FACE = BUKKIT.relativeClass("block", "BlockFace");
 
-    public static final ClassName BLOCK_FACE = ClassName.get(API_PACKAGE + ".block", "BlockFace");
+    public static final ClassName VECTOR = BUKKIT.relativeClass("util", "Vector");
 
-    public static final ClassName VECTOR = ClassName.get(API_PACKAGE + ".util", "Vector");
+    public static final ClassName NOTE = BUKKIT.className("Note");
 
-    public static final ClassName NOTE = ClassName.get(API_PACKAGE, "Note");
-
-    public static final ClassName BLOCK_DATA_RAIL_SHAPE = ClassName.get(API_PACKAGE + ".block.data", "Rail", "Shape");
+    public static final ClassName BLOCK_DATA_RAIL_SHAPE = BUKKIT.relativeClass("block.data", "Rail", "Shape");
 
     public static final ClassName KEY = ClassName.get("net.kyori.adventure.key", "Key");
 
-    public static final ClassName REGISTRY_KEY = ClassName.get(PAPER_PACKAGE + ".registry", "RegistryKey");
+    public static final ClassName REGISTRY_KEY = PAPER.relativeClass("registry", "RegistryKey");
 
-    public static final ClassName TYPED_KEY = ClassName.get(PAPER_PACKAGE + ".registry", "TypedKey");
+    public static final ClassName TYPED_KEY = PAPER.relativeClass("registry", "TypedKey");
 
-    public static final ClassName GOAL_KEY = ClassName.get("com.destroystokyo.paper.entity.ai", "GoalKey");
+    public static final ClassName GOAL_KEY = PAPER_LEGACY.relativeClass("entity.ai", "GoalKey");
 
-    public static final ClassName GOAL = ClassName.get("com.destroystokyo.paper.entity.ai", "Goal");
+    public static final ClassName GOAL = PAPER_LEGACY.relativeClass("entity.ai", "Goal");
 
-    public static final ClassName MOB = ClassName.get(API_PACKAGE + ".entity", "Mob");
+    public static final ClassName MOB = BUKKIT.relativeClass("entity", "Mob");
 
-    public static final ClassName RANGED_ENTITY = ClassName.get("com.destroystokyo.paper.entity", "RangedEntity");
+    public static final ClassName RANGED_ENTITY = PAPER_LEGACY.relativeClass("entity", "RangedEntity");
 
-    public static final ClassName TAG_KEY = ClassName.get(PAPER_PACKAGE + ".registry.tag", "TagKey");
 
-    public static final ClassName GENERATED_FROM = ClassName.get(PAPER_PACKAGE + ".generated", "GeneratedFrom");
+    public static final ClassName CRAFT_BLOCK_DATA = BUKKIT.relativeImpClass("block.data", "CraftBlockData");
 
-    public static final String IMPL_PACKAGE = "org.bukkit.craftbukkit";
+    public static final ClassName CRAFT_BLOCK = BUKKIT.relativeImpClass("block", "CraftBlock");
 
-    public static final ClassName CRAFT_BLOCK_DATA = ClassName.get(IMPL_PACKAGE + ".block.data", "CraftBlockData");
+    public static final ClassName TAG_KEY = PAPER.relativeClass("registry.tag", "TagKey");
 
-    public static final ClassName CRAFT_BLOCK = ClassName.get(IMPL_PACKAGE + ".block", "CraftBlock");
+    public static final ClassName GENERATED_FROM = PAPER.relativeClass("generated", "GeneratedFrom");
 
     public static ClassName typed(ClassNamed name) {
         if (name.knownClass() != null) {

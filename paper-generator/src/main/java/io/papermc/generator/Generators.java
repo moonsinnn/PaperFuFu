@@ -16,7 +16,7 @@ public interface Generators {
 
     List<SourceGenerator> API = Collections.unmodifiableList(Util.make(new ArrayList<>(), list -> {
         RegistryBootstrapper.bootstrap(list);
-        list.add(new MobGoalGenerator("VanillaGoal", BasePackage.PAPER_LEGACY.api() + ".entity.ai"));
+        list.add(new MobGoalGenerator("VanillaGoal", BasePackage.PAPER_LEGACY.name() + ".entity.ai"));
         // todo extract fields for registry based api
     }));
 

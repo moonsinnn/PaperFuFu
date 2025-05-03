@@ -53,7 +53,7 @@ public class CraftBlockDataGenerator extends OverriddenClassGenerator {
     private final BlockStateMapping.BlockData blockData;
 
     protected CraftBlockDataGenerator(Class<? extends Block> blockClass, BlockStateMapping.BlockData blockData) {
-        super(blockData.api(), blockData.implName(), BasePackage.BUKKIT.impl().concat(".block.impl"));
+        super(blockData.api(), blockData.implName(), BasePackage.CRAFT_BUKKIT.name().concat(".block.impl"));
         this.blockClass = blockClass;
         this.blockData = blockData;
         this.printWarningOnMissingOverride = true;

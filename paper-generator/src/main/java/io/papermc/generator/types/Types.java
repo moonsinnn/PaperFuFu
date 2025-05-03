@@ -4,26 +4,29 @@ import com.squareup.javapoet.ClassName;
 import io.papermc.typewriter.ClassNamed;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Arrays;
+
 import static io.papermc.generator.utils.BasePackage.BUKKIT;
+import static io.papermc.generator.utils.BasePackage.CRAFT_BUKKIT;
 import static io.papermc.generator.utils.BasePackage.PAPER;
 import static io.papermc.generator.utils.BasePackage.PAPER_LEGACY;
 
 @NullMarked
 public final class Types {
 
-    public static final ClassName NAMESPACED_KEY = BUKKIT.className("NamespacedKey");
+    public static final ClassName NAMESPACED_KEY = BUKKIT.rootClass("NamespacedKey");
 
-    public static final ClassName MINECRAFT_EXPERIMENTAL = BUKKIT.className("MinecraftExperimental");
+    public static final ClassName MINECRAFT_EXPERIMENTAL = BUKKIT.rootClass("MinecraftExperimental");
 
-    public static final ClassName MINECRAFT_EXPERIMENTAL_REQUIRES = BUKKIT.className("MinecraftExperimental", "Requires");
+    public static final ClassName MINECRAFT_EXPERIMENTAL_REQUIRES = BUKKIT.rootClass("MinecraftExperimental", "Requires");
 
-    public static final ClassName AXIS = BUKKIT.className("Axis");
+    public static final ClassName AXIS = BUKKIT.rootClass("Axis");
 
     public static final ClassName BLOCK_FACE = BUKKIT.relativeClass("block", "BlockFace");
 
     public static final ClassName VECTOR = BUKKIT.relativeClass("util", "Vector");
 
-    public static final ClassName NOTE = BUKKIT.className("Note");
+    public static final ClassName NOTE = BUKKIT.rootClass("Note");
 
     public static final ClassName BLOCK_DATA_RAIL_SHAPE = BUKKIT.relativeClass("block.data", "Rail", "Shape");
 
@@ -42,9 +45,9 @@ public final class Types {
     public static final ClassName RANGED_ENTITY = PAPER_LEGACY.relativeClass("entity", "RangedEntity");
 
 
-    public static final ClassName CRAFT_BLOCK_DATA = BUKKIT.relativeImpClass("block.data", "CraftBlockData");
+    public static final ClassName CRAFT_BLOCK_DATA = CRAFT_BUKKIT.relativeClass("block.data", "CraftBlockData");
 
-    public static final ClassName CRAFT_BLOCK = BUKKIT.relativeImpClass("block", "CraftBlock");
+    public static final ClassName CRAFT_BLOCK = CRAFT_BUKKIT.relativeClass("block", "CraftBlock");
 
     public static final ClassName TAG_KEY = PAPER.relativeClass("registry.tag", "TagKey");
 
@@ -55,6 +58,8 @@ public final class Types {
             return ClassName.get(name.knownClass());
         }
 
-        return ClassName.bestGuess(name.canonicalName());
+        String[] names = name.dottedNestedName().split("\\.", -1);
+        String topName = names[0];
+        return ClassName.get(name.packageName(), topName, Arrays.copyOfRange(names, 1, names.length));
     }
 }

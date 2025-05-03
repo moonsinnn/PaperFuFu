@@ -169,7 +169,7 @@ public class DataFileLoader {
                     missingType -> {
                         Class<?> genericType = ENTITY_TYPE_GENERICS.get().get(missingType);
 
-                        String packageName = BasePackage.BUKKIT.api().concat(".entity");
+                        String packageName = BasePackage.BUKKIT.name().concat(".entity");
                         if (AbstractBoat.class.isAssignableFrom(genericType)) {
                             packageName += ".boat";
                         } else if (AbstractMinecart.class.isAssignableFrom(genericType)) {

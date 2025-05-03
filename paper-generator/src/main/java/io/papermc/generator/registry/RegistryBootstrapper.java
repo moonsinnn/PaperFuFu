@@ -15,7 +15,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class RegistryBootstrapper {
 
-    private static final String PAPER_REGISTRY_PACKAGE = BasePackage.PAPER.impl() + ".registry";
+    private static final String PAPER_REGISTRY_PACKAGE = BasePackage.PAPER.name() + ".registry";
 
     public static void bootstrap(List<SourceGenerator> generators) {
         // typed/tag keys

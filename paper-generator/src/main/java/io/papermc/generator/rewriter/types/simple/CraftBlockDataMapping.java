@@ -12,7 +12,7 @@ public class CraftBlockDataMapping extends SearchReplaceRewriter {
     protected void insert(SearchMetadata metadata, StringBuilder builder) {
         BlockStateMapping.MAPPING.entrySet().stream().sorted(Comparator.comparing(entry -> entry.getKey().getCanonicalName())).forEach(entry -> {
             builder.append(metadata.indent());
-            builder.append("register(%s.class, %s::new);".formatted(entry.getKey().getCanonicalName(), BasePackage.BUKKIT.impl().concat(".block.impl.").concat(entry.getValue().implName())));
+            builder.append("register(%s.class, %s::new);".formatted(entry.getKey().getCanonicalName(), BasePackage.CRAFT_BUKKIT.name().concat(".block.impl.").concat(entry.getValue().implName())));
             builder.append('\n');
         });
     }

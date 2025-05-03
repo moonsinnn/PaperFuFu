@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 @NullMarked
 public abstract class DataFile<V, A, R> {
 
-    private static final Gson GSON = new GsonBuilder().setFormattingStyle(FormattingStyle.PRETTY.withIndent(SimpleGenerator.INDENT_UNIT)).create();
+    private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setFormattingStyle(FormattingStyle.PRETTY.withIndent(SimpleGenerator.INDENT_UNIT)).create();
 
     private final String path;
     protected final Codec<V> codec;
@@ -65,7 +66,7 @@ public abstract class DataFile<V, A, R> {
     public V read() throws IOException {
         try (Reader input = new BufferedReader(new InputStreamReader(DataFile.class.getClassLoader().getResourceAsStream(this.path)))) {
             JsonElement predicates = GSON.fromJson(input, JsonElement.class);
-            return this.codec.parse(this.readOps(), predicates).getOrThrow();
+            return this.codec.parse(this.readOps(), predicates).getOrThrow(JsonParseException::new);
         }
     }
 

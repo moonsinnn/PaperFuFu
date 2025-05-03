@@ -49,9 +49,17 @@ public class PaperRegistriesRewriter extends SearchReplaceRewriter {
             });
 
             data.builder().ifPresentOrElse(b -> {
-                builder.append(".%s(".formatted(b.capability().getSerializedName()));
-                builder.append(this.importCollector.getShortName(b.impl())).append("::new");
-                builder.append(')');
+                if (b.capability() != RegistryData.Builder.RegisterCapability.NONE) {
+                    builder.append(".%s(".formatted(b.capability().getSerializedName()));
+                    builder.append(this.importCollector.getShortName(b.impl())).append("::new");
+                    builder.append(')');
+                } else {
+                    builder.append(".create(%s::new, %s.%s)".formatted(
+                        this.importCollector.getShortName(b.impl()),
+                        Types.REGISTRY_MODIFICATION_API_SUPPORT.dottedNestedName(),
+                        b.capability().name()
+                    ));
+                }
             }, () -> builder.append(".build()"));
         }
         if (data.impl().delayed()) {

@@ -17,6 +17,10 @@ public class RegistryEventsRewriter extends SearchReplaceRewriter {
         RegistryEntries.forEach(entry -> {
             RegistryData data = entry.data();
             data.builder().ifPresent(b -> {
+                if (b.capability() == RegistryData.Builder.RegisterCapability.NONE) {
+                    return;
+                }
+
                 builder.append(metadata.indent());
                 builder.append("%s %s %s ".formatted(PUBLIC, STATIC, FINAL));
                 builder.append(Types.REGISTRY_EVENT_PROVIDER.simpleName());

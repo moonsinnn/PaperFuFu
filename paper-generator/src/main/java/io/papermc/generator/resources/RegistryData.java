@@ -79,23 +79,24 @@ public record RegistryData(
         public static final Codec<Impl> CODEC = Codec.withAlternative(CLASS_ONLY_CODEC, DIRECT_CODEC);
     }
 
-    public record Builder(ClassNamed api, ClassNamed impl, Capability capability) {
+    public record Builder(ClassNamed api, ClassNamed impl, RegisterCapability capability) {
 
         public static final Codec<Builder> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             SourceCodecs.CLASS_NAMED.fieldOf("api").forGetter(Builder::api),
             SourceCodecs.CLASS_NAMED.fieldOf("impl").forGetter(Builder::impl),
-            Capability.CODEC.optionalFieldOf("capability", Capability.WRITABLE).forGetter(Builder::capability)
+            RegisterCapability.CODEC.optionalFieldOf("capability", RegisterCapability.WRITABLE).forGetter(Builder::capability)
         ).apply(instance, Builder::new));
 
-        public enum Capability implements StringRepresentable {
+        public enum RegisterCapability implements StringRepresentable {
+            NONE("none"),
             ADDABLE("addable"),
             MODIFIABLE("modifiable"),
             WRITABLE("writable");
 
             private final String name;
-            static final Codec<Capability> CODEC = StringRepresentable.fromEnum(Capability::values);
+            static final Codec<RegisterCapability> CODEC = StringRepresentable.fromEnum(RegisterCapability::values);
 
-            Capability(String name) {
+            RegisterCapability(String name) {
                 this.name = name;
             }
 

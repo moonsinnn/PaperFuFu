@@ -138,7 +138,10 @@ public final class RegistryEntries {
             Map<ResourceKey<? extends Registry<?>>, RegistryData> registries = file.get();
             for (Map.Entry<ResourceKey<? extends Registry<?>>, RegistryData> registry : registries.entrySet()) {
                 ResourceKey<? extends Registry<?>> registryKey = registry.getKey();
-                RegistryEntry<?> entry = EXPOSED_REGISTRIES.get(registryKey).bind(registry.getValue());
+                RegistryIntern<?> intern = Objects.requireNonNull(EXPOSED_REGISTRIES.get(registryKey),
+                    () -> "Registry '%s' found in registry/%s.json is not exposed to the api".formatted(registryKey.location(), type.getSerializedName())
+                );
+                RegistryEntry<?> entry = intern.bind(registry.getValue());
                 entry.validate(type);
                 if (remainingRegistries.remove(registryKey)) {
                     if (API_ONLY_KEYS.contains(registryKey)) {

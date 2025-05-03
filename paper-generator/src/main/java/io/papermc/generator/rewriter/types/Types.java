@@ -112,6 +112,8 @@ public final class Types {
 
     public static final ClassNamed PAPER_SIMPLE_REGISTRY = PAPER.relativeClassNamed("registry", "PaperSimpleRegistry");
 
+    public static final ClassNamed REGISTRY_MODIFICATION_API_SUPPORT = PAPER.relativeClassNamed("registry.entry", "RegistryEntryMeta", "RegistryModificationApiSupport");
+
     public static final ClassNamed MOB_GOAL_HELPER = PAPER_LEGACY.relativeClassNamed("entity.ai", "MobGoalHelper");
 
     public static ClassNamed typed(ClassName name) {

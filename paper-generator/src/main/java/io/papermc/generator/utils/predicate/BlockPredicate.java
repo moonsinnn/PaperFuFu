@@ -39,7 +39,7 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
         }
     }
 
-    boolean test(Class<? extends Block> block, Set<Property<?>> properties);
+    boolean matches(Class<? extends Block> block, Set<Property<?>> properties);
 
     record IsClassPredicate(Class<? extends Block> value) implements BlockPredicate {
 
@@ -53,7 +53,7 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
         }
 
         @Override
-        public boolean test(Class<? extends Block> block, Set<Property<?>> properties) {
+        public boolean matches(Class<? extends Block> block, Set<Property<?>> properties) {
             return this.value.equals(block);
         }
     }
@@ -71,7 +71,7 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
         }
 
         @Override
-        public boolean test(Class<? extends Block> block, Set<Property<?>> properties) {
+        public boolean matches(Class<? extends Block> block, Set<Property<?>> properties) {
             if (!this.value.isAssignableFrom(block)) {
                 return false;
             }
@@ -82,7 +82,7 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
 
             for (BlockPropertyPredicate predicate : this.propertyPredicates) {
                 for (Property<?> property : properties) {
-                    if (predicate.test(property)) {
+                    if (predicate.matches(property)) {
                         return true;
                     }
                 }
@@ -109,11 +109,11 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
         }
 
         @Override
-        public boolean test(Class<? extends Block> block, Set<Property<?>> properties) {
+        public boolean matches(Class<? extends Block> block, Set<Property<?>> properties) {
             int found = 0;
             for (BlockPropertyPredicate predicate : this.value) {
                 for (Property<?> property : properties) {
-                    if (predicate.test(property)) {
+                    if (predicate.matches(property)) {
                         found++;
                         if (this.strategy == Strategy.AT_LEAST && found == this.count) {
                             return true;

@@ -52,10 +52,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "STAIRS_SHAPE"
-                }
+                "BlockStateProperties.STAIRS_SHAPE"
             ]
         }
     ],
@@ -63,10 +60,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "PISTON_TYPE"
-                }
+                "BlockStateProperties.PISTON_TYPE"
             ]
         }
     ],
@@ -74,10 +68,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "ATTACH_FACE"
-                }
+                "BlockStateProperties.ATTACH_FACE"
             ]
         }
     ],
@@ -85,14 +76,8 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "AXIS"
-                },
-                {
-                    "type": "is_field",
-                    "value": "HORIZONTAL_AXIS"
-                }
+                "BlockStateProperties.AXIS",
+                "BlockStateProperties.HORIZONTAL_AXIS"
             ]
         }
     ],
@@ -100,14 +85,8 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "DOUBLE_BLOCK_HALF"
-                },
-                {
-                    "type": "is_field",
-                    "value": "HALF"
-                }
+                "BlockStateProperties.DOUBLE_BLOCK_HALF",
+                "BlockStateProperties.HALF"
             ]
         }
     ],
@@ -115,10 +94,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "DUSTED"
-                }
+                "BlockStateProperties.DUSTED"
             ]
         }
     ],
@@ -126,10 +102,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "HANGING"
-                }
+                "BlockStateProperties.HANGING"
             ]
         }
     ],
@@ -137,10 +110,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "HATCH"
-                }
+                "BlockStateProperties.HATCH"
             ]
         }
     ],
@@ -148,14 +118,8 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "HORIZONTAL_FACING"
-                },
-                {
-                    "type": "is_field",
-                    "value": "FACING"
-                }
+                "BlockStateProperties.HORIZONTAL_FACING",
+                "BlockStateProperties.FACING"
             ]
         }
     ],
@@ -163,10 +127,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "LIT"
-                }
+                "BlockStateProperties.LIT"
             ]
         }
     ],
@@ -174,10 +135,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "OPEN"
-                }
+                "BlockStateProperties.OPEN"
             ]
         }
     ],
@@ -185,10 +143,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "POWER"
-                }
+                "BlockStateProperties.POWER"
             ]
         }
     ],
@@ -196,10 +151,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "POWERED"
-                }
+                "BlockStateProperties.POWERED"
             ]
         }
     ],
@@ -207,10 +159,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "ROTATION_16"
-                }
+                "BlockStateProperties.ROTATION_16"
             ]
         }
     ],
@@ -218,10 +167,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "SEGMENT_AMOUNT"
-                }
+                "BlockStateProperties.SEGMENT_AMOUNT"
             ]
         }
     ],
@@ -229,10 +175,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "SNOWY"
-                }
+                "BlockStateProperties.SNOWY"
             ]
         }
     ],
@@ -240,10 +183,7 @@
         {
             "type": "has_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "WATERLOGGED"
-                }
+                "BlockStateProperties.WATERLOGGED"
             ]
         }
     ],
@@ -267,30 +207,12 @@
         {
             "type": "contains_property",
             "value": [
-                {
-                    "type": "is_field",
-                    "value": "NORTH"
-                },
-                {
-                    "type": "is_field",
-                    "value": "EAST"
-                },
-                {
-                    "type": "is_field",
-                    "value": "SOUTH"
-                },
-                {
-                    "type": "is_field",
-                    "value": "WEST"
-                },
-                {
-                    "type": "is_field",
-                    "value": "UP"
-                },
-                {
-                    "type": "is_field",
-                    "value": "DOWN"
-                }
+                "BlockStateProperties.NORTH",
+                "BlockStateProperties.EAST",
+                "BlockStateProperties.SOUTH",
+                "BlockStateProperties.WEST",
+                "BlockStateProperties.UP",
+                "BlockStateProperties.DOWN"
             ],
             "count": 2,
             "strategy": "at_least"

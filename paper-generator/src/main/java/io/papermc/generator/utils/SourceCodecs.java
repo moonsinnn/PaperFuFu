@@ -25,11 +25,15 @@ public final class SourceCodecs {
     }
 
     public static final Codec<String> IDENTIFIER = Codec.STRING.validate(name -> {
-        return SourceVersion.isIdentifier(name) && !SourceVersion.isKeyword(name) ? DataResult.success(name) : DataResult.error(() -> "Invalid identifier: %s".formatted(name));
+        return SourceVersion.isIdentifier(name) && !SourceVersion.isKeyword(name) ? DataResult.success(name) : DataResult.error(() -> "Invalid identifier: '%s'".formatted(name));
     });
 
-    public static final Codec<String> BINARY_NAME = Codec.STRING.validate(name -> {
-        return SourceVersion.isName(name.replace('$', '.')) ? DataResult.success(name) : DataResult.error(() -> "Invalid binary name: %s".formatted(name));
+    public static final Codec<String> QUALIFIED_NAME = Codec.STRING.validate(name -> {
+        return SourceVersion.isName(name) ? DataResult.success(name) : DataResult.error(() -> "Invalid qualified name: '%s'".formatted(name));
+    });
+
+    private static final Codec<String> BINARY_NAME = Codec.STRING.validate(name -> {
+        return SourceVersion.isName(name.replace('$', '.')) ? DataResult.success(name) : DataResult.error(() -> "Invalid binary name: '%s'".formatted(name));
     });
 
     public static final Codec<Class<?>> CLASS = BINARY_NAME.comapFlatMap(name -> {

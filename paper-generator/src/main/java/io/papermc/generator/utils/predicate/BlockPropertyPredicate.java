@@ -1,13 +1,14 @@
 package io.papermc.generator.utils.predicate;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.papermc.generator.utils.BlockStateMapping;
 import io.papermc.generator.utils.SourceCodecs;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.NullMarked;
 
@@ -16,13 +17,16 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 @NullMarked
-public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.IsNamePredicate, BlockPropertyPredicate.IsFieldPredicate {
+public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.IsFieldPredicate, BlockPropertyPredicate.IsNamePredicate {
 
     Codec<BlockPropertyPredicate> DIRECT_CODEC = Type.CODEC.dispatch("type", BlockPropertyPredicate::type, type -> type.codec);
-    Codec<BlockPropertyPredicate> CODEC = Codec.either(BlockPropertyPredicate.IsNamePredicate.COMPACT_CODEC, DIRECT_CODEC).xmap(Either::unwrap, Either::right);
+    Codec<BlockPropertyPredicate> COMPACT_CODEC = Codec.withAlternative(IsFieldPredicate.COMPACT_CODEC, IsNamePredicate.COMPACT_CODEC);
+    Codec<BlockPropertyPredicate> CODEC = Codec.withAlternative(DIRECT_CODEC, COMPACT_CODEC);
 
     Codec<Set<BlockPropertyPredicate>> SET_CODEC = CODEC.listOf().xmap(Set::copyOf, List::copyOf);
     Codec<Set<BlockPropertyPredicate>> NON_EMPTY_SET_CODEC = ExtraCodecs.nonEmptyList(CODEC.listOf()).xmap(Set::copyOf, List::copyOf);
+
+    String value();
 
     Type type();
 
@@ -45,9 +49,10 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
         }
     }
 
-    boolean test(Property<?> property);
+    boolean matches(Property<?> property);
 
     static boolean testProperty(Predicate<String> predicate, String id, boolean supportInversion) {
+        // expand if needed with proper support + AND/OR-ed
         if (supportInversion && !id.isEmpty() && id.charAt(0) == '!') {
             return !predicate.test(id.substring(1));
         }
@@ -58,10 +63,10 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
     record IsNamePredicate(String value) implements BlockPropertyPredicate {
 
         public static final MapCodec<IsNamePredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.STRING.fieldOf("value").forGetter(IsNamePredicate::value)
+            ExtraCodecs.NON_EMPTY_STRING.fieldOf("value").forGetter(IsNamePredicate::value)
         ).apply(instance, IsNamePredicate::new));
 
-        public static final Codec<IsNamePredicate> COMPACT_CODEC = Codec.STRING.xmap(IsNamePredicate::new, IsNamePredicate::value);
+        public static final Codec<BlockPropertyPredicate> COMPACT_CODEC = ExtraCodecs.NON_EMPTY_STRING.xmap(IsNamePredicate::new, BlockPropertyPredicate::value);
 
         @Override
         public Type type() {
@@ -69,7 +74,7 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
         }
 
         @Override
-        public boolean test(Property<?> property) {
+        public boolean matches(Property<?> property) {
             return BlockPropertyPredicate.testProperty(
                 name -> name.equals(property.getName()),
                 this.value,
@@ -80,9 +85,20 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
 
     record IsFieldPredicate(String value) implements BlockPropertyPredicate {
 
+        private static final String FIELD_HOLDER = BlockStateProperties.class.getSimpleName();
+
+        private static final Codec<String> FIELD_CODEC = SourceCodecs.QUALIFIED_NAME.comapFlatMap(name -> {
+            if (name.startsWith(FIELD_HOLDER + ".")) {
+                return DataResult.success(name.substring(FIELD_HOLDER.length() + 1));
+            }
+            return DataResult.error(() -> "Invalid field '%s', field must belong to %s".formatted(name, FIELD_HOLDER));
+        }, name -> "%s.%s".formatted(FIELD_HOLDER, name));
+
         public static final MapCodec<IsFieldPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SourceCodecs.IDENTIFIER.fieldOf("value").forGetter(IsFieldPredicate::value)
         ).apply(instance, IsFieldPredicate::new));
+
+        public static final Codec<BlockPropertyPredicate> COMPACT_CODEC = FIELD_CODEC.xmap(IsFieldPredicate::new, BlockPropertyPredicate::value);
 
         @Override
         public Type type() {
@@ -90,11 +106,11 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
         }
 
         @Override
-        public boolean test(Property<?> property) {
+        public boolean matches(Property<?> property) {
             return BlockPropertyPredicate.testProperty(
                 field -> field.equals(BlockStateMapping.GENERIC_FIELDS.get(property).getName()),
                 this.value,
-                true
+                false
             );
         }
     }

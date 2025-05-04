@@ -76,7 +76,7 @@ public class MapAppender implements DataAppender {
         Set<Property<?>> propertySet = new HashSet<>(BlockStateMapping.STATEFUL_BLOCKS.get(block));
         for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : DataFileLoader.get(DataFiles.BLOCK_STATE_PREDICATES).entrySet()) {
             for (BlockPredicate predicate : predicateEntry.getValue()) {
-                if (!predicate.test(block, propertySet)) {
+                if (!predicate.matches(block, propertySet)) {
                     continue;
                 }
                 if (predicateEntry.getKey().equals(type)) {

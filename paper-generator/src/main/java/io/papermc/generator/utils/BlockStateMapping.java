@@ -154,7 +154,7 @@ public final class BlockStateMapping {
                 Set<Property<?>> propertySet = new HashSet<>(entry.getValue());
                 for (Map.Entry<ClassNamed, List<BlockPredicate>> predicateEntry : DataFileLoader.get(DataFiles.BLOCK_STATE_PREDICATES).entrySet()) {
                     for (BlockPredicate predicate : predicateEntry.getValue()) {
-                        if (predicate.test(statefulBlock, propertySet)) {
+                        if (predicate.matches(statefulBlock, propertySet)) {
                             return predicateEntry.getKey();
                         }
                     }

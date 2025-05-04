@@ -30,7 +30,7 @@ public class ItemTypeRewriter extends RegistryFieldRewriter<Item> {
     mainLoop:
         for (Map.Entry<ClassNamed, List<ItemPredicate>> entry : DataFileLoader.get(DataFiles.ITEM_META_PREDICATES).entrySet()) {
             for (ItemPredicate predicate : entry.getValue()) {
-                if (predicate.test(reference)) {
+                if (predicate.matches(reference)) {
                     implMetaName = entry.getKey();
                     break mainLoop;
                 }

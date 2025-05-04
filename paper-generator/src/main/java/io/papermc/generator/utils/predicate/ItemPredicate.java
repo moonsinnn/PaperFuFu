@@ -41,7 +41,7 @@ public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, It
         }
     }
 
-    boolean test(Holder.Reference<Item> item);
+    boolean matches(Holder.Reference<Item> item);
 
     record IsClassPredicate(Class<?> value, boolean againstBlock) implements ItemPredicate {
 
@@ -56,7 +56,7 @@ public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, It
         }
 
         @Override
-        public boolean test(Holder.Reference<Item> item) {
+        public boolean matches(Holder.Reference<Item> item) {
             if (!this.againstBlock) {
                 return this.value.equals(item.value().getClass());
             } else if (item.value() instanceof BlockItem blockItem) {
@@ -80,7 +80,7 @@ public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, It
         }
 
         @Override
-        public boolean test(Holder.Reference<Item> item) {
+        public boolean matches(Holder.Reference<Item> item) {
             if (!this.againstBlock) {
                 return this.value.isAssignableFrom(item.value().getClass());
             } else if (item.value() instanceof BlockItem blockItem) {
@@ -105,7 +105,7 @@ public sealed interface ItemPredicate permits ItemPredicate.IsClassPredicate, It
         }
 
         @Override
-        public boolean test(Holder.Reference<Item> item) {
+        public boolean matches(Holder.Reference<Item> item) {
             return this.value.map(item::is, item::is);
         }
     }

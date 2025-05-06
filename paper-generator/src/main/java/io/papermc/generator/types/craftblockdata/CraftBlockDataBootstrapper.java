@@ -11,7 +11,7 @@ import org.jspecify.annotations.NullMarked;
 public final class CraftBlockDataBootstrapper {
 
     public static void bootstrap(List<SourceGenerator> generators) {
-        for (Map.Entry<Class<? extends Block>, BlockStateMapping.BlockData> entry : BlockStateMapping.MAPPING.entrySet()) {
+        for (Map.Entry<Class<? extends Block>, BlockStateMapping.BlockData> entry : BlockStateMapping.getOrCreate().entrySet()) {
             generators.add(new CraftBlockDataGenerator(entry.getKey(), entry.getValue()));
         }
     }

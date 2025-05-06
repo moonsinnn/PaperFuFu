@@ -14,6 +14,7 @@ import io.papermc.generator.types.craftblockdata.property.holder.VirtualField;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import io.papermc.generator.utils.predicate.BlockPredicate;
 import io.papermc.typewriter.ClassNamed;
 import io.papermc.typewriter.util.ClassNamedView;
@@ -39,6 +41,7 @@ import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.TestInstanceBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -50,35 +53,6 @@ public final class BlockStateMapping {
                             Multimap<Either<Field, VirtualField>, Property<?>> complexPropertyFields) {
     }
 
-    private static final Map<String, String> API_RENAMES = ImmutableMap.<String, String>builder()
-        .put("SnowLayer", "Snow")
-        .put("StainedGlassPane", "GlassPane") // weird that this one implements glass pane but not the regular glass pane
-        .put("CeilingHangingSign", "HangingSign")
-        .put("RedStoneWire", "RedstoneWire")
-        .put("TripWire", "Tripwire")
-        .put("TripWireHook", "TripwireHook")
-        .put("Tnt", "TNT")
-        .put("BambooStalk", "Bamboo")
-        .put("Farm", "Farmland")
-        .put("ChiseledBookShelf", "ChiseledBookshelf")
-        .put("UntintedParticleLeaves", "Leaves")
-        .put("TintedParticleLeaves", "Leaves")
-        .put("StandingSign", "Sign")
-        .put("FenceGate", "Gate")
-        .buildOrThrow();
-
-    private static final Set<Class<? extends Block>> BLOCK_SUFFIX_INTENDED = Set.of(
-        CommandBlock.class,
-        StructureBlock.class,
-        NoteBlock.class,
-        TestBlock.class,
-        TestInstanceBlock.class
-    );
-
-    // virtual data that doesn't exist as constant in the source but still organized this way in the api
-    public static final ImmutableMultimap<Class<?>, VirtualField> VIRTUAL_NODES = ImmutableMultimap.<Class<?>, VirtualField>builder()
-        .build();
-
     public static final BiMap<Property<?>, Field> GENERIC_FIELDS;
 
     static {
@@ -86,6 +60,10 @@ public final class BlockStateMapping {
         fetchProperties(BlockStateProperties.class, (field, property) -> genericFields.put(property, field), null);
         GENERIC_FIELDS = genericFields.buildOrThrow();
     }
+
+    public static final Map<Property<?>, String> GENERIC_FIELD_NAMES = BlockStateMapping.GENERIC_FIELDS.entrySet().stream().collect(Collectors.toMap(
+        Map.Entry::getKey, entry -> entry.getValue().getName()
+    ));
 
     public static final Map<Class<? extends Block>, Collection<Property<?>>> STATEFUL_BLOCKS = Collections.unmodifiableMap(Util.make(new IdentityHashMap<>(), map -> {
         for (Block block : BuiltInRegistries.BLOCK) {
@@ -95,9 +73,38 @@ public final class BlockStateMapping {
         }
     }));
 
-    public static final Map<Class<? extends Block>, BlockData> MAPPING;
+    private static Map<Class<? extends Block>, BlockData> create(Path rootDir) {
+        class ExtraData {
+            public static final Map<String, String> API_RENAMES = ImmutableMap.<String, String>builder()
+                .put("SnowLayer", "Snow")
+                .put("StainedGlassPane", "GlassPane") // weird that this one implements glass pane but not the regular glass pane
+                .put("CeilingHangingSign", "HangingSign")
+                .put("RedStoneWire", "RedstoneWire")
+                .put("TripWire", "Tripwire")
+                .put("TripWireHook", "TripwireHook")
+                .put("Tnt", "TNT")
+                .put("BambooStalk", "Bamboo")
+                .put("Farm", "Farmland")
+                .put("ChiseledBookShelf", "ChiseledBookshelf")
+                .put("UntintedParticleLeaves", "Leaves")
+                .put("TintedParticleLeaves", "Leaves")
+                .put("StandingSign", "Sign")
+                .put("FenceGate", "Gate")
+                .buildOrThrow();
 
-    static {
+            public static final Set<Class<? extends Block>> BLOCK_SUFFIX_INTENDED = Set.of(
+                CommandBlock.class,
+                StructureBlock.class,
+                NoteBlock.class,
+                TestBlock.class,
+                TestInstanceBlock.class
+            );
+
+            // virtual data that doesn't exist as constant in the source but still organized this way in the api
+            public static final ImmutableMultimap<Class<?>, VirtualField> VIRTUAL_NODES = ImmutableMultimap.<Class<?>, VirtualField>builder()
+                .build();
+        }
+
         Map<Class<? extends Block>, BlockData> map = new IdentityHashMap<>();
         for (Map.Entry<Class<? extends Block>, Collection<Property<?>>> entry : STATEFUL_BLOCKS.entrySet()) {
             Class<? extends Block> statefulBlock = entry.getKey();
@@ -118,8 +125,8 @@ public final class BlockStateMapping {
             });
 
             // virtual nodes
-            if (VIRTUAL_NODES.containsKey(statefulBlock)) {
-                for (VirtualField virtualField : VIRTUAL_NODES.get(statefulBlock)) {
+            if (ExtraData.VIRTUAL_NODES.containsKey(statefulBlock)) {
+                for (VirtualField virtualField : ExtraData.VIRTUAL_NODES.get(statefulBlock)) {
                     for (Property<?> property : virtualField.values()) {
                         if (properties.remove(property)) {
                             complexPropertyFields.put(Either.right(virtualField), property);
@@ -130,22 +137,22 @@ public final class BlockStateMapping {
                 }
             }
 
-            String apiName = formatApiName(statefulBlock);
+            String apiName = formatApiName(ExtraData.BLOCK_SUFFIX_INTENDED, statefulBlock);
             String implName = "Craft".concat(apiName); // before renames
 
             apiName = Formatting.stripWordOfCamelCaseName(apiName, "Base", true);
-            apiName = API_RENAMES.getOrDefault(apiName, apiName);
+            apiName = ExtraData.API_RENAMES.getOrDefault(apiName, apiName);
 
-            ClassNamedView view = new ClassNamedView(Main.ROOT_DIR.resolve("paper-api/src/main/java"), 1, "org/bukkit/block/data/type");
+            ClassNamedView view = new ClassNamedView(rootDir.resolve("paper-api/src/main/java"), 1, "org/bukkit/block/data/type");
             ClassNamed api = view.tryFindFirst("org/bukkit/block/data/type/" + apiName).or(() -> {
                 Class<?> directParent = statefulBlock.getSuperclass();
                 if (STATEFUL_BLOCKS.containsKey(directParent)) {
                     // if the properties are the same then always consider the parent
                     // check deeper in the tree?
                     if (STATEFUL_BLOCKS.get(directParent).equals(entry.getValue())) {
-                        String parentApiName = formatApiName(directParent);
+                        String parentApiName = formatApiName(ExtraData.BLOCK_SUFFIX_INTENDED, directParent);
                         parentApiName = Formatting.stripWordOfCamelCaseName(parentApiName, "Base", true);
-                        parentApiName = API_RENAMES.getOrDefault(parentApiName, parentApiName);
+                        parentApiName = ExtraData.API_RENAMES.getOrDefault(parentApiName, parentApiName);
                         return view.tryFindFirst("org/bukkit/block/data/type/" + parentApiName);
                     }
                 }
@@ -165,20 +172,30 @@ public final class BlockStateMapping {
 
             map.put(statefulBlock, new BlockData(implName, Objects.requireNonNull(api, () -> "Unknown block data for " + statefulBlock.getCanonicalName()), properties, propertyFields, complexPropertyFields));
         }
-        MAPPING = Collections.unmodifiableMap(map);
+        return Collections.unmodifiableMap(map);
+    }
+
+    public static @MonotonicNonNull Map<Class<? extends Block>, BlockData> MAPPING;
+
+    public static Map<Class<? extends Block>, BlockData> getOrCreate() {
+        if (MAPPING == null) {
+            MAPPING = create(Main.ROOT_DIR);
+        }
+
+        return MAPPING;
     }
 
     public static @Nullable ClassNamed getBestSuitedApiClass(Class<?> block) {
-        if (!MAPPING.containsKey(block)) {
+        if (!getOrCreate().containsKey(block)) {
             return null;
         }
 
-        return MAPPING.get(block).api();
+        return getOrCreate().get(block).api();
     }
 
-    private static String formatApiName(Class<?> specialBlock) {
+    public static String formatApiName(Set<Class<? extends Block>> withBlockSuffix, Class<?> specialBlock) {
         String apiName = specialBlock.getSimpleName();
-        if (!BLOCK_SUFFIX_INTENDED.contains(specialBlock)) {
+        if (!withBlockSuffix.contains(specialBlock)) {
             return apiName.substring(0, apiName.length() - "Block".length());
         }
         return apiName;

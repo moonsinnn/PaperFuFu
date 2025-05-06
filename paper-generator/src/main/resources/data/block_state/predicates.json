@@ -38,7 +38,7 @@
             "type": "instance_of",
             "value": "net.minecraft.world.level.block.BaseRailBlock",
             "properties": [
-                "powered"
+                "BlockStateProperties.POWERED"
             ]
         }
     ],

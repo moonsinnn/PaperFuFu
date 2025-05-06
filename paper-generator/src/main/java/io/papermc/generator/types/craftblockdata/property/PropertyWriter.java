@@ -66,11 +66,14 @@ public class PropertyWriter<T extends Comparable<T>> implements PropertyMaker {
     public static Pair<Class<?>, String> referenceField(Class<? extends Block> from, Property<?> property, Map<Property<?>, Field> fields) {
         Class<?> fieldAccess = from;
         Field field = fields.get(property);
+        String fieldName;
         if (field == null || !Modifier.isPublic(field.getModifiers())) {
             fieldAccess = BlockStateProperties.class;
-            field = BlockStateMapping.GENERIC_FIELDS.get(property);
+            fieldName = BlockStateMapping.GENERIC_FIELD_NAMES.get(property);
+        } else {
+            fieldName = field.getName();
         }
-        return Pair.of(fieldAccess, field.getName());
+        return Pair.of(fieldAccess, fieldName);
     }
 
     public static Pair<Class<?>, String> referenceFieldFromVar(Class<? extends Block> from, Property<?> property, Map<Property<?>, Field> fields) {

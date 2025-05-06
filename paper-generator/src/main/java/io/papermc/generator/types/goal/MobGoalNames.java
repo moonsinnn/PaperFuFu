@@ -59,7 +59,7 @@ public final class MobGoalNames { // todo sync with MobGoalHelper ideally this s
         return deobfuscationMap.getOrDefault(pathName, pathName);
     }
 
-    public static GoalKey getKey(Class<? extends Goal> goalClass) {
+    static GoalKey getKey(Class<? extends Goal> goalClass) {
         String name = getPathName(goalClass.getName());
         return new GoalKey(getEntityClassName(goalClass), ResourceLocation.withDefaultNamespace(name));
     }

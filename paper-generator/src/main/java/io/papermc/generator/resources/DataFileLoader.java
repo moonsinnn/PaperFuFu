@@ -141,7 +141,7 @@ public class DataFileLoader {
                     Comparator.comparing(Class::getCanonicalName))
             ));
 
-        // order matter: instance_of / is_class -> has_property -> contains_property
+        // order matters: instance_of / is_class -> has_property -> contains_property
         register(DataFiles.BLOCK_STATE_PREDICATES, () -> Codec.unboundedMap(
                 SourceCodecs.CLASS_NAMED, ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf())
             ),
@@ -154,7 +154,7 @@ public class DataFileLoader {
                 path, codec, sortedMap(Comparator.comparing(ClassNamed::canonicalName))
             ));
 
-        // order matter
+        // order matters
         register(DataFiles.ITEM_META_PREDICATES, () -> Codec.unboundedMap(
                 SourceCodecs.CLASS_NAMED, ExtraCodecs.nonEmptyList(ItemPredicate.CODEC.listOf())
             ),

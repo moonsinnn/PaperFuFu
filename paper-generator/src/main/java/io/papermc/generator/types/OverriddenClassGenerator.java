@@ -34,7 +34,7 @@ public abstract class OverriddenClassGenerator extends SimpleGenerator {
             methodBuilder.addAnnotation(Annotations.OVERRIDE);
         } else {
             if (this.printWarningOnMissingOverride) {
-                LOGGER.warn("Method {}#{}{} didn't override a known api method!", this.className, name, Arrays.toString(parameterTypes));
+                LOGGER.warn("Method {}#{}{} didn't override a known api method!", this.className, name, LogUtils.defer(() -> Arrays.toString(parameterTypes)));
             }
         }
         return methodBuilder;

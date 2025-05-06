@@ -37,7 +37,7 @@ public class MaterialRewriter {
         protected EnumValue.Builder rewriteEnumValue(Holder.Reference<Block> reference) {
             EnumValue.Builder value = super.rewriteEnumValue(reference);
             Block block = reference.value();
-            if (BlockStateMapping.MAPPING.containsKey(block.getClass())) {
+            if (BlockStateMapping.getOrCreate().containsKey(block.getClass())) {
                 // some block can also be represented as item in that enum
                 // doing a double job
                 Optional<Item> equivalentItem = BuiltInRegistries.ITEM.getOptional(reference.key().location());

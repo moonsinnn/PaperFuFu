@@ -10,6 +10,7 @@ import com.squareup.javapoet.ClassName;
 import io.papermc.typewriter.ClassNamed;
 import javax.lang.model.SourceVersion;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.RegistryOps;
@@ -17,6 +18,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.jspecify.annotations.NullMarked;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 @NullMarked
 public final class SourceCodecs {
@@ -35,6 +38,22 @@ public final class SourceCodecs {
     private static final Codec<String> BINARY_NAME = Codec.STRING.validate(name -> {
         return SourceVersion.isName(name.replace('$', '.')) ? DataResult.success(name) : DataResult.error(() -> "Invalid binary name: '%s'".formatted(name));
     });
+
+    public static Codec<String> fieldCodec(Class<?> fieldHolder, Predicate<String> checker) {
+        String className = fieldHolder.getSimpleName();
+        return QUALIFIED_NAME.comapFlatMap(name -> {
+            if (!name.startsWith(className + ".")) {
+                return DataResult.error(() -> "Invalid field '%s', field must belong to %s".formatted(name, className));
+            }
+
+            String fieldName = name.substring(className.length() + 1);
+            if (!checker.test(fieldName)) {
+                return DataResult.error(() -> "Unknown field '%s' in %s".formatted(fieldName, className));
+            }
+
+            return DataResult.success(name.substring(className.length() + 1));
+        }, fieldName -> String.join(".", className, fieldName));
+    }
 
     public static final Codec<Class<?>> CLASS = BINARY_NAME.comapFlatMap(name -> {
         try {
@@ -89,20 +108,20 @@ public final class SourceCodecs {
 
         @Override
         public <T> DataResult<Pair<TagKey<E>, T>> decode(DynamicOps<T> ops, T input) {
-            if (!(ops instanceof RegistryOps<T> registryOps)) {
-                return DataResult.error(() -> "Can't access registry " + this.registryKey);
-            }
-
-            return registryOps.getter(this.registryKey)
-                .map(getter -> {
+            if (ops instanceof RegistryOps<T> registryOps) {
+                Optional<HolderGetter<E>> getter = registryOps.getter(this.registryKey);
+                if (getter.isPresent()) {
                     return this.delegate.decode(ops, input).flatMap(pair -> {
                         TagKey<E> result = pair.getFirst();
-                        if (getter.get(result).isPresent()) {
+                        if (getter.get().get(result).isPresent()) {
                             return DataResult.success(pair);
                         }
-                        return DataResult.error(() -> "Missing tag: '" + result.location() + "' in registry '" + result.registry().location() + "'");
+                        return DataResult.error(() -> "Missing tag: '%s' in registry '%s'".formatted(result.location(), result.registry().location()));
                     });
-                }).orElseGet(() -> DataResult.error(() -> "Can't access registry " + this.registryKey));
+                }
+            }
+
+            return DataResult.error(() -> "Can't access registry " + this.registryKey);
         }
 
         @Override

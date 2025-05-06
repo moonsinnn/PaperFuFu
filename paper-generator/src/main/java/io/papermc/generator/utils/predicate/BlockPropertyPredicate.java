@@ -12,8 +12,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 
 @NullMarked
@@ -22,9 +20,6 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
     Codec<BlockPropertyPredicate> DIRECT_CODEC = Type.CODEC.dispatch("type", BlockPropertyPredicate::type, type -> type.codec);
     Codec<BlockPropertyPredicate> COMPACT_CODEC = Codec.withAlternative(IsFieldPredicate.COMPACT_CODEC, IsNamePredicate.COMPACT_CODEC);
     Codec<BlockPropertyPredicate> CODEC = Codec.withAlternative(DIRECT_CODEC, COMPACT_CODEC);
-
-    Codec<Set<BlockPropertyPredicate>> SET_CODEC = CODEC.listOf().xmap(Set::copyOf, List::copyOf);
-    Codec<Set<BlockPropertyPredicate>> NON_EMPTY_SET_CODEC = ExtraCodecs.nonEmptyList(CODEC.listOf()).xmap(Set::copyOf, List::copyOf);
 
     String value();
 
@@ -89,7 +84,7 @@ public sealed interface BlockPropertyPredicate permits BlockPropertyPredicate.Is
     record IsFieldPredicate(String value) implements BlockPropertyPredicate {
 
         public static final MapCodec<IsFieldPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            SourceCodecs.IDENTIFIER.fieldOf("value").forGetter(IsFieldPredicate::value)
+            SourceCodecs.fieldNameCodec(BlockStateProperties.class, BlockStateMapping.GENERIC_FIELD_NAMES::containsValue).fieldOf("value").forGetter(IsFieldPredicate::value)
         ).apply(instance, IsFieldPredicate::new));
 
         public static final Codec<BlockPropertyPredicate> COMPACT_CODEC = SourceCodecs.fieldCodec(

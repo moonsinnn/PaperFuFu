@@ -1,5 +1,6 @@
 package io.papermc.generator.resources;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.lang.constant.ConstantDescs;
@@ -41,7 +42,13 @@ public record RegistryData(
 
         public static final Codec<Api> CLASS_ONLY_CODEC = SourceCodecs.CLASS_NAMED.xmap(Api::new, Api::klass);
 
-        public static final Codec<Api> CODEC = Codec.withAlternative(CLASS_ONLY_CODEC, DIRECT_CODEC);
+        public static final Codec<Api> CODEC = Codec.either(CLASS_ONLY_CODEC, DIRECT_CODEC).xmap(Either::unwrap, api -> {
+            if ((api.holders().isEmpty() || api.klass().equals(api.holders().get())) &&
+                api.type() == Type.INTERFACE && !api.keyClassNameRelate() && api.registryField().isEmpty()) {
+                return Either.left(api);
+            }
+            return Either.right(api);
+        });
 
         public enum Type implements StringRepresentable {
             INTERFACE("interface"),
@@ -76,7 +83,12 @@ public record RegistryData(
 
         public static final Codec<Impl> CLASS_ONLY_CODEC = SourceCodecs.CLASS_NAMED.xmap(Impl::new, Impl::klass);
 
-        public static final Codec<Impl> CODEC = Codec.withAlternative(CLASS_ONLY_CODEC, DIRECT_CODEC);
+        public static final Codec<Impl> CODEC = Codec.either(CLASS_ONLY_CODEC, DIRECT_CODEC).xmap(Either::unwrap, impl -> {
+            if (impl.instanceMethod().equals(ConstantDescs.INIT_NAME) && !impl.delayed()) {
+                return Either.left(impl);
+            }
+            return Either.right(impl);
+        });
     }
 
     public record Builder(ClassNamed api, ClassNamed impl, RegisterCapability capability) {

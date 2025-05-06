@@ -14,6 +14,7 @@ import io.papermc.generator.Main;
 import io.papermc.generator.types.SimpleGenerator;
 import net.minecraft.resources.RegistryOps;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.jspecify.annotations.NullMarked;
 
 import java.io.BufferedReader;
@@ -95,6 +96,11 @@ public abstract class DataFile<V, A, R> {
 
     public String path() {
         return this.path;
+    }
+
+    @VisibleForTesting
+    public Codec<V> codec() {
+        return this.codec;
     }
 
     private DynamicOps<JsonElement> readOps() {

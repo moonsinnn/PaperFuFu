@@ -39,6 +39,16 @@ public final class SourceCodecs {
         return SourceVersion.isName(name.replace('$', '.')) ? DataResult.success(name) : DataResult.error(() -> "Invalid binary name: '%s'".formatted(name));
     });
 
+    public static Codec<String> fieldNameCodec(Class<?> fieldHolder, Predicate<String> checker) {
+        return IDENTIFIER.comapFlatMap(name -> {
+            if (!checker.test(name)) {
+                return DataResult.error(() -> "Unknown field '%s' in %s".formatted(name, fieldHolder.getSimpleName()));
+            }
+
+            return DataResult.success(name);
+        }, name -> name);
+    }
+
     public static Codec<String> fieldCodec(Class<?> fieldHolder, Predicate<String> checker) {
         String className = fieldHolder.getSimpleName();
         return QUALIFIED_NAME.comapFlatMap(name -> {

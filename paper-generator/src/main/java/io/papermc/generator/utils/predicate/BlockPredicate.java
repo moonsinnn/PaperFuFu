@@ -9,6 +9,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.NullMarked;
+import java.util.List;
 import java.util.Set;
 
 @NullMarked
@@ -58,11 +59,11 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
         }
     }
 
-    record InstanceOfPredicate(Class<? extends Block> value, Set<BlockPropertyPredicate> propertyPredicates) implements BlockPredicate {
+    record InstanceOfPredicate(Class<? extends Block> value, List<BlockPropertyPredicate> propertyPredicates) implements BlockPredicate {
 
         public static final MapCodec<InstanceOfPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SourceCodecs.classCodec(Block.class).fieldOf("value").forGetter(InstanceOfPredicate::value),
-            BlockPropertyPredicate.SET_CODEC.optionalFieldOf("properties", Set.of()).forGetter(InstanceOfPredicate::propertyPredicates)
+            BlockPropertyPredicate.CODEC.listOf().optionalFieldOf("properties", List.of()).forGetter(InstanceOfPredicate::propertyPredicates)
         ).apply(instance, InstanceOfPredicate::new));
 
         @Override
@@ -91,16 +92,16 @@ public sealed interface BlockPredicate permits BlockPredicate.ContainsPropertyPr
         }
     }
 
-    record ContainsPropertyPredicate(Set<BlockPropertyPredicate> value, int count, Strategy strategy) implements BlockPredicate {
+    record ContainsPropertyPredicate(List<BlockPropertyPredicate> value, int count, Strategy strategy) implements BlockPredicate {
 
         public static final MapCodec<ContainsPropertyPredicate> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            BlockPropertyPredicate.NON_EMPTY_SET_CODEC.fieldOf("value").forGetter(ContainsPropertyPredicate::value),
+            ExtraCodecs.nonEmptyList(BlockPropertyPredicate.CODEC.listOf()).fieldOf("value").forGetter(ContainsPropertyPredicate::value),
             ExtraCodecs.POSITIVE_INT.fieldOf("count").forGetter(ContainsPropertyPredicate::count),
             Strategy.CODEC.fieldOf("strategy").forGetter(ContainsPropertyPredicate::strategy)
         ).apply(instance, ContainsPropertyPredicate::new));
 
         public static final MapCodec<ContainsPropertyPredicate> SINGLE_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            BlockPropertyPredicate.NON_EMPTY_SET_CODEC.fieldOf("value").forGetter(ContainsPropertyPredicate::value)
+            ExtraCodecs.nonEmptyList(BlockPropertyPredicate.CODEC.listOf()).fieldOf("value").forGetter(ContainsPropertyPredicate::value)
         ).apply(instance, value -> new ContainsPropertyPredicate(value, 1, Strategy.AT_LEAST)));
 
         @Override
